@@ -1,14 +1,10 @@
 /*BabylonJS GUI*/
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
-declare module BABYLON.GUI {
-}
-declare module BABYLON.GUI {
-}
-declare module BABYLON.GUI {
-}
-declare module BABYLON.GUI {
-}
+
+
+
+
 declare module BABYLON.GUI {
     /**
         * Interface used to define a control that can receive focus
@@ -489,10 +485,8 @@ declare module BABYLON.GUI {
             static readonly UNITMODE_PIXEL: number;
     }
 }
-declare module BABYLON.GUI {
-}
-declare module BABYLON.GUI {
-}
+
+
 declare module BABYLON.GUI {
     /**
         * Class used to manage 3D user interface
@@ -2628,4 +2622,4 @@ declare module BABYLON.GUI {
             getClassName(): string;
             static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FluentMaterial;
     }
-}
+}
