@@ -77,6 +77,22 @@ varying vec4 vColor;
     uniform sampler2D opacitySampler;
 #endif
 
+#ifdef SCENETEXTURE
+    uniform sampler2D sceneSampler;
+    uniform vec2 sceneTextureSize;
+#endif
+
+#ifdef TRANSMISSION
+    #if TRANSMISSIONDIRECTUV == 1
+        #define vTransmissionUV vMainUV1
+    #elif TRANSMISSIONDIRECTUV == 2
+        #define vTransmissionUV vMainUV2
+    #else
+        varying vec2 vTransmissionUV;
+    #endif
+    uniform sampler2D transmissionSampler;
+#endif
+
 #ifdef EMISSIVE
     #if EMISSIVEDIRECTUV == 1
         #define vEmissiveUV vMainUV1
@@ -301,6 +317,21 @@ void main(void) {
 
 #include<depthPrePass>
 
+#ifdef ADOBETRANSPARENCY
+float transmissionFinal = opticalTransmission;
+    #ifdef TRANSMISSION
+        vec4 transmissionMap = texture2D(transmissionSampler, vTransmissionUV + uvOffset);
+
+        #ifdef TRANSMISSIONRGB
+            transmissionFinal *= getLuminance(transmissionMap.rgb);
+        #else
+            transmissionFinal *= transmissionMap.a;
+        #endif
+
+        transmissionFinal = clamp(transmissionFinal * vTransmissionInfos.y, 0.0, 1.0);
+    #endif
+#endif
+
 #ifdef VERTEXCOLOR
     surfaceAlbedo *= vColor.rgb;
 #endif
@@ -364,6 +395,9 @@ void main(void) {
         // 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.
         const vec3 DefaultSpecularReflectanceDielectric = vec3(0.04, 0.04, 0.04);
 
+        #ifdef ADOBETRANSPARENCY
+            metallicRoughness.r *= 1.0 - transmissionFinal;
+        #endif
         // Compute the converted diffuse.
         surfaceAlbedo = mix(baseColor.rgb * (1.0 - DefaultSpecularReflectanceDielectric.r), vec3(0., 0., 0.), metallicRoughness.r);
 
@@ -821,6 +855,54 @@ void main(void) {
         finalEmissive			* vLightingIntensity.y,
         alpha);
 
+#if defined(ADOBETRANSPARENCY) && defined(SCENETEXTURE)
+    vec2 coords = gl_FragCoord.xy / sceneTextureSize;
+    float fresnelTerm = 1.0 - NdotV;
+    // TODO - scale for ior. IOR can be taken from vRefractionInfos.y after this code is merged with all the refraction stuff above.
+    coords -= 0.05 * (view * vec4(normalW, 0.0)).xy;
+    float loadBias = roughness * 0.75 * log2(sceneTextureSize).x;
+    vec3 transmittedColour = texture2DLodEXT(sceneSampler, coords, loadBias).rgb;
+    
+    // vec3 tintColor = surfaceAlbedo * (1.0 - pow(fresnelTerm, 5.0));
+    vec3 tintColor = pow(surfaceAlbedo * surfaceAlbedo, vec3(5.0 * fresnelTerm + 1.0));
+    transmittedColour *= tintColor;
+
+    // Interior Color
+    #ifdef INTERIOR
+        vec3 interiorFinal = interiorColor;
+        #ifndef UNLIT
+            #ifdef REFLECTION
+                interiorFinal *= finalIrradiance * ambientOcclusionColor * vLightingIntensity.z;
+            #endif
+        #endif
+        transmittedColour = mix(transmittedColour, interiorColor, interiorDensity);
+    #endif
+    
+    transmittedColour += 
+    #ifndef UNLIT
+        // #ifdef REFLECTION
+        //     finalIrradiance			* ambientOcclusionColor * vLightingIntensity.z +
+        // #endif
+        #ifdef SPECULARTERM
+        // Computed in the previous step to help with alpha luminance.
+        //	finalSpecular			* vLightingIntensity.x * vLightingIntensity.w +
+            finalSpecularScaled +
+        #endif
+        #ifdef REFLECTION
+        // Comupted in the previous step to help with alpha luminance.
+        //	finalRadiance			* vLightingIntensity.z +
+            finalRadianceScaled;
+        #endif
+        // #ifdef REFRACTION
+        //     finalRefraction			* vLightingIntensity.z +
+        // #endif
+    #endif
+
+    
+
+    finalColor.rgb = mix(finalColor.rgb, transmittedColour, transmissionFinal);
+#endif
+
 // _____________________________ LightMappping _____________________________________
 #ifdef LIGHTMAP
     #ifndef LIGHTMAPEXCLUDED
@@ -852,8 +934,9 @@ void main(void) {
     finalColor.rgb *= finalColor.a;
 #endif
 
-    gl_FragColor = finalColor;
 
+    gl_FragColor = finalColor;
+    
     // Normal Display.
     //gl_FragColor = vec4(normalW * 0.5 + 0.5, 1.0);
 

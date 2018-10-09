@@ -1,6 +1,8 @@
 uniform vec3 vReflectionColor;
 uniform vec4 vAlbedoColor;
 
+uniform float opticalTransmission;
+
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
 
@@ -25,6 +27,10 @@ uniform vec2 vTangentSpaceParams;
 uniform vec2 vOpacityInfos;
 #endif
 
+#ifdef TRANSMISSION	
+uniform vec2 vTransmissionInfos;
+#endif
+
 #ifdef EMISSIVE
 uniform vec2 vEmissiveInfos;
 #endif
@@ -42,7 +48,7 @@ uniform vec2 vMicroSurfaceSamplerInfos;
 #endif
 
 // Refraction Reflection
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION) || defined(SCENETEXTURE)
 uniform mat4 view;
 #endif
 

@@ -5,6 +5,7 @@ uniform Material
 	uniform vec2 vAlbedoInfos;
 	uniform vec4 vAmbientInfos;
 	uniform vec2 vOpacityInfos;
+	uniform vec2 vTransmissionInfos;
 	uniform vec2 vEmissiveInfos;
 	uniform vec2 vLightmapInfos;
 	uniform vec3 vReflectivityInfos;
@@ -17,6 +18,7 @@ uniform Material
 	uniform mat4 albedoMatrix;
 	uniform mat4 ambientMatrix;
 	uniform mat4 opacityMatrix;
+	uniform mat4 transmissionMatrix;
 	uniform mat4 emissiveMatrix;
 	uniform mat4 lightmapMatrix;
 	uniform mat4 reflectivityMatrix;
@@ -37,6 +39,10 @@ uniform Material
 	uniform vec3 vEmissiveColor;
 
 	uniform float pointSize;
+	uniform float opticalTransmission;
+	uniform vec3 interiorColor;
+	uniform float interiorDensity;
+
 };
 
 uniform Scene {

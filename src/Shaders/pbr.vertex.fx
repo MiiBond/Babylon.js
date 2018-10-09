@@ -44,6 +44,10 @@ varying vec2 vAmbientUV;
 varying vec2 vOpacityUV;
 #endif
 
+#if defined(TRANSMISSION) && TRANSMISSIONDIRECTUV == 0
+varying vec2 vTransmissionUV;
+#endif
+
 #if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0
 varying vec2 vEmissiveUV;
 #endif
@@ -192,6 +196,17 @@ void main(void) {
     else
     {
         vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
+    }
+#endif
+
+#if defined(TRANSMISSION) && TRANSMISSIONDIRECTUV == 0 
+    if (vTransmissionInfos.x == 0.)
+    {
+        vTransmissionUV = vec2(transmissionMatrix * vec4(uv, 1.0, 0.0));
+    }
+    else
+    {
+        vTransmissionUV = vec2(transmissionMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
 

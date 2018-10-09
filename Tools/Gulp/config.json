@@ -502,7 +502,8 @@
                 "../../src/Materials/PBR/babylon.pbrBaseSimpleMaterial.js",
                 "../../src/Materials/PBR/babylon.pbrMaterial.js",
                 "../../src/Materials/PBR/babylon.pbrMetallicRoughnessMaterial.js",
-                "../../src/Materials/PBR/babylon.pbrSpecularGlossinessMaterial.js"
+                "../../src/Materials/PBR/babylon.pbrSpecularGlossinessMaterial.js",
+                "../../src/Materials/PBR/babylon.pbrTransparencyMaterial.js"
             ],
             "dependUpon": [
                 "core",

@@ -144,6 +144,13 @@ module BABYLON {
 
         public UNLIT = false;
 
+        public ADOBETRANSPARENCY = false;
+        public SCENETEXTURE = false;
+        public TRANSMISSION = false;
+        public TRANSMISSIONRGB = false;
+        public TRANSMISSIONDIRECTUV = 0;
+        public INTERIOR = false;
+
         /**
          * Initializes the PBR Material defines.
          */
@@ -249,6 +256,26 @@ module BABYLON {
         protected _opacityTexture: BaseTexture;
 
         /**
+         * Stuff
+         */
+        protected _transmissionTexture: BaseTexture;
+
+        /**
+         * Stuff
+         */
+        protected _sceneTexture: RenderTargetTexture;
+
+        /**
+         * Stuff
+         */
+        protected _interiorColor: Color3 = new Color3(1, 1, 1);
+
+        /**
+         * Stuff
+         */
+        protected _interiorDensity: number = 0.0;
+
+        /**
          * Stores the reflection values in a texture.
          */
         protected _reflectionTexture: BaseTexture;
@@ -310,6 +337,11 @@ module BABYLON {
          * AKA Diffuse Color in other nomenclature.
          */
         protected _albedoColor = new Color3(1, 1, 1);
+
+        /**
+         * Stuff
+         */
+        protected _opticalTransmission = 0;
 
         /**
          * AKA Specular Color in other nomenclature.
@@ -693,8 +725,11 @@ module BABYLON {
             if (this._disableAlphaBlending) {
                 return false;
             }
+            if (this._sceneTexture) {
+                return false;
+            }
 
-            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
+            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture() || (this._transmissionTexture != null);
         }
 
         /**
@@ -791,6 +826,18 @@ module BABYLON {
                         }
                     }
 
+                    if (this._sceneTexture) {
+                        if (!this._sceneTexture.isReadyOrNotBlocking()) {
+                            return false;
+                        }
+                    }
+
+                    if (this._transmissionTexture) {
+                        if (!this._transmissionTexture.isReadyOrNotBlocking()) {
+                            return false;
+                        }
+                    }
+
                     var reflectionTexture = this._getReflectionTexture();
                     if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                         if (!reflectionTexture.isReadyOrNotBlocking()) {
@@ -861,21 +908,13 @@ module BABYLON {
             if (!engine.getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 mesh.createNormals(true);
                 Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
-            }
-
-            let previousEffect = subMesh.effect;
-            let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
-
-            if (effect) {
-                // Use previous effect while new one is compiling
-                if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
-                    effect = previousEffect;
-                    defines.markAsUnprocessed();
-                } else {
-                    scene.resetCachedMaterial();
-                    subMesh.setEffect(effect, defines);
-                    this.buildUniformLayout();
                 }
+
+            const effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
+            if (effect) {
+                scene.resetCachedMaterial();
+                subMesh.setEffect(effect, defines);
+                this.buildUniformLayout();
             }
 
             if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -897,6 +936,14 @@ module BABYLON {
                 return true;
             }
 
+            return false;
+        }
+
+        /**
+         * Stuff
+         * @returns Whether the material uses transparency from the Adobe standard material.
+         */
+        public useAdobeTransparency(): boolean {
             return false;
         }
 
@@ -1016,10 +1063,11 @@ module BABYLON {
 
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
                 "vFogInfos", "vFogColor", "pointSize",
-                "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
+                "sceneTextureSize", "opticalTransmission", "interiorColor", "interiorDensity",
+                "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vTransmissionInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
                 "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "normalMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "albedoMatrix", "ambientMatrix", "opacityMatrix", "transmissionMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "normalMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                 "vLightingIntensity",
                 "logarithmicDepthConstant",
                 "vSphericalX", "vSphericalY", "vSphericalZ",
@@ -1030,7 +1078,7 @@ module BABYLON {
             ];
 
             var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
-                "bumpSampler", "lightmapSampler", "opacitySampler",
+                "bumpSampler", "lightmapSampler", "opacitySampler", "sceneSampler", "transmissionSampler",
                 "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh",
                 "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh",
                 "microSurfaceSampler", "environmentBrdfSampler"];
@@ -1073,6 +1121,8 @@ module BABYLON {
 
             // Textures
             defines.METALLICWORKFLOW = this.isMetallicWorkflow();
+            defines.ADOBETRANSPARENCY = this.useAdobeTransparency();
+            defines.INTERIOR = this._interiorDensity > 0;
             if (defines._areTexturesDirty) {
                 defines._needUVs = false;
                 if (scene.texturesEnabled) {
@@ -1098,6 +1148,19 @@ module BABYLON {
                         defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
                     } else {
                         defines.OPACITY = false;
+                    }
+
+                    if (this._sceneTexture) {
+                        defines.SCENETEXTURE = true;
+                    } else {
+                        defines.SCENETEXTURE = false;
+                    }
+
+                    if (this._transmissionTexture && this._opticalTransmission > 0) {
+                        MaterialHelper.PrepareDefinesForMergedUV(this._transmissionTexture, defines, "TRANSMISSION");
+                        defines.TRANSMISSIONRGB = this._transmissionTexture.getAlphaFromRGB;
+                    } else {
+                        defines.TRANSMISSION = false;
                     }
 
                     var reflectionTexture = this._getReflectionTexture();
@@ -1142,10 +1205,10 @@ module BABYLON {
                             case Texture.CUBIC_MODE:
                             case Texture.INVCUBIC_MODE:
                             default:
-                                defines.REFLECTIONMAP_CUBIC = true;
-                                defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>reflectionTexture).boundingBoxSize ? true : false;
-                                break;
-                        }
+                                    defines.REFLECTIONMAP_CUBIC = true;
+                                    defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>reflectionTexture).boundingBoxSize ? true : false;
+                                    break;
+                            }
 
                         if (reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
                             if (reflectionTexture.sphericalPolynomial) {
@@ -1357,6 +1420,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("vAlbedoInfos", 2);
             this._uniformBuffer.addUniform("vAmbientInfos", 4);
             this._uniformBuffer.addUniform("vOpacityInfos", 2);
+            this._uniformBuffer.addUniform("vTransmissionInfos", 2);
             this._uniformBuffer.addUniform("vEmissiveInfos", 2);
             this._uniformBuffer.addUniform("vLightmapInfos", 2);
             this._uniformBuffer.addUniform("vReflectivityInfos", 3);
@@ -1369,6 +1433,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("albedoMatrix", 16);
             this._uniformBuffer.addUniform("ambientMatrix", 16);
             this._uniformBuffer.addUniform("opacityMatrix", 16);
+            this._uniformBuffer.addUniform("transmissionMatrix", 16);
             this._uniformBuffer.addUniform("emissiveMatrix", 16);
             this._uniformBuffer.addUniform("lightmapMatrix", 16);
             this._uniformBuffer.addUniform("reflectivityMatrix", 16);
@@ -1388,6 +1453,10 @@ module BABYLON {
             this._uniformBuffer.addUniform("vEmissiveColor", 3);
 
             this._uniformBuffer.addUniform("pointSize", 1);
+            this._uniformBuffer.addUniform("opticalTransmission", 1);
+            this._uniformBuffer.addUniform("interiorColor", 3);
+            this._uniformBuffer.addUniform("interiorDensity", 1);
+            this._uniformBuffer.addUniform("sceneTextureSize", 2);
             this._uniformBuffer.create();
         }
 
@@ -1432,7 +1501,8 @@ module BABYLON {
             this.bindOnlyWorldMatrix(world);
 
             // Normal Matrix
-            if (defines.OBJECTSPACE_NORMALMAP) {
+            if (defines.OBJECTSPACE_NORMALMAP)
+            {
                 world.toNormalMatrix(this._normalMatrix);
                 this.bindOnlyNormalMatrix(this._normalMatrix);
             }
@@ -1467,6 +1537,16 @@ module BABYLON {
                         if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                             MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
+                        }
+
+                        if (this._transmissionTexture) {
+                            this._uniformBuffer.updateFloat2("vTransmissionInfos", this._transmissionTexture.coordinatesIndex, this._transmissionTexture.level);
+                            MaterialHelper.BindTextureMatrix(this._transmissionTexture, this._uniformBuffer, "transmission");
+                        }
+
+                        if (this._sceneTexture) {
+                            const engine = this.getScene().getEngine();
+                            this._uniformBuffer.updateFloat2("sceneTextureSize", engine.getRenderWidth(), engine.getRenderHeight());
                         }
 
                         if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
@@ -1575,6 +1655,11 @@ module BABYLON {
                     this._uniformBuffer.updateColor3("vEmissiveColor", this._emissiveColor);
                     this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
                     this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha * mesh.visibility);
+                    this._uniformBuffer.updateFloat("opticalTransmission", this._opticalTransmission);
+                    if (defines.INTERIOR) {
+                        this._uniformBuffer.updateColor3("interiorColor", this._interiorColor);
+                        this._uniformBuffer.updateFloat("interiorDensity", this._interiorDensity);
+                    }
 
                     // Misc
                     this._lightingInfos.x = this._directIntensity;
@@ -1597,6 +1682,14 @@ module BABYLON {
 
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                         this._uniformBuffer.setTexture("opacitySampler", this._opacityTexture);
+                    }
+
+                    if (this._sceneTexture) {
+                        this._uniformBuffer.setTexture("sceneSampler", this._sceneTexture);
+                    }
+
+                    if (this._transmissionTexture) {
+                        this._uniformBuffer.setTexture("transmissionSampler", this._transmissionTexture);
                     }
 
                     if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
@@ -1665,6 +1758,11 @@ module BABYLON {
                     eyePosition.z,
                     invertNormal ? -1 : 1);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
+
+                if (this._sceneTexture) {
+                    const engine = this.getScene().getEngine();
+                    effect.setFloat2("sceneTextureSize", engine.getRenderWidth(), engine.getRenderHeight());
+                }
             }
 
             if (mustRebind || !this.isFrozen) {
@@ -1715,6 +1813,10 @@ module BABYLON {
 
             if (this._opacityTexture && this._opacityTexture.animations && this._opacityTexture.animations.length > 0) {
                 results.push(this._opacityTexture);
+            }
+
+            if (this._transmissionTexture && this._transmissionTexture.animations && this._transmissionTexture.animations.length > 0) {
+                results.push(this._transmissionTexture);
             }
 
             if (this._reflectionTexture && this._reflectionTexture.animations && this._reflectionTexture.animations.length > 0) {
@@ -1793,6 +1895,14 @@ module BABYLON {
 
                 if (this._opacityTexture) {
                     this._opacityTexture.dispose();
+                }
+
+                if (this._transmissionTexture) {
+                    this._transmissionTexture.dispose();
+                }
+
+                if (this._sceneTexture) {
+                    this._sceneTexture.dispose();
                 }
 
                 if (this._reflectionTexture) {
