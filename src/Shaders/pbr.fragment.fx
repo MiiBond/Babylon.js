@@ -93,6 +93,11 @@ varying vec4 vColor;
     uniform sampler2D transmissionSampler;
 #endif
 
+#ifdef INTERIOR
+    uniform vec3 interiorColor;
+    uniform float interiorDensity;
+#endif
+
 #ifdef EMISSIVE
     #if EMISSIVEDIRECTUV == 1
         #define vEmissiveUV vMainUV1
@@ -864,7 +869,7 @@ float transmissionFinal = opticalTransmission;
     vec3 transmittedColour = texture2DLodEXT(sceneSampler, coords, loadBias).rgb;
     
     // vec3 tintColor = surfaceAlbedo * (1.0 - pow(fresnelTerm, 5.0));
-    vec3 tintColor = pow(surfaceAlbedo * surfaceAlbedo, vec3(5.0 * fresnelTerm + 1.0));
+    vec3 tintColor = pow(surfaceAlbedo * surfaceAlbedo, vec3(4.0 * fresnelTerm + 1.0));
     transmittedColour *= tintColor;
 
     // Interior Color
@@ -875,7 +880,7 @@ float transmissionFinal = opticalTransmission;
                 interiorFinal *= finalIrradiance * ambientOcclusionColor * vLightingIntensity.z;
             #endif
         #endif
-        transmittedColour = mix(transmittedColour, interiorFinal, interiorDensity);
+        transmittedColour = mix(transmittedColour, tintColor, interiorDensity);
     #endif
     
     transmittedColour += 
