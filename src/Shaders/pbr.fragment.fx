@@ -869,13 +869,13 @@ float transmissionFinal = opticalTransmission;
 
     // Interior Color
     #ifdef INTERIOR
-        vec3 interiorFinal = interiorColor;
+        vec3 interiorFinal = interiorColor * tintColor;
         #ifndef UNLIT
             #ifdef REFLECTION
                 interiorFinal *= finalIrradiance * ambientOcclusionColor * vLightingIntensity.z;
             #endif
         #endif
-        transmittedColour = mix(transmittedColour, interiorColor, interiorDensity);
+        transmittedColour = mix(transmittedColour, interiorFinal, interiorDensity);
     #endif
     
     transmittedColour += 
