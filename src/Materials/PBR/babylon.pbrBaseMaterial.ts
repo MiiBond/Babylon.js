@@ -103,6 +103,7 @@ module BABYLON {
 
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
+        public BONETEXTURE = false;
 
         public NONUNIFORMSCALING = false;
 
@@ -1074,14 +1075,14 @@ module BABYLON {
                 "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                 "vSphericalXY", "vSphericalYZ", "vSphericalZX",
                 "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos",
-                "vTangentSpaceParams"
+                "vTangentSpaceParams", "boneTextureWidth"
             ];
 
             var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
                 "bumpSampler", "lightmapSampler", "opacitySampler", "sceneSampler", "transmissionSampler",
                 "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh",
                 "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh",
-                "microSurfaceSampler", "environmentBrdfSampler"];
+                "microSurfaceSampler", "environmentBrdfSampler", "boneSampler"];
             var uniformBuffers = ["Material", "Scene"];
 
             if (ImageProcessingConfiguration) {
