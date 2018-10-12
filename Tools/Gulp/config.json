@@ -1490,9 +1490,7 @@
         }
     ],
     "modules": [
-        "materialsLibrary",
         "postProcessesLibrary",
-        "proceduralTexturesLibrary",
         "loaders",
         "serializers",
         "gui",
