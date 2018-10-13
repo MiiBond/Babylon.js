@@ -93,11 +93,6 @@ varying vec4 vColor;
     uniform sampler2D transmissionSampler;
 #endif
 
-#ifdef INTERIOR
-    uniform vec3 interiorColor;
-    uniform float interiorDensity;
-#endif
-
 #ifdef EMISSIVE
     #if EMISSIVEDIRECTUV == 1
         #define vEmissiveUV vMainUV1
@@ -862,25 +857,31 @@ float transmissionFinal = opticalTransmission;
 
 #if defined(ADOBETRANSPARENCY) && defined(SCENETEXTURE)
     vec2 coords = gl_FragCoord.xy / sceneTextureSize;
-    float fresnelTerm = 1.0 - NdotV;
     // TODO - scale for ior. IOR can be taken from vRefractionInfos.y after this code is merged with all the refraction stuff above.
-    coords -= 0.05 * (view * vec4(normalW, 0.0)).xy;
-    float loadBias = roughness * 0.75 * log2(sceneTextureSize).x;
+    coords -= 0.04 * (view * vec4(normalW, 0.0)).xy;
+    float gloss = 1.0 - roughness;
+    float loadBias = (1.0 - gloss * gloss) * 0.8 * log2(sceneTextureSize).x;
     vec3 transmittedColour = texture2DLodEXT(sceneSampler, coords, loadBias).rgb;
     
-    // vec3 tintColor = surfaceAlbedo * (1.0 - pow(fresnelTerm, 5.0));
-    vec3 tintColor = pow(surfaceAlbedo * surfaceAlbedo, vec3(4.0 * fresnelTerm + 1.0));
+    vec3 tintColor = surfaceAlbedo * surfaceAlbedo;
+    tintColor = pow(tintColor, clamp(vec3(1.0 / NdotV), 1.0, 3.0));
     transmittedColour *= tintColor;
 
     // Interior Color
     #ifdef INTERIOR
-        vec3 interiorFinal = interiorColor * tintColor;
-        #ifndef UNLIT
-            #ifdef REFLECTION
-                interiorFinal *= finalIrradiance * ambientOcclusionColor * vLightingIntensity.z;
-            #endif
-        #endif
-        transmittedColour = mix(transmittedColour, tintColor, interiorDensity);
+        // vec3 interiorFinal = interiorColor * tintColor;
+        // float ior = 1.6;
+        // float iorScale = 5.0;
+        // float invFresnel = (1.0 - NdotV * NdotV);
+        // float densityFinal = clamp(interiorDensity + (ior - 1.0) * interiorDensity * 8.0, 0.0, 1.0) * invFresnel;
+        // vec3 interiorTint = mix(vec3(1.0), interiorColor, invFresnel);
+        // transmittedColour *= interiorTint;
+        // #ifndef UNLIT
+        //     #ifdef REFLECTION
+        //         interiorFinal *= finalIrradiance * ambientOcclusionColor * vLightingIntensity.z;
+        //     #endif
+        // #endif
+        // transmittedColour = mix(transmittedColour, interiorFinal, densityFinal);
     #endif
     
     transmittedColour += 

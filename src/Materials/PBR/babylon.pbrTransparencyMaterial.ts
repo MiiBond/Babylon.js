@@ -66,6 +66,13 @@ module BABYLON {
             return true;
         }
 
+        public needAlphaBlending(): boolean {
+            if ((this.transmissionTexture != null || this.opticalTransmission > 0) && this._sceneTexture === null) {
+                return true;
+            }
+            return super.needAlphaBlending();
+        }
+
         /**
          * Return the active textures of the material.
          */

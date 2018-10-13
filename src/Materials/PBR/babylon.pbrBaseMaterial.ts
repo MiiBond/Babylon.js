@@ -726,11 +726,8 @@ module BABYLON {
             if (this._disableAlphaBlending) {
                 return false;
             }
-            if (this._sceneTexture) {
-                return false;
-            }
 
-            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture() || (this._transmissionTexture != null);
+            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
         }
 
         /**

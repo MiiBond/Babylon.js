@@ -31,6 +31,11 @@ uniform vec2 vOpacityInfos;
 uniform vec2 vTransmissionInfos;
 #endif
 
+#ifdef INTERIOR
+    uniform vec3 interiorColor;
+    uniform float interiorDensity;
+#endif
+
 #ifdef EMISSIVE
 uniform vec2 vEmissiveInfos;
 #endif
