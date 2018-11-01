@@ -4,9 +4,13 @@ module BABYLON {
      */
     export enum WebXRState {
         /**
-         * Transitioning to/from being in XR mode
+         * Transitioning to being in XR mode
          */
-        TRANSITION,
+        ENTERING_XR,
+        /**
+         * Transitioning to non XR mode
+         */
+        EXITING_XR,
         /**
          * In XR mode and presenting
          */
@@ -35,38 +39,56 @@ module BABYLON {
          */
         public state: WebXRState = WebXRState.NOT_IN_XR;
 
+        private _setState(val: WebXRState) {
+            this.state = val;
+            this.onStateChangedObservable.notifyObservers(this.state);
+        }
+
         /**
          * Fires when the state of the experience helper has changed
          */
         public onStateChangedObservable = new Observable<WebXRState>();
 
-        private _sessionManager: WebXRSessionManager;
+        /** @hidden */
+        public _sessionManager: WebXRSessionManager;
 
         private _nonVRCamera: Nullable<Camera> = null;
         private _originalSceneAutoClear = true;
 
-        private _outputCanvas: HTMLCanvasElement;
-        private _outputCanvasContext: WebGLRenderingContext;
+        private _supported = false;
+
+        /**
+         * Creates the experience helper
+         * @param scene the scene to attach the experience helper to
+         * @returns a promise for the experience helper
+         */
+        public static CreateAsync(scene: BABYLON.Scene): Promise<WebXRExperienceHelper> {
+            var helper = new WebXRExperienceHelper(scene);
+            return helper._sessionManager.initializeAsync().then(() => {
+                helper._supported = true;
+                return helper;
+            }).catch(() => {
+                return helper;
+            });
+        }
 
         /**
          * Creates a WebXRExperienceHelper
          * @param scene The scene the helper should be created in
          */
-        constructor(private scene: BABYLON.Scene) {
+        private constructor(private scene: BABYLON.Scene) {
             this.camera = new BABYLON.WebXRCamera("", scene);
             this._sessionManager = new BABYLON.WebXRSessionManager(scene);
             this.container = new AbstractMesh("", scene);
-            this._sessionManager.initialize();
         }
 
         /**
          * Exits XR mode and returns the scene to its original state
          * @returns promise that resolves after xr mode has exited
          */
-        public exitXR() {
-            this.state = WebXRState.TRANSITION;
-            this.onStateChangedObservable.notifyObservers(this.state);
-            return this._sessionManager.exitXR();
+        public exitXRAsync() {
+            this._setState(WebXRState.EXITING_XR);
+            return this._sessionManager.exitXRAsync();
         }
 
         /**
@@ -75,16 +97,10 @@ module BABYLON {
          * @param frameOfReference frame of reference of the XR session
          * @returns promise that resolves after xr mode has entered
          */
-        public enterXR(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string) {
-            this.state = WebXRState.TRANSITION;
-            this.onStateChangedObservable.notifyObservers(this.state);
+        public enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string) {
+            this._setState(WebXRState.ENTERING_XR);
 
-            this._createCanvas();
-            if (!sessionCreationOptions.outputContext) {
-                sessionCreationOptions.outputContext = this._outputCanvasContext;
-            }
-
-            return this._sessionManager.enterXR(sessionCreationOptions, frameOfReference).then(() => {
+            return this._sessionManager.enterXRAsync(sessionCreationOptions, frameOfReference).then(() => {
                 // Cache pre xr scene settings
                 this._originalSceneAutoClear = this.scene.autoClear;
                 this._nonVRCamera = this.scene.activeCamera;
@@ -107,14 +123,32 @@ module BABYLON {
                     this.scene.autoClear = this._originalSceneAutoClear;
                     this.scene.activeCamera = this._nonVRCamera;
                     this._sessionManager.onXRFrameObservable.clear();
-                    this._removeCanvas();
 
-                    this.state = WebXRState.NOT_IN_XR;
-                    this.onStateChangedObservable.notifyObservers(this.state);
+                    this._setState(WebXRState.NOT_IN_XR);
                 });
-                this.state = WebXRState.IN_XR;
-                this.onStateChangedObservable.notifyObservers(this.state);
+                this._setState(WebXRState.IN_XR);
             });
+        }
+
+        /**
+         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
+         * @param ray ray to cast into the environment
+         * @returns Promise which resolves with a collision point in the environment if it exists
+         */
+        public environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>> {
+            return this._sessionManager.environmentPointHitTestAsync(ray);
+        }
+
+        /**
+         * Checks if the creation options are supported by the xr session
+         * @param options creation options
+         * @returns true if supported
+         */
+        public supportsSessionAsync(options: XRSessionCreationOptions) {
+            if (!this._supported) {
+                return Promise.resolve(false);
+            }
+            return this._sessionManager.supportsSessionAsync(options);
         }
 
         /**
@@ -123,23 +157,8 @@ module BABYLON {
         public dispose() {
             this.camera.dispose();
             this.container.dispose();
-            this._removeCanvas();
             this.onStateChangedObservable.clear();
             this._sessionManager.dispose();
-        }
-
-        // create canvas used to mirror/vr xr content in fullscreen
-        private _createCanvas() {
-            this._removeCanvas();
-            this._outputCanvas = document.createElement('canvas');
-            this._outputCanvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:100%;height:100%;background-color: #48989e;";
-            document.body.appendChild(this._outputCanvas);
-            this._outputCanvasContext = <any>this._outputCanvas.getContext('xrpresent');
-        }
-        private _removeCanvas() {
-            if (this._outputCanvas && document.body.contains(this._outputCanvas)) {
-                document.body.removeChild(this._outputCanvas);
-            }
         }
     }
 }

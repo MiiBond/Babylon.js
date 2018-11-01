@@ -181,8 +181,10 @@ interface WebGLUniformLocation {
 // WebXR
 interface XRDevice {
     requestSession(options: XRSessionCreationOptions): Promise<XRSession>;
+    supportsSession(options: XRSessionCreationOptions): Promise<void>;
 }
 interface XRSession {
+    getInputSources(): Array<any>;
     baseLayer: XRWebGLLayer;
     requestFrameOfReference(type: string): Promise<void>;
     requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
@@ -191,7 +193,9 @@ interface XRSession {
     addEventListener: Function;
 }
 interface XRSessionCreationOptions {
-    outputContext: WebGLRenderingContext;
+    outputContext?: WebGLRenderingContext | null;
+    immersive?: boolean;
+    environmentIntegration?: boolean;
 }
 interface XRLayer {
     getViewport: Function;
@@ -203,6 +207,7 @@ interface XRView {
 }
 interface XRFrame {
     getDevicePose: Function;
+    getInputPose: Function;
     views: Array<XRView>;
     baseLayer: XRLayer;
 }
