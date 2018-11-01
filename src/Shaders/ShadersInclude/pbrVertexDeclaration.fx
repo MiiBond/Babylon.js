@@ -55,6 +55,10 @@ uniform float pointSize;
     uniform vec4 vRefractionInfos;
     uniform mat4 refractionMatrix;
     uniform vec3 vRefractionMicrosurfaceInfos;
+
+    #ifdef SCENETEXTURE
+        uniform mat4 sceneRefractionMatrix;
+    #endif
 #endif
 
 // Reflection

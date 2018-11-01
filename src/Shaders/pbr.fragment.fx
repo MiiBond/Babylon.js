@@ -80,6 +80,9 @@ varying vec4 vColor;
 #ifdef SCENETEXTURE
     uniform sampler2D sceneSampler;
     uniform vec2 sceneTextureSize;
+    #ifdef SCENEDEPTHTEXTURE
+        uniform sampler2D sceneDepthSampler;
+    #endif
 #endif
 
 #ifdef TRANSMISSION
@@ -161,6 +164,10 @@ varying vec4 vColor;
             uniform samplerCube refractionSamplerLow;
             uniform samplerCube refractionSamplerHigh;
         #endif
+    #endif
+
+    #ifdef SCENEDEPTHTEXTURE
+        varying vec3 vPosCameraSpace;
     #endif
 #endif
 
@@ -488,6 +495,37 @@ float transmissionFinal = opticalTransmission;
             refractionVector.y = refractionVector.y * vRefractionInfos.w;
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
+            #ifdef SCENETEXTURE
+                
+                // Unrefracted coords.
+                vec3 vRefractionUVW = vec3(sceneRefractionMatrix * (view * vec4(vPositionW, 1.0)));
+                vec2 sceneCoords2d = vRefractionUVW.xy / vRefractionUVW.z;
+                sceneCoords2d.y = 1.0 - sceneCoords2d.y;
+
+                float refractTextureDepth = vSceneRefractionInfos.z;
+                #ifdef SCENEDEPTHTEXTURE
+                    refractTextureDepth *= texture2D(sceneDepthSampler, sceneCoords2d).r;
+                #endif
+                
+                // Refracted coords.
+                vRefractionUVW = vec3(sceneRefractionMatrix * (view * vec4(vPositionW + refractionVector * refractTextureDepth, 1.0)));
+                vec2 refractionCoords2d = vRefractionUVW.xy / vRefractionUVW.z;
+                refractionCoords2d.y = 1.0 - refractionCoords2d.y;
+                refractionCoords2d = clamp(refractionCoords2d, 0.0, 1.0);
+                
+                #ifdef SCENEDEPTHTEXTURE
+                    // Sample the depth that we're refracting at.
+                    float depth = texture2D(sceneDepthSampler, refractionCoords2d.xy).r;
+                    float pixelDistance = (view * vec4(vPositionW, 1.0)).z;
+                    float refractDistance = (cameraMinMaxZ.x + (cameraMinMaxZ.y - cameraMinMaxZ.x) * depth);
+                    
+                    // If the sampled refraction is closer to the camera than the rendered pixel, just use
+                    // the unrefracted sample instead.
+                    if (refractDistance <= pixelDistance) {
+                        refractionCoords2d = sceneCoords2d;
+                    }
+                #endif
+            #endif
         #else
             vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
@@ -522,6 +560,7 @@ float transmissionFinal = opticalTransmission;
             #endif
 
             environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+            
         #else
             float lodRefractionNormalized = clamp(refractionLOD / log2(vRefractionMicrosurfaceInfos.x), 0., 1.);
             float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
@@ -548,6 +587,14 @@ float transmissionFinal = opticalTransmission;
 
         #ifdef RGBDREFRACTION
             environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
+        #endif
+        // Add option to sample from both environmentTexture and refractionTexture and blend between them using roughness.
+        // If refractionTexture is 2D, grab refractedLightTexture and sample it as 3D
+        #if defined(REFRACTIONMAP_3D) && defined(SCENETEXTURE)
+            float sceneRefractionLOD = getLodFromAlphaG(vSceneRefractionMicrosurfaceInfos.x, alphaG, 1.0);
+            sceneRefractionLOD = sceneRefractionLOD * vSceneRefractionMicrosurfaceInfos.y + vSceneRefractionMicrosurfaceInfos.z;
+            vec3 sceneRefraction = toLinearSpace(texture2DLodEXT(sceneSampler, refractionCoords2d, sceneRefractionLOD).rgb);
+            environmentRefraction.rgb = mix(environmentRefraction.rgb, sceneRefraction, clamp(NdotV * (1.0-roughness), 0.0, 1.0));
         #endif
 
         // _____________________________ Levels _____________________________________
@@ -742,6 +789,37 @@ float transmissionFinal = opticalTransmission;
 
             // Put alpha back to 1;
             alpha = 1.0;
+        #else
+            transmission *= transmissionFinal;
+            // Tint the material with albedo.
+            // TODO. PBR Tinting.
+            vec3 mixedAlbedo = surfaceAlbedo;
+            float maxChannel = max(max(mixedAlbedo.r, mixedAlbedo.g), mixedAlbedo.b);
+            vec3 tint = clamp(maxChannel * mixedAlbedo, 0.0, 1.0);
+
+            #ifdef INTERIORCOLOR
+                vec3 interiorFinalTint = pow(interiorColor, vec3(1.0 + 6.0 * interiorDensity)) * vRefractionInfos.y;
+                float OneMinusNdotV = 1.0 - NdotV;
+                float densityFinal = clamp(interiorDensity * (1.0 - OneMinusNdotV * OneMinusNdotV), 0.0, 1.0);
+                vec3 interiorFinal = interiorFinalTint;
+                #ifndef UNLIT
+                    #ifdef REFLECTION
+                        interiorFinal *= environmentIrradiance * vLightingIntensity.z;
+                    #endif
+                #endif
+                environmentRefraction.rgb *= interiorFinalTint;
+                environmentRefraction.rgb = mix(environmentRefraction.rgb, interiorFinal, densityFinal);
+            #endif
+            
+            float tranInv = 1.0 - transmissionFinal;
+            // Decrease Albedo Contribution
+            surfaceAlbedo *= tranInv;
+
+            // Decrease irradiance Contribution
+            environmentIrradiance *= tranInv;
+
+            // Tint reflectance
+            environmentRefraction.rgb *= tint * transmission;
         #endif
 
         // Add Multiple internal bounces.
@@ -854,60 +932,6 @@ float transmissionFinal = opticalTransmission;
 #endif
         finalEmissive			* vLightingIntensity.y,
         alpha);
-
-#if defined(ADOBETRANSPARENCY) && defined(SCENETEXTURE)
-    vec2 coords = gl_FragCoord.xy / sceneTextureSize;
-    // TODO - scale for ior. IOR can be taken from vRefractionInfos.y after this code is merged with all the refraction stuff above.
-    coords -= 0.04 * (view * vec4(normalW, 0.0)).xy;
-    float gloss = 1.0 - roughness;
-    float loadBias = (1.0 - gloss * gloss) * 0.8 * log2(sceneTextureSize).x;
-    vec3 transmittedColour = texture2DLodEXT(sceneSampler, coords, loadBias).rgb;
-    
-    vec3 tintColor = surfaceAlbedo * surfaceAlbedo;
-    tintColor = pow(tintColor, clamp(vec3(1.0 / NdotV), 1.0, 3.0));
-    transmittedColour *= tintColor;
-
-    // Interior Color
-    #ifdef INTERIOR
-        // vec3 interiorFinal = interiorColor * tintColor;
-        // float ior = 1.6;
-        // float iorScale = 5.0;
-        // float invFresnel = (1.0 - NdotV * NdotV);
-        // float densityFinal = clamp(interiorDensity + (ior - 1.0) * interiorDensity * 8.0, 0.0, 1.0) * invFresnel;
-        // vec3 interiorTint = mix(vec3(1.0), interiorColor, invFresnel);
-        // transmittedColour *= interiorTint;
-        // #ifndef UNLIT
-        //     #ifdef REFLECTION
-        //         interiorFinal *= finalIrradiance * ambientOcclusionColor * vLightingIntensity.z;
-        //     #endif
-        // #endif
-        // transmittedColour = mix(transmittedColour, interiorFinal, densityFinal);
-    #endif
-    
-    transmittedColour += 
-    #ifndef UNLIT
-        // #ifdef REFLECTION
-        //     finalIrradiance			* ambientOcclusionColor * vLightingIntensity.z +
-        // #endif
-        #ifdef SPECULARTERM
-        // Computed in the previous step to help with alpha luminance.
-        //	finalSpecular			* vLightingIntensity.x * vLightingIntensity.w +
-            finalSpecularScaled +
-        #endif
-        #ifdef REFLECTION
-        // Comupted in the previous step to help with alpha luminance.
-        //	finalRadiance			* vLightingIntensity.z +
-            finalRadianceScaled;
-        #endif
-        // #ifdef REFRACTION
-        //     finalRefraction			* vLightingIntensity.z +
-        // #endif
-    #endif
-
-    
-
-    finalColor.rgb = mix(finalColor.rgb, transmittedColour, transmissionFinal);
-#endif
 
 // _____________________________ LightMappping _____________________________________
 #ifdef LIGHTMAP

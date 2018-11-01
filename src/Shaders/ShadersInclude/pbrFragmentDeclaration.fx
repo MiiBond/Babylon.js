@@ -31,7 +31,7 @@ uniform vec2 vOpacityInfos;
 uniform vec2 vTransmissionInfos;
 #endif
 
-#ifdef INTERIOR
+#ifdef INTERIORCOLOR
     uniform vec3 interiorColor;
     uniform float interiorDensity;
 #endif
@@ -62,6 +62,13 @@ uniform mat4 view;
     uniform vec4 vRefractionInfos;
     uniform mat4 refractionMatrix;
     uniform vec3 vRefractionMicrosurfaceInfos;
+
+    #ifdef SCENETEXTURE
+        uniform mat4 sceneRefractionMatrix;
+        uniform vec4 vSceneRefractionInfos;
+        uniform vec3 vSceneRefractionMicrosurfaceInfos;
+        uniform vec2 cameraMinMaxZ;
+    #endif
 #endif
 
 // Reflection

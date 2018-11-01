@@ -46,6 +46,13 @@ module BABYLON {
         public sceneTexture: RenderTargetTexture;
 
         /**
+         * Stuff
+         */
+        @serializeAsTexture()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_sceneDepthTexture")
+        public sceneDepthTexture: RenderTargetTexture;
+
+        /**
          * Instantiates a new PBRMetalRoughnessMaterial instance.
          *
          * @param name The material name
@@ -66,12 +73,13 @@ module BABYLON {
             return true;
         }
 
-        public needAlphaBlending(): boolean {
-            if ((this.transmissionTexture != null || this.opticalTransmission > 0) && this._sceneTexture === null) {
-                return true;
-            }
-            return super.needAlphaBlending();
-        }
+        // public needAlphaBlending(): boolean {
+        //     return false;
+        //     if ((this.transmissionTexture != null || this.opticalTransmission > 0) && !this._sceneTexture === null) {
+        //         return true;
+        //     }
+        //     return super.needAlphaBlending();
+        // }
 
         /**
          * Return the active textures of the material.

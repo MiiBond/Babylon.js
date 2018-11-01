@@ -99,6 +99,10 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
+#ifdef SCENEDEPTHTEXTURE
+varying vec3 vPosCameraSpace;
+#endif
+
 #include<logDepthDeclaration>
 
 void main(void) {
@@ -127,6 +131,10 @@ void main(void) {
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
+
+#ifdef SCENEDEPTHTEXTURE
+    vPosCameraSpace = (view * worldPos).xyz;
+#endif
 
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);
