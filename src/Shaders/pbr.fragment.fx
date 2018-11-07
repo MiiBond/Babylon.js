@@ -581,11 +581,11 @@ float transmissionFinal = opticalTransmission;
             }
         #endif
 
-        #ifdef GAMMAREFRACTION
+        #ifdef RGBDREFRACTION
             environmentRefraction.rgb = fromRGBD(environmentRefraction);
         #endif
 
-        #ifdef RGBDREFRACTION
+        #ifdef GAMMAREFRACTION
             environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
         #endif
         // Add option to sample from both environmentTexture and refractionTexture and blend between them using roughness.

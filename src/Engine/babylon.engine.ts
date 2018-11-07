@@ -481,7 +481,7 @@ module BABYLON {
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.4";
+            return "4.0.0-alpha.6";
         }
 
         /**
@@ -559,6 +559,11 @@ module BABYLON {
          * Gets the list of created scenes
          */
         public scenes = new Array<Scene>();
+
+        /**
+         * Event raised when a new scene is created
+         */
+        public onNewSceneAddedObservable = new Observable<Scene>();
 
         /**
          * Gets the list of created postprocesses
@@ -1096,8 +1101,10 @@ module BABYLON {
                     this.onCanvasPointerOutObservable.notifyObservers(ev);
                 };
 
-                window.addEventListener("blur", this._onBlur);
-                window.addEventListener("focus", this._onFocus);
+                if (Tools.IsWindowObjectExist()) {
+                    window.addEventListener("blur", this._onBlur);
+                    window.addEventListener("focus", this._onFocus);
+                }
 
                 canvas.addEventListener("pointerout", this._onCanvasPointerOut);
 
@@ -1155,8 +1162,10 @@ module BABYLON {
             }
 
             // Viewport
-            var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
-            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
+            const devicePixelRatio = Tools.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
+
+            var limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
+            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
             this.resize();
 
             this._isStencilEnable = options.stencil ? true : false;
@@ -1217,8 +1226,10 @@ module BABYLON {
                     document.exitPointerLock();
                 };
 
-                window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
-                window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
+                if (Tools.IsWindowObjectExist()) {
+                    window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
+                    window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
+                }
             }
 
             // Create Audio Engine if needed.
@@ -4633,13 +4644,14 @@ module BABYLON {
          * @param invertY defines if data must be stored with Y axis inverted
          * @param premulAlpha defines if alpha is stored as premultiplied
          * @param format defines the format of the data
+         * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          */
-        public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+        public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number, forceBindTexture: boolean = false): void {
             if (!texture) {
                 return;
             }
 
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true, forceBindTexture);
             this._unpackFlipY(invertY);
             if (premulAlpha) {
                 this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
@@ -6838,6 +6850,8 @@ module BABYLON {
             this.hideLoadingUI();
 
             this.stopRenderLoop();
+
+            this.onNewSceneAddedObservable.clear();
 
             // Release postProcesses
             while (this.postProcesses.length) {

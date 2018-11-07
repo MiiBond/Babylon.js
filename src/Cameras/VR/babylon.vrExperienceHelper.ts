@@ -197,17 +197,18 @@ module BABYLON {
                 });
             };
             makeNotPick(mesh);
-            var childMeshes = mesh.getChildMeshes();
+            var meshChildren = mesh.getChildren(undefined, false);
 
+            let laserParent: TransformNode = mesh;
             this.webVRController._pointingPoseNode = null;
-            for (var i = 0; i < childMeshes.length; i++) {
-                if (childMeshes[i].name && childMeshes[i].name.indexOf(PoseEnabledController.POINTING_POSE) >= 0) {
-                    mesh = childMeshes[i];
-                    this.webVRController._pointingPoseNode = mesh;
+            for (var i = 0; i < meshChildren.length; i++) {
+                if (meshChildren[i].name && meshChildren[i].name.indexOf(PoseEnabledController.POINTING_POSE) >= 0) {
+                    laserParent = <TransformNode>meshChildren[i];
+                    this.webVRController._pointingPoseNode = laserParent;
                     break;
                 }
             }
-            this._laserPointer.parent = mesh;
+            this._laserPointer.parent = laserParent;
         }
 
         public _updatePointerDistance(distance: number = 100) {
@@ -642,6 +643,7 @@ module BABYLON {
             // Create VR cameras
             if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
                 this._vrDeviceOrientationCamera = new VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
+                this._vrDeviceOrientationCamera.angularSensibility = Number.MAX_VALUE;
             }
             this._webVRCamera = new WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
             this._webVRCamera.useStandingMatrix();
@@ -859,6 +861,7 @@ module BABYLON {
             }
         }
 
+        private _cachedAngularSensibility = {angularSensibilityX: null, angularSensibilityY: null, angularSensibility: null};
         /**
          * Attempt to enter VR. If a headset is connected and ready, will request present on that.
          * Otherwise, will use the fullscreen API.
@@ -875,8 +878,35 @@ module BABYLON {
 
             if (this._scene.activeCamera) {
                 this._position = this._scene.activeCamera.position.clone();
+
+                if (this.vrDeviceOrientationCamera) {
+                    this.vrDeviceOrientationCamera.rotation = BABYLON.Quaternion.FromRotationMatrix(this._scene.activeCamera.getWorldMatrix().getRotationMatrix()).toEulerAngles();
+                    this.vrDeviceOrientationCamera.angularSensibility = 2000;
+                }
+                if (this.webVRCamera) {
+                    var currentYRotation = this.webVRCamera.deviceRotationQuaternion.toEulerAngles().y;
+                    var desiredYRotation = BABYLON.Quaternion.FromRotationMatrix(this._scene.activeCamera.getWorldMatrix().getRotationMatrix()).toEulerAngles().y;
+                    var delta = desiredYRotation - currentYRotation;
+                    var currentGlobalRotation = this.webVRCamera.rotationQuaternion.toEulerAngles().y;
+                    this.webVRCamera.rotationQuaternion = Quaternion.FromEulerAngles(0, currentGlobalRotation + delta, 0);
+                }
+
                 // make sure that we return to the last active camera
                 this._existingCamera = this._scene.activeCamera;
+
+                // Remove and cache angular sensability to avoid camera rotation when in VR
+                if ((<any>this._existingCamera).angularSensibilityX) {
+                    this._cachedAngularSensibility.angularSensibilityX = (<any>this._existingCamera).angularSensibilityX;
+                    (<any>this._existingCamera).angularSensibilityX = Number.MAX_VALUE;
+                }
+                if ((<any>this._existingCamera).angularSensibilityY) {
+                    this._cachedAngularSensibility.angularSensibilityY = (<any>this._existingCamera).angularSensibilityY;
+                    (<any>this._existingCamera).angularSensibilityY = Number.MAX_VALUE;
+                }
+                if ((<any>this._existingCamera).angularSensibility) {
+                    this._cachedAngularSensibility.angularSensibility = (<any>this._existingCamera).angularSensibility;
+                    (<any>this._existingCamera).angularSensibility = Number.MAX_VALUE;
+                }
             }
 
             if (this._webVRrequesting) {
@@ -932,15 +962,47 @@ module BABYLON {
 
                 }
 
+                if (this.vrDeviceOrientationCamera) {
+                    this.vrDeviceOrientationCamera.angularSensibility = Number.MAX_VALUE;
+                }
+
                 if (this._deviceOrientationCamera) {
                     this._deviceOrientationCamera.position = this._position;
                     this._scene.activeCamera = this._deviceOrientationCamera;
                     if (this._canvas) {
                         this._scene.activeCamera.attachControl(this._canvas);
                     }
+
+                    // Restore angular sensibility
+                    if (this._cachedAngularSensibility.angularSensibilityX) {
+                        (<any>this._deviceOrientationCamera).angularSensibilityX = this._cachedAngularSensibility.angularSensibilityX;
+                        this._cachedAngularSensibility.angularSensibilityX = null;
+                    }
+                    if (this._cachedAngularSensibility.angularSensibilityY) {
+                        (<any>this._deviceOrientationCamera).angularSensibilityY = this._cachedAngularSensibility.angularSensibilityY;
+                        this._cachedAngularSensibility.angularSensibilityY = null;
+                    }
+                    if (this._cachedAngularSensibility.angularSensibility) {
+                        (<any>this._deviceOrientationCamera).angularSensibility = this._cachedAngularSensibility.angularSensibility;
+                        this._cachedAngularSensibility.angularSensibility = null;
+                    }
                 } else if (this._existingCamera) {
                     this._existingCamera.position = this._position;
                     this._scene.activeCamera = this._existingCamera;
+
+                    // Restore angular sensibility
+                    if (this._cachedAngularSensibility.angularSensibilityX) {
+                        (<any>this._existingCamera).angularSensibilityX = this._cachedAngularSensibility.angularSensibilityX;
+                        this._cachedAngularSensibility.angularSensibilityX = null;
+                    }
+                    if (this._cachedAngularSensibility.angularSensibilityY) {
+                        (<any>this._existingCamera).angularSensibilityY = this._cachedAngularSensibility.angularSensibilityY;
+                        this._cachedAngularSensibility.angularSensibilityY = null;
+                    }
+                    if (this._cachedAngularSensibility.angularSensibility) {
+                        (<any>this._existingCamera).angularSensibility = this._cachedAngularSensibility.angularSensibility;
+                        this._cachedAngularSensibility.angularSensibility = null;
+                    }
                 }
 
                 this.updateButtonVisibility();

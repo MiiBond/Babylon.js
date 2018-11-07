@@ -11,6 +11,11 @@ import { Matrix2D, Vector2WithInfo } from "../math2D";
  * @see http://doc.babylonjs.com/how_to/gui#controls
  */
 export class Control {
+    /**
+     * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
+     */
+    public static AllowAlphaInheritance = false;
+
     private _alpha = 1;
     private _alphaSet = false;
     private _zIndex = 0;
@@ -151,8 +156,13 @@ export class Control {
     public onDirtyObservable = new Observable<Control>();
 
     /**
-   * An event triggered after the control is drawn
-   */
+     * An event triggered before drawing the control
+     */
+    public onBeforeDrawObservable = new Observable<Control>();
+
+    /**
+     * An event triggered after the control was drawn
+     */
     public onAfterDrawObservable = new Observable<Control>();
 
     /** Gets or set information about font offsets (used to render and align text) */
@@ -985,7 +995,9 @@ export class Control {
             context.fillStyle = this._color;
         }
 
-        if (this._alphaSet) {
+        if (Control.AllowAlphaInheritance) {
+            context.globalAlpha *= this._alpha;
+        } else if (this._alphaSet) {
             context.globalAlpha = this.parent ? this.parent.alpha * this._alpha : this._alpha;
         }
     }
@@ -1046,6 +1058,10 @@ export class Control {
         if (this.clipChildren) {
             this._clip(context);
             context.clip();
+        }
+
+        if (this.onBeforeDrawObservable.hasObservers()) {
+            this.onBeforeDrawObservable.notifyObservers(this);
         }
 
         return true;
@@ -1269,12 +1285,16 @@ export class Control {
 
     /** @hidden */
     public _onPointerOut(target: Control): void {
-        if (!this._isEnabled) {
+        if (!this._isEnabled || target === this) {
             return;
         }
         this._enterCount = 0;
 
-        var canNotify: boolean = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+        var canNotify: boolean = true;
+
+        if (!target.isAscendant(this)) {
+            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+        }
 
         if (canNotify && this.parent != null) { this.parent._onPointerOut(target); }
     }
@@ -1386,6 +1406,7 @@ export class Control {
     /** Releases associated resources */
     public dispose() {
         this.onDirtyObservable.clear();
+        this.onBeforeDrawObservable.clear();
         this.onAfterDrawObservable.clear();
         this.onPointerDownObservable.clear();
         this.onPointerEnterObservable.clear();

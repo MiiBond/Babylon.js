@@ -312,6 +312,9 @@ module BABYLON {
                 // Only update the bouding box if scaling has changed
                 if (this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)) {
                     this.updateBoundingBox();
+                }else if (this.fixedDragMeshScreenSize) {
+                    this._updateRotationSpheres();
+                    this._updateScaleBoxes();
                 }
             });
             this.updateBoundingBox();
@@ -375,7 +378,16 @@ module BABYLON {
                 this.attachedMesh.position.copyFrom(this._tmpVector);
             }
 
-            // Update rotation sphere locations
+            this._updateRotationSpheres();
+            this._updateScaleBoxes();
+
+            if (this.attachedMesh) {
+                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);
+                BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
+            }
+        }
+
+        private _updateRotationSpheres() {
             var rotateSpheres = this._rotateSpheresParent.getChildMeshes();
             for (var i = 0; i < 3; i++) {
                 for (var j = 0; j < 2; j++) {
@@ -397,9 +409,6 @@ module BABYLON {
                             rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Forward(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
                         }
                         if (this.fixedDragMeshScreenSize) {
-                            this._rootMesh.computeWorldMatrix();
-                            this._rotateSpheresParent.computeWorldMatrix();
-                            rotateSpheres[index].computeWorldMatrix();
                             rotateSpheres[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera!.position, this._tmpVector);
                             var distanceFromCamera = this.rotationSphereSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
                             rotateSpheres[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
@@ -409,8 +418,9 @@ module BABYLON {
                     }
                 }
             }
+        }
 
-            // Update scale box locations
+        private _updateScaleBoxes() {
             var scaleBoxes = this._scaleBoxesParent.getChildMeshes();
             for (var i = 0; i < 2; i++) {
                 for (var j = 0; j < 2; j++) {
@@ -420,9 +430,6 @@ module BABYLON {
                             scaleBoxes[index].position.set(this._boundingDimensions.x * i, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
                             scaleBoxes[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                             if (this.fixedDragMeshScreenSize) {
-                                this._rootMesh.computeWorldMatrix();
-                                this._scaleBoxesParent.computeWorldMatrix();
-                                scaleBoxes[index].computeWorldMatrix();
                                 scaleBoxes[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera!.position, this._tmpVector);
                                 var distanceFromCamera = this.scaleBoxSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
                                 scaleBoxes[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
@@ -432,10 +439,6 @@ module BABYLON {
                         }
                     }
                 }
-            }
-            if (this.attachedMesh) {
-                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);
-                BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
             }
         }
 

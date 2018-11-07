@@ -93,6 +93,14 @@ module BABYLON {
         }
 
         /**
+         * Returns a positive integer : the total number of indices in this mesh geometry.
+         * @returns the numner of indices or zero if the mesh has no geometry.
+         */
+        public getTotalIndices(): number {
+            return this._sourceMesh.getTotalIndices();
+        }
+
+        /**
          * The source mesh of the instance
          */
         public get sourceMesh(): Mesh {
@@ -214,20 +222,18 @@ module BABYLON {
         }
 
         /**
-         * reconstructs and updates the BoundingInfo of the mesh.
-         * @returns the mesh.
+         * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
+         * This means the mesh underlying bounding box and sphere are recomputed.
+         * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+         * @returns the current mesh
          */
-        public refreshBoundingInfo(): InstancedMesh {
-            var meshBB = this._sourceMesh.getBoundingInfo();
-
-            if (this._boundingInfo) {
-                this._boundingInfo.reConstruct(meshBB.minimum, meshBB.maximum);
-            }
-            else {
-                this._boundingInfo = new BoundingInfo(meshBB.minimum, meshBB.maximum);
+        public refreshBoundingInfo(applySkeleton: boolean = false): InstancedMesh {
+            if (this._boundingInfo && this._boundingInfo.isLocked) {
+                return this;
             }
 
-            this._updateBoundingInfo();
+            const bias = this._sourceMesh.geometry ? this._sourceMesh.geometry.boundingBias : null;
+            this._refreshBoundingInfo(this._sourceMesh._getPositionData(applySkeleton), bias);
             return this;
         }
 
