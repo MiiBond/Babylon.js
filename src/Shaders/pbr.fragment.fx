@@ -503,9 +503,9 @@ float transmissionFinal = opticalTransmission;
                 sceneCoords2d.y = 1.0 - sceneCoords2d.y;
 
                 float refractTextureDepth = vSceneRefractionInfos.z;
-                #ifdef SCENEDEPTHTEXTURE
-                    refractTextureDepth *= texture2D(sceneDepthSampler, sceneCoords2d).r;
-                #endif
+                // #ifdef SCENEDEPTHTEXTURE
+                //     refractTextureDepth *= texture2D(sceneDepthSampler, sceneCoords2d).r;
+                // #endif
                 
                 // Refracted coords.
                 vRefractionUVW = vec3(sceneRefractionMatrix * (view * vec4(vPositionW + refractionVector * refractTextureDepth, 1.0)));
@@ -588,13 +588,16 @@ float transmissionFinal = opticalTransmission;
         #ifdef GAMMAREFRACTION
             environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
         #endif
-        // Add option to sample from both environmentTexture and refractionTexture and blend between them using roughness.
-        // If refractionTexture is 2D, grab refractedLightTexture and sample it as 3D
+        // If both refractionTexture and sceneTexture are being used, blend between them based on fresnel and roughness.
         #if defined(REFRACTIONMAP_3D) && defined(SCENETEXTURE)
             float sceneRefractionLOD = getLodFromAlphaG(vSceneRefractionMicrosurfaceInfos.x, alphaG, 1.0);
             sceneRefractionLOD = sceneRefractionLOD * vSceneRefractionMicrosurfaceInfos.y + vSceneRefractionMicrosurfaceInfos.z;
             vec3 sceneRefraction = toLinearSpace(texture2DLodEXT(sceneSampler, refractionCoords2d, sceneRefractionLOD).rgb);
-            environmentRefraction.rgb = mix(environmentRefraction.rgb, sceneRefraction, clamp(NdotV * (1.0-roughness), 0.0, 1.0));
+            
+            float opacity0 = 0.04;
+            float opacity90 = fresnelGrazingReflectance(opacity0);
+            float refractFresnel = fresnelSchlickEnvironmentGGX(NdotV, vec3(opacity0), vec3(opacity90), sqrt(1.0 - roughness)).x;
+            environmentRefraction.rgb = mix(sceneRefraction, environmentRefraction.rgb, clamp(refractFresnel + roughness, 0.0, 1.0));
         #endif
 
         // _____________________________ Levels _____________________________________
