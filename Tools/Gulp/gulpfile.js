@@ -20,7 +20,7 @@ var replace = require("gulp-replace");
 var uncommentShader = require("./gulp-removeShaderComments");
 var expect = require("gulp-expect-file");
 var optimisejs = require("gulp-optimize-js");
-var webserver = require("gulp-webserver");
+var connect = require("gulp-connect");
 var path = require("path");
 const webpack = require('webpack');
 var webpackStream = require("webpack-stream");
@@ -274,7 +274,7 @@ gulp.task("build", gulp.series("shaders", function build() {
 * TsLint all typescript files from the src directory.
 */
 gulp.task("typescript-tsLint", function() {
-    const dtsFilter = filter(['**', '!**/*.d.ts'], {restore: false});
+    const dtsFilter = filter(['**', '!**/*.d.ts'], { restore: false });
     return gulp.src(config.typescript)
         .pipe(dtsFilter)
         .pipe(gulpTslint({
@@ -348,7 +348,7 @@ gulp.task("tsLint", gulp.series("typescript-tsLint", "typescript-libraries-tsLin
 * Compiles all typescript files and creating a js and a declaration file.
 */
 gulp.task("typescript-compile", function() {
-    const dtsFilter = filter(['**', '!**/*.d.ts'], {restore: false});
+    const dtsFilter = filter(['**', '!**/*.d.ts'], { restore: false });
     var tsResult = gulp.src(config.typescript)
         .pipe(dtsFilter)
         .pipe(sourcemaps.init())
@@ -686,7 +686,6 @@ var buildExternalLibrary = function(library, settings, watch) {
                         cb();
                     }))
                     .pipe(rename(function(path) {
-                        console.log(path.basename);
                         //path.extname === ".js"
                         path.basename = path.basename.replace(".min", "")
                     })).pipe(gulp.dest(outputDirectory));
@@ -794,21 +793,27 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
                 //config.stats = "minimal";
                 tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
             } else {
-                tasks.push(gulp.watch(library.files, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug());
-                }));
-                tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug())
-                }));
-                tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug())
-                }));
+                if (library.files) {
+                    tasks.push(gulp.watch(library.files, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug());
+                    }));
+                }
+                if (library.shaderFiles) {
+                    tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug())
+                    }));
+                }
+                if (library.sassFiles) {
+                    tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug())
+                    }));
+                }
             }
         });
     });
@@ -842,16 +847,19 @@ gulp.task("deployLocalDev", function() {
  */
 gulp.task("webserver", function() {
     var options = {
+        root: "../../.",
         port: 1338,
         livereload: false,
-        middleware: [cors()]
+        middleware: function() {
+            return [cors()];
+        }
     };
 
     if (commandLineOptions.public) {
         options.host = "0.0.0.0";
     }
 
-    return gulp.src("../../.").pipe(webserver(options));
+    connect.server(options);
 });
 
 /**
@@ -883,7 +891,7 @@ gulp.task("netlify-cleanup", function() {
 
 // this is needed for the modules for the declaration files.
 gulp.task("modules-compile", function() {
-    const dtsFilter = filter(['**', '!**/*.d.ts'], {restore: false});
+    const dtsFilter = filter(['**', '!**/*.d.ts'], { restore: false });
     var tsResult = gulp.src(config.typescript)
         .pipe(dtsFilter)
         .pipe(sourcemaps.init())

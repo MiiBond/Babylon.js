@@ -135,13 +135,13 @@ module BABYLON {
         public _environmentBRDFTexture: BaseTexture;
 
         /** @hidden */
-        protected _environmentTexture: BaseTexture;
+        protected _environmentTexture: Nullable<BaseTexture>;
         /**
          * Texture used in all pbr material as the reflection texture.
          * As in the majority of the scene they are the same (exception for multi room and so on),
          * this is easier to reference from here than from all the materials.
          */
-        public get environmentTexture(): BaseTexture {
+        public get environmentTexture(): Nullable<BaseTexture> {
             return this._environmentTexture;
         }
         /**
@@ -149,7 +149,7 @@ module BABYLON {
          * As in the majority of the scene they are the same (exception for multi room and so on),
          * this is easier to set here than in all the materials.
          */
-        public set environmentTexture(value: BaseTexture) {
+        public set environmentTexture(value: Nullable<BaseTexture>) {
             if (this._environmentTexture === value) {
                 return;
             }
@@ -276,6 +276,12 @@ module BABYLON {
          * Gets or sets user defined metadata
          */
         public metadata: any = null;
+
+        /**
+         * For internal use only. Please do not use.
+         */
+        public reservedDataStore: any = null;
+
         /**
          * Gets the name of the plugin used to load this scene (null by default)
          */
@@ -2441,10 +2447,13 @@ module BABYLON {
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the animatable object created for this animation
          */
-        public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean): Animatable {
-            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask);
+        public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0,
+            onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable {
+
+            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask, onAnimationLoop);
             returnedAnimatable.weight = weight;
 
             return returnedAnimatable;
@@ -2460,10 +2469,13 @@ module BABYLON {
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
-         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the animatable object created for this animation
          */
-        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true, targetMask?: (target: any) => boolean): Animatable {
+        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
+            onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
+            targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable {
 
             if (from > to && speedRatio > 0) {
                 speedRatio *= -1;
@@ -2474,7 +2486,7 @@ module BABYLON {
             }
 
             if (!animatable) {
-                animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
+                animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, undefined, onAnimationLoop);
             }
 
             const shouldRunTargetAnimations = targetMask ? targetMask(target) : true;
@@ -2487,7 +2499,7 @@ module BABYLON {
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
                 for (var index = 0; index < animatables.length; index++) {
-                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask);
+                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, onAnimationLoop);
                 }
             }
 
@@ -2508,9 +2520,13 @@ module BABYLON {
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
          * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the list of created animatables
          */
-        public beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true, targetMask?: (target: any) => boolean): Animatable[] {
+        public beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
+            onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
+            targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[] {
+
             let children = target.getDescendants(directDescendantsOnly);
 
             let result = [];
@@ -2531,14 +2547,15 @@ module BABYLON {
          * @param loop defines if you want animation to loop (off by default)
          * @param speedRatio defines the speed ratio to apply to all animations
          * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the list of created animatables
          */
-        public beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable {
+        public beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable {
             if (speedRatio === undefined) {
                 speedRatio = 1.0;
             }
 
-            var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations);
+            var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop);
 
             return animatable;
         }
@@ -2553,15 +2570,16 @@ module BABYLON {
          * @param loop defines if you want animation to loop (off by default)
          * @param speedRatio defines the speed ratio to apply to all animations
          * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the list of animatables created for all nodes
          */
-        public beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable[] {
+        public beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[] {
             let children = target.getDescendants(directDescendantsOnly);
 
             let result = [];
-            result.push(this.beginDirectAnimation(target, animations, from, to, loop, speedRatio, onAnimationEnd));
+            result.push(this.beginDirectAnimation(target, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop));
             for (var child of children) {
-                result.push(this.beginDirectAnimation(child, animations, from, to, loop, speedRatio, onAnimationEnd));
+                result.push(this.beginDirectAnimation(child, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop));
             }
 
             return result;

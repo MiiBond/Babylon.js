@@ -20,8 +20,6 @@ export class Control {
     private _alphaSet = false;
     private _zIndex = 0;
     /** @hidden */
-    public _root: Nullable<Container>;
-    /** @hidden */
     public _host: AdvancedDynamicTexture;
     /** Gets or sets the control parent */
     public parent: Nullable<Container>;
@@ -45,7 +43,10 @@ export class Control {
     protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
     /** @hidden */
     protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-    private _isDirty = true;
+    /** @hidden */
+    protected _isDirty = true;
+    /** @hidden */
+    protected _wasDirty = false;
     /** @hidden */
     public _tempParentMeasure = Measure.Empty();
     /** @hidden */
@@ -68,11 +69,11 @@ export class Control {
     protected _invertTransformMatrix = Matrix2D.Identity();
     /** @hidden */
     protected _transformedPosition = Vector2.Zero();
-    private _onlyMeasureMode = false;
     private _isMatrixDirty = true;
     private _cachedOffsetX: number;
     private _cachedOffsetY: number;
     private _isVisible = true;
+    private _isHighlighted = false;
     /** @hidden */
     public _linkedMesh: Nullable<AbstractMesh>;
     private _fontSet = false;
@@ -84,7 +85,18 @@ export class Control {
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
     /** @hidden */
+    protected _rebuildLayout = false;
+
+    /** @hidden */
+    public _isClipped = false;
+
+    /** @hidden */
     public _tag: any;
+
+    /**
+     * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
+     */
+    public uniqueId: number;
 
     /**
      * Gets or sets an object used to store user defined information for the node
@@ -101,14 +113,72 @@ export class Control {
     /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
     public clipChildren = true;
 
+    /**
+     * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
+     */
+    public useBitmapCache = false;
+
+    private _cacheData: Nullable<ImageData>;
+
+    private _shadowOffsetX = 0;
     /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
-    public shadowOffsetX = 0;
+    public get shadowOffsetX() {
+        return this._shadowOffsetX;
+    }
+
+    public set shadowOffsetX(value: number) {
+        if (this._shadowOffsetX === value) {
+            return;
+        }
+
+        this._shadowOffsetX = value;
+        this._markAsDirty();
+    }
+
+    private _shadowOffsetY = 0;
     /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
-    public shadowOffsetY = 0;
+    public get shadowOffsetY() {
+        return this._shadowOffsetY;
+    }
+
+    public set shadowOffsetY(value: number) {
+        if (this._shadowOffsetY === value) {
+            return;
+        }
+
+        this._shadowOffsetY = value;
+        this._markAsDirty();
+    }
+
+    private _shadowBlur = 0;
     /** Gets or sets a value indicating the amount of blur to use to render the shadow */
-    public shadowBlur = 0;
+    public get shadowBlur() {
+        return this._shadowBlur;
+    }
+
+    public set shadowBlur(value: number) {
+        if (this._shadowBlur === value) {
+            return;
+        }
+
+        this._shadowBlur = value;
+        this._markAsDirty();
+    }
+
+    private _shadowColor = 'black';
     /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
-    public shadowColor = '#000';
+    public get shadowColor() {
+        return this._shadowColor;
+    }
+
+    public set shadowColor(value: string) {
+        if (this._shadowColor === value) {
+            return;
+        }
+
+        this._shadowColor = value;
+        this._markAsDirty();
+    }
 
     /** Gets or sets the cursor to use when the control is hovered */
     public hoverCursor = "";
@@ -122,6 +192,14 @@ export class Control {
 
     /** Gets the control type name */
     public get typeName(): string {
+        return this._getTypeName();
+    }
+
+    /**
+     * Get the current class name of the control.
+     * @returns current class name
+     */
+    public getClassName(): string {
         return this._getTypeName();
     }
 
@@ -170,6 +248,13 @@ export class Control {
      */
     public onAfterDrawObservable = new Observable<Control>();
 
+    /**
+     * Get the hosting AdvancedDynamicTexture
+     */
+    public get host(): AdvancedDynamicTexture {
+        return this._host;
+    }
+
     /** Gets or set information about font offsets (used to render and align text) */
     public get fontOffset(): { ascent: number, height: number, descent: number } {
         return this._fontOffset;
@@ -190,6 +275,22 @@ export class Control {
         }
         this._alphaSet = true;
         this._alpha = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
+     */
+    public get isHighlighted(): boolean {
+        return this._isHighlighted;
+    }
+
+    public set isHighlighted(value: boolean) {
+        if (this._isHighlighted === value) {
+            return;
+        }
+
+        this._isHighlighted = value;
         this._markAsDirty();
     }
 
@@ -366,6 +467,9 @@ export class Control {
 
     /** Gets or set font family */
     public get fontFamily(): string {
+        if (!this._fontSet) {
+            return "";
+        }
         return this._fontFamily;
     }
 
@@ -491,8 +595,8 @@ export class Control {
 
         this._zIndex = value;
 
-        if (this._root) {
-            this._root._reOrderControl(this);
+        if (this.parent) {
+            this.parent._reOrderControl(this);
         }
     }
 
@@ -764,6 +868,23 @@ export class Control {
         return "Control";
     }
 
+    /**
+     * Gets the first ascendant in the hierarchy of the given type
+     * @param className defines the required type
+     * @returns the ascendant or null if not found
+     */
+    public getAscendantOfClass(className: string): Nullable<Control> {
+        if (!this.parent) {
+            return null;
+        }
+
+        if (this.parent.getClassName() === className) {
+            return this.parent;
+        }
+
+        return this.parent.getAscendantOfClass(className);
+    }
+
     /** @hidden */
     public _resetFontCache(): void {
         this._fontSet = true;
@@ -832,7 +953,7 @@ export class Control {
      * @param scene defines the hosting scene
      */
     public moveToVector3(position: Vector3, scene: Scene): void {
-        if (!this._host || this._root !== this._host._rootContainer) {
+        if (!this._host || this.parent !== this._host._rootContainer) {
             Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
             return;
         }
@@ -852,13 +973,32 @@ export class Control {
         this.notRenderable = false;
     }
 
+    /** @hidden */
+    public _getDescendants(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+        // Do nothing by default
+    }
+
+    /**
+     * Will return all controls that have this control as ascendant
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @return all child controls
+     */
+    public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
+        var results = new Array<Control>();
+
+        this._getDescendants(results, directDescendantsOnly, predicate);
+
+        return results;
+    }
+
     /**
      * Link current control with a target mesh
      * @param mesh defines the mesh to link with
      * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public linkWithMesh(mesh: Nullable<AbstractMesh>): void {
-        if (!this._host || this._root && this._root !== this._host._rootContainer) {
+        if (!this._host || this.parent && this.parent !== this._host._rootContainer) {
             if (mesh) {
                 Tools.Error("Cannot link a control to a mesh if the control is not at root level");
             }
@@ -879,7 +1019,6 @@ export class Control {
         this.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
         this._linkedMesh = mesh;
-        this._onlyMeasureMode = this._currentMeasure.width === 0 || this._currentMeasure.height === 0;
         this._host._linkedControls.push(this);
     }
 
@@ -906,6 +1045,18 @@ export class Control {
 
         this._left.ignoreAdaptiveScaling = true;
         this._top.ignoreAdaptiveScaling = true;
+    }
+
+    /** @hidden */
+    public _offsetLeft(offset: number) {
+        this._isDirty = true;
+        this._currentMeasure.left += offset;
+    }
+
+    /** @hidden */
+    public _offsetTop(offset: number) {
+        this._isDirty = true;
+        this._currentMeasure.top += offset;
     }
 
     /** @hidden */
@@ -943,9 +1094,11 @@ export class Control {
     }
 
     /** @hidden */
-    public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
-        this._root = root;
+    public _link(host: AdvancedDynamicTexture): void {
         this._host = host;
+        if (this._host) {
+            this.uniqueId = this._host.getScene()!.getUniqueId();
+        }
     }
 
     /** @hidden */
@@ -975,10 +1128,29 @@ export class Control {
             this._isMatrixDirty = false;
             this._flagDescendantsAsMatrixDirty();
 
-            Matrix2D.ComposeToRef(-offsetX, -offsetY, this._rotation, this._scaleX, this._scaleY, this._root ? this._root._transformMatrix : null, this._transformMatrix);
+            Matrix2D.ComposeToRef(-offsetX, -offsetY, this._rotation, this._scaleX, this._scaleY, this.parent ? this.parent._transformMatrix : null, this._transformMatrix);
 
             this._transformMatrix.invertToRef(this._invertTransformMatrix);
         }
+    }
+
+    /** @hidden */
+    public _renderHighlight(context: CanvasRenderingContext2D): void {
+        if (!this.isHighlighted) {
+            return;
+        }
+
+        context.save();
+        context.strokeStyle = "#4affff";
+        context.lineWidth = 2;
+
+        this._renderHighlightSpecific(context);
+        context.restore();
+    }
+
+    /** @hidden */
+    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+        context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
     /** @hidden */
@@ -1008,9 +1180,37 @@ export class Control {
     }
 
     /** @hidden */
-    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+        if (!this.isVisible || this.notRenderable) {
+            return false;
+        }
+        context.save();
+
+        this._applyStates(context);
+
+        let rebuildCount = 0;
+        do {
+            this._rebuildLayout = false;
+            this._processMeasures(parentMeasure, context);
+            rebuildCount++;
+        }
+        while (this._rebuildLayout && rebuildCount < 3);
+
+        if (rebuildCount >= 3) {
+            BABYLON.Tools.Error(`Layout cycle detected in GUI (Control uniqueId=${this.uniqueId})`);
+        }
+
+        context.restore();
+
+        this._wasDirty = this._isDirty;
+        this._isDirty = false;
+
+        return true;
+    }
+
+    /** @hidden */
+    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
-            this._isDirty = false;
             this._currentMeasure.copyFrom(parentMeasure);
 
             // Let children take some pre-measurement actions
@@ -1035,64 +1235,30 @@ export class Control {
             }
         }
 
-        if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
-            return false;
+        if (this.parent && this.parent.clipChildren) {
+            // Early clip
+            if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
+                this._isClipped = true;
+                return;
+            }
+
+            if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
+                this._isClipped = true;
+                return;
+            }
+
+            if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
+                this._isClipped = true;
+                return;
+            }
+
+            if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
+                this._isClipped = true;
+                return;
+            }
         }
 
-        if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
-            return false;
-        }
-
-        if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
-            return false;
-        }
-
-        if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
-            return false;
-        }
-
-        // Transform
-        this._transform(context);
-
-        if (this._onlyMeasureMode) {
-            this._onlyMeasureMode = false;
-            return false; // We do not want rendering for this frame as they are measure dependant information that need to be gathered
-        }
-
-        // Clip
-        if (this.clipChildren) {
-            this._clip(context);
-            context.clip();
-        }
-
-        if (this.onBeforeDrawObservable.hasObservers()) {
-            this.onBeforeDrawObservable.notifyObservers(this);
-        }
-
-        return true;
-    }
-
-    /** @hidden */
-    protected _clip(context: CanvasRenderingContext2D) {
-        context.beginPath();
-
-        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-            var shadowOffsetX = this.shadowOffsetX;
-            var shadowOffsetY = this.shadowOffsetY;
-            var shadowBlur = this.shadowBlur;
-
-            var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
-            var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
-            var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
-            var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
-
-            context.rect(this._currentMeasure.left + leftShadowOffset,
-                this._currentMeasure.top + topShadowOffset,
-                this._currentMeasure.width + rightShadowOffset - leftShadowOffset,
-                this._currentMeasure.height + bottomShadowOffset - topShadowOffset);
-        } else {
-            context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-        }
+        this._isClipped = false;
     }
 
     /** @hidden */
@@ -1202,7 +1368,79 @@ export class Control {
     }
 
     /** @hidden */
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _clipForChildren(context: CanvasRenderingContext2D): void {
+        // DO nothing
+    }
+
+    private _clip(context: CanvasRenderingContext2D) {
+        context.beginPath();
+
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            var shadowOffsetX = this.shadowOffsetX;
+            var shadowOffsetY = this.shadowOffsetY;
+            var shadowBlur = this.shadowBlur;
+
+            var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
+            var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
+            var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
+            var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
+
+            context.rect(this._currentMeasure.left + leftShadowOffset,
+                this._currentMeasure.top + topShadowOffset,
+                this._currentMeasure.width + rightShadowOffset - leftShadowOffset,
+                this._currentMeasure.height + bottomShadowOffset - topShadowOffset);
+        } else {
+            context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+        }
+
+        context.clip();
+    }
+
+    /** @hidden */
+    public _render(context: CanvasRenderingContext2D): boolean {
+        if (!this.isVisible || this.notRenderable || this._isClipped) {
+            this._isDirty = false;
+            return false;
+        }
+        context.save();
+
+        this._applyStates(context);
+
+        // Transform
+        this._transform(context);
+
+        // Clip
+        if (this.clipChildren) {
+            this._clip(context);
+        }
+
+        if (this.onBeforeDrawObservable.hasObservers()) {
+            this.onBeforeDrawObservable.notifyObservers(this);
+        }
+
+        if (this.useBitmapCache && !this._wasDirty && this._cacheData) {
+            context.putImageData(this._cacheData, this._currentMeasure.left, this._currentMeasure.top);
+        } else {
+            this._draw(context);
+        }
+
+        if (this.useBitmapCache && this._wasDirty) {
+            this._cacheData = context.getImageData(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+        }
+
+        this._renderHighlight(context);
+
+        if (this.onAfterDrawObservable.hasObservers()) {
+            this.onAfterDrawObservable.notifyObservers(this);
+        }
+
+        context.restore();
+
+        return true;
+    }
+
+    /** @hidden */
+    public _draw(context: CanvasRenderingContext2D): void {
         // Do nothing
     }
 
@@ -1378,7 +1616,7 @@ export class Control {
 
         if (type === PointerEventTypes.POINTERDOWN) {
             this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
-            this._host._lastControlDown[pointerId] = this;
+            this._host._registerLastControlDown(this, pointerId);
             this._host._lastPickedControl = this;
             return true;
         }
@@ -1425,9 +1663,9 @@ export class Control {
             this._styleObserver = null;
         }
 
-        if (this._root) {
-            this._root.removeControl(this);
-            this._root = null;
+        if (this.parent) {
+            this.parent.removeControl(this);
+            this.parent = null;
         }
 
         if (this._host) {

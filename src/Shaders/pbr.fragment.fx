@@ -588,6 +588,10 @@ float transmissionFinal = opticalTransmission;
         #ifdef GAMMAREFRACTION
             environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
         #endif
+
+        // _____________________________ Levels _____________________________________
+        environmentRefraction.rgb *= vRefractionInfos.x;
+        
         // If both refractionTexture and sceneTexture are being used, blend between them based on fresnel and roughness.
         #if defined(REFRACTIONMAP_3D) && defined(SCENETEXTURE)
             float sceneRefractionLOD = getLodFromAlphaG(vSceneRefractionMicrosurfaceInfos.x, alphaG, 1.0);
@@ -600,8 +604,6 @@ float transmissionFinal = opticalTransmission;
             environmentRefraction.rgb = mix(sceneRefraction, environmentRefraction.rgb, clamp(refractFresnel + roughness, 0.0, 1.0));
         #endif
 
-        // _____________________________ Levels _____________________________________
-        environmentRefraction.rgb *= vRefractionInfos.x;
     #endif
 
     // _____________________________ Reflection Info _______________________________________

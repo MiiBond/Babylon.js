@@ -7,50 +7,85 @@ module BABYLON.Debug {
      * The Axes viewer will show 3 axes in a specific point in space
      */
     export class AxesViewer {
-
-        private _xline = [Vector3.Zero(), Vector3.Zero()];
-        private _yline = [Vector3.Zero(), Vector3.Zero()];
-        private _zline = [Vector3.Zero(), Vector3.Zero()];
-
-        private _xmesh: Nullable<LinesMesh>;
-        private _ymesh: Nullable<LinesMesh>;
-        private _zmesh: Nullable<LinesMesh>;
+        private _xAxis: TransformNode;
+        private _yAxis: TransformNode;
+        private _zAxis: TransformNode;
+        private _scaleLinesFactor = 4;
+        private _instanced = false;
 
         /**
          * Gets the hosting scene
          */
-        public scene: Nullable<Scene>;
+        public scene: Scene;
+
         /**
          * Gets or sets a number used to scale line length
          */
         public scaleLines = 1;
 
+        /** Gets the node hierarchy used to render x-axis */
+        public get xAxis(): TransformNode {
+            return this._xAxis;
+        }
+
+        /** Gets the node hierarchy used to render y-axis */
+        public get yAxis(): TransformNode {
+            return this._yAxis;
+        }
+
+        /** Gets the node hierarchy used to render z-axis */
+        public get zAxis(): TransformNode {
+            return this._zAxis;
+        }
+
         /**
          * Creates a new AxesViewer
          * @param scene defines the hosting scene
          * @param scaleLines defines a number used to scale line length (1 by default)
+         * @param renderingGroupId defines a number used to set the renderingGroupId of the meshes (2 by default)
+         * @param xAxis defines the node hierarchy used to render the x-axis
+         * @param yAxis defines the node hierarchy used to render the y-axis
+         * @param zAxis defines the node hierarchy used to render the z-axis
          */
-        constructor(scene: Scene, scaleLines = 1) {
-
+        constructor(scene: Scene, scaleLines = 1, renderingGroupId: Nullable<number> = 2, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode) {
             this.scaleLines = scaleLines;
 
-            this._xmesh = Mesh.CreateLines("xline", this._xline, scene, true);
-            this._ymesh = Mesh.CreateLines("yline", this._yline, scene, true);
-            this._zmesh = Mesh.CreateLines("zline", this._zline, scene, true);
+            if (!xAxis) {
+                var redColoredMaterial = new StandardMaterial("", scene);
+                redColoredMaterial.disableLighting = true;
+                redColoredMaterial.emissiveColor = Color3.Red().scale(0.5);
+                xAxis = AxisDragGizmo._CreateArrow(scene, redColoredMaterial);
+            }
 
-            this._xmesh.renderingGroupId = 2;
-            this._ymesh.renderingGroupId = 2;
-            this._zmesh.renderingGroupId = 2;
+            if (!yAxis) {
+                var greenColoredMaterial = new StandardMaterial("", scene);
+                greenColoredMaterial.disableLighting = true;
+                greenColoredMaterial.emissiveColor = Color3.Green().scale(0.5);
+                yAxis = AxisDragGizmo._CreateArrow(scene, greenColoredMaterial);
+            }
 
-            this._xmesh.material.checkReadyOnlyOnce = true;
-            this._xmesh.color = new Color3(1, 0, 0);
-            this._ymesh.material.checkReadyOnlyOnce = true;
-            this._ymesh.color = new Color3(0, 1, 0);
-            this._zmesh.material.checkReadyOnlyOnce = true;
-            this._zmesh.color = new Color3(0, 0, 1);
+            if (!zAxis) {
+                var blueColoredMaterial = new StandardMaterial("", scene);
+                blueColoredMaterial.disableLighting = true;
+                blueColoredMaterial.emissiveColor = Color3.Blue().scale(0.5);
+                zAxis = AxisDragGizmo._CreateArrow(scene, blueColoredMaterial);
+            }
+
+            this._xAxis = xAxis;
+            this._xAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
+            this._yAxis = yAxis;
+            this._yAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
+            this._zAxis = zAxis;
+            this._zAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
+
+            if (renderingGroupId != null) {
+                AxesViewer._SetRenderingGroupId(this._xAxis, renderingGroupId);
+                AxesViewer._SetRenderingGroupId(this._yAxis, renderingGroupId);
+                AxesViewer._SetRenderingGroupId(this._zAxis, renderingGroupId);
+            }
 
             this.scene = scene;
-
+            this.update(new Vector3(), Vector3.Right(), Vector3.Up(), Vector3.Forward());
         }
 
         /**
@@ -61,60 +96,56 @@ module BABYLON.Debug {
          * @param zaxis defines the z axis of the viewer
          */
         public update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
+            this._xAxis.position.copyFrom(position);
+            this._xAxis.setDirection(xaxis);
+            this._xAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
 
-            var scaleLines = this.scaleLines;
+            this._yAxis.position.copyFrom(position);
+            this._yAxis.setDirection(yaxis);
+            this._yAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
 
-            if (this._xmesh) {
-                this._xmesh.position.copyFrom(position);
-            }
-            if (this._ymesh) {
-                this._ymesh.position.copyFrom(position);
-            }
-            if (this._zmesh) {
-                this._zmesh.position.copyFrom(position);
-            }
+            this._zAxis.position.copyFrom(position);
+            this._zAxis.setDirection(zaxis);
+            this._zAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
+        }
 
-            var point2 = this._xline[1];
-            point2.x = xaxis.x * scaleLines;
-            point2.y = xaxis.y * scaleLines;
-            point2.z = xaxis.z * scaleLines;
-            Mesh.CreateLines("", this._xline, null, false, this._xmesh);
-
-            point2 = this._yline[1];
-            point2.x = yaxis.x * scaleLines;
-            point2.y = yaxis.y * scaleLines;
-            point2.z = yaxis.z * scaleLines;
-            Mesh.CreateLines("", this._yline, null, false, this._ymesh);
-
-            point2 = this._zline[1];
-            point2.x = zaxis.x * scaleLines;
-            point2.y = zaxis.y * scaleLines;
-            point2.z = zaxis.z * scaleLines;
-            Mesh.CreateLines("", this._zline, null, false, this._zmesh);
-
+        /**
+         * Creates an instance of this axes viewer.
+         * @returns a new axes viewer with instanced meshes
+         */
+        public createInstance(): AxesViewer {
+            const xAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._xAxis);
+            const yAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._yAxis);
+            const zAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._zAxis);
+            const axesViewer = new AxesViewer(this.scene, this.scaleLines, null, xAxis, yAxis, zAxis);
+            axesViewer._instanced = true;
+            return axesViewer;
         }
 
         /** Releases resources */
         public dispose() {
-
-            if (this._xmesh) {
-                this._xmesh.dispose();
+            if (this._xAxis) {
+                this._xAxis.dispose(false, !this._instanced);
+                delete this._xAxis;
             }
 
-            if (this._ymesh) {
-                this._ymesh.dispose();
+            if (this._yAxis) {
+                this._yAxis.dispose(false, !this._instanced);
+                delete this._yAxis;
             }
 
-            if (this._zmesh) {
-                this._zmesh.dispose();
+            if (this._zAxis) {
+                this._zAxis.dispose(false, !this._instanced);
+                delete this._zAxis;
             }
 
-            this._xmesh = null;
-            this._ymesh = null;
-            this._zmesh = null;
-
-            this.scene = null;
+            delete this.scene;
         }
 
+        private static _SetRenderingGroupId(node: TransformNode, id: number) {
+            node.getChildMeshes().forEach((mesh) => {
+                mesh.renderingGroupId = id;
+            });
+        }
     }
 }
