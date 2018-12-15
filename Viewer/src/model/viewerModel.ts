@@ -1,5 +1,5 @@
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, IParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
-import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
+import { GLTFFileLoader, GLTF2, InstancedMesh } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
@@ -196,7 +196,9 @@ export class ViewerModel implements IDisposable {
         if (!mesh.parent) {
             mesh.parent = this._pivotMesh;
         }
-        mesh.receiveShadows = !!this.configuration.receiveShadows;
+        if (!(mesh instanceof InstancedMesh)) {
+            mesh.receiveShadows = !!this.configuration.receiveShadows;
+        }
         this._meshes.push(mesh);
         if (triggerLoaded) {
             return this.onLoadedObservable.notifyObserversWithPromise(this);

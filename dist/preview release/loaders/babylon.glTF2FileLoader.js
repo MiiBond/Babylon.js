@@ -1400,7 +1400,7 @@ var BABYLON;
                 loadAttribute("JOINTS_0", BABYLON.VertexBuffer.MatricesIndicesKind);
                 loadAttribute("WEIGHTS_0", BABYLON.VertexBuffer.MatricesWeightsKind);
                 loadAttribute("COLOR_0", BABYLON.VertexBuffer.ColorKind, function (accessor) {
-                    if (accessor.type === AccessorType.VEC4) {
+                    if (accessor.type === "VEC4" /* VEC4 */) {
                         babylonMesh.hasVertexAlpha = true;
                     }
                 });
@@ -1604,7 +1604,7 @@ var BABYLON;
                 var babylonCamera = new BABYLON.FreeCamera(camera.name || "camera" + camera.index, BABYLON.Vector3.Zero(), this.babylonScene, false);
                 babylonCamera.rotation = new BABYLON.Vector3(0, Math.PI, 0);
                 switch (camera.type) {
-                    case CameraType.PERSPECTIVE: {
+                    case "perspective" /* PERSPECTIVE */: {
                         var perspective = camera.perspective;
                         if (!perspective) {
                             throw new Error(context + ": Camera perspective properties are missing");
@@ -1614,7 +1614,7 @@ var BABYLON;
                         babylonCamera.maxZ = perspective.zfar || Number.MAX_VALUE;
                         break;
                     }
-                    case CameraType.ORTHOGRAPHIC: {
+                    case "orthographic" /* ORTHOGRAPHIC */: {
                         if (!camera.orthographic) {
                             throw new Error(context + ": Camera orthographic properties are missing");
                         }
@@ -1682,8 +1682,8 @@ var BABYLON;
                 }
                 var targetNode = ArrayItem.Get(context + "/target/node", this.gltf.nodes, channel.target.node);
                 // Ignore animations that have no animation targets.
-                if ((channel.target.path === AnimationChannelTargetPath.WEIGHTS && !targetNode._numMorphTargets) ||
-                    (channel.target.path !== AnimationChannelTargetPath.WEIGHTS && !targetNode._babylonTransformNode)) {
+                if ((channel.target.path === "weights" /* WEIGHTS */ && !targetNode._numMorphTargets) ||
+                    (channel.target.path !== "weights" /* WEIGHTS */ && !targetNode._babylonTransformNode)) {
                     return Promise.resolve();
                 }
                 var sampler = ArrayItem.Get(context + "/sampler", animation.samplers, channel.sampler);
@@ -1691,22 +1691,22 @@ var BABYLON;
                     var targetPath;
                     var animationType;
                     switch (channel.target.path) {
-                        case AnimationChannelTargetPath.TRANSLATION: {
+                        case "translation" /* TRANSLATION */: {
                             targetPath = "position";
                             animationType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
                             break;
                         }
-                        case AnimationChannelTargetPath.ROTATION: {
+                        case "rotation" /* ROTATION */: {
                             targetPath = "rotationQuaternion";
                             animationType = BABYLON.Animation.ANIMATIONTYPE_QUATERNION;
                             break;
                         }
-                        case AnimationChannelTargetPath.SCALE: {
+                        case "scale" /* SCALE */: {
                             targetPath = "scaling";
                             animationType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
                             break;
                         }
-                        case AnimationChannelTargetPath.WEIGHTS: {
+                        case "weights" /* WEIGHTS */: {
                             targetPath = "influence";
                             animationType = BABYLON.Animation.ANIMATIONTYPE_FLOAT;
                             break;
@@ -1755,7 +1755,7 @@ var BABYLON;
                     }
                     var getNextKey;
                     switch (data.interpolation) {
-                        case AnimationSamplerInterpolation.STEP: {
+                        case "STEP" /* STEP */: {
                             getNextKey = function (frameIndex) { return ({
                                 frame: data.input[frameIndex],
                                 value: getNextOutputValue(),
@@ -1763,14 +1763,14 @@ var BABYLON;
                             }); };
                             break;
                         }
-                        case AnimationSamplerInterpolation.LINEAR: {
+                        case "LINEAR" /* LINEAR */: {
                             getNextKey = function (frameIndex) { return ({
                                 frame: data.input[frameIndex],
                                 value: getNextOutputValue()
                             }); };
                             break;
                         }
-                        case AnimationSamplerInterpolation.CUBICSPLINE: {
+                        case "CUBICSPLINE" /* CUBICSPLINE */: {
                             getNextKey = function (frameIndex) { return ({
                                 frame: data.input[frameIndex],
                                 inTangent: getNextOutputValue(),
@@ -1818,11 +1818,11 @@ var BABYLON;
                 if (sampler._data) {
                     return sampler._data;
                 }
-                var interpolation = sampler.interpolation || AnimationSamplerInterpolation.LINEAR;
+                var interpolation = sampler.interpolation || "LINEAR" /* LINEAR */;
                 switch (interpolation) {
-                    case AnimationSamplerInterpolation.STEP:
-                    case AnimationSamplerInterpolation.LINEAR:
-                    case AnimationSamplerInterpolation.CUBICSPLINE: {
+                    case "STEP" /* STEP */:
+                    case "LINEAR" /* LINEAR */:
+                    case "CUBICSPLINE" /* CUBICSPLINE */: {
                         break;
                     }
                     default: {
@@ -1876,12 +1876,12 @@ var BABYLON;
                 return bufferView._data;
             };
             GLTFLoader.prototype._loadIndicesAccessorAsync = function (context, accessor) {
-                if (accessor.type !== AccessorType.SCALAR) {
+                if (accessor.type !== "SCALAR" /* SCALAR */) {
                     throw new Error(context + "/type: Invalid value " + accessor.type);
                 }
-                if (accessor.componentType !== AccessorComponentType.UNSIGNED_BYTE &&
-                    accessor.componentType !== AccessorComponentType.UNSIGNED_SHORT &&
-                    accessor.componentType !== AccessorComponentType.UNSIGNED_INT) {
+                if (accessor.componentType !== 5121 /* UNSIGNED_BYTE */ &&
+                    accessor.componentType !== 5123 /* UNSIGNED_SHORT */ &&
+                    accessor.componentType !== 5125 /* UNSIGNED_INT */) {
                     throw new Error(context + "/componentType: Invalid value " + accessor.componentType);
                 }
                 if (accessor._data) {
@@ -1896,7 +1896,7 @@ var BABYLON;
             GLTFLoader.prototype._loadFloatAccessorAsync = function (context, accessor) {
                 // TODO: support normalized and stride
                 var _this = this;
-                if (accessor.componentType !== AccessorComponentType.FLOAT) {
+                if (accessor.componentType !== 5126 /* FLOAT */) {
                     throw new Error("Invalid component type " + accessor.componentType);
                 }
                 if (accessor._data) {
@@ -2146,13 +2146,13 @@ var BABYLON;
                 if (!(babylonMaterial instanceof BABYLON.PBRMaterial)) {
                     throw new Error(context + ": Material type not supported");
                 }
-                var alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;
+                var alphaMode = material.alphaMode || "OPAQUE" /* OPAQUE */;
                 switch (alphaMode) {
-                    case MaterialAlphaMode.OPAQUE: {
+                    case "OPAQUE" /* OPAQUE */: {
                         babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
                         break;
                     }
-                    case MaterialAlphaMode.MASK: {
+                    case "MASK" /* MASK */: {
                         babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
                         babylonMaterial.alphaCutOff = (material.alphaCutoff == undefined ? 0.5 : material.alphaCutoff);
                         if (babylonMaterial.albedoTexture) {
@@ -2160,7 +2160,7 @@ var BABYLON;
                         }
                         break;
                     }
-                    case MaterialAlphaMode.BLEND: {
+                    case "BLEND" /* BLEND */: {
                         babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
                         if (babylonMaterial.albedoTexture) {
                             babylonMaterial.albedoTexture.hasAlpha = true;
@@ -2245,7 +2245,7 @@ var BABYLON;
             GLTFLoader.prototype._loadSampler = function (context, sampler) {
                 if (!sampler._data) {
                     sampler._data = {
-                        noMipMaps: (sampler.minFilter === TextureMinFilter.NEAREST || sampler.minFilter === TextureMinFilter.LINEAR),
+                        noMipMaps: (sampler.minFilter === 9728 /* NEAREST */ || sampler.minFilter === 9729 /* LINEAR */),
                         samplingMode: GLTFLoader._GetTextureSamplingMode(context, sampler),
                         wrapU: GLTFLoader._GetTextureWrapMode(context + "/wrapS", sampler.wrapS),
                         wrapV: GLTFLoader._GetTextureWrapMode(context + "/wrapT", sampler.wrapT)
@@ -2360,11 +2360,11 @@ var BABYLON;
             };
             GLTFLoader._GetTextureWrapMode = function (context, mode) {
                 // Set defaults if undefined
-                mode = mode == undefined ? TextureWrapMode.REPEAT : mode;
+                mode = mode == undefined ? 10497 /* REPEAT */ : mode;
                 switch (mode) {
-                    case TextureWrapMode.CLAMP_TO_EDGE: return BABYLON.Texture.CLAMP_ADDRESSMODE;
-                    case TextureWrapMode.MIRRORED_REPEAT: return BABYLON.Texture.MIRROR_ADDRESSMODE;
-                    case TextureWrapMode.REPEAT: return BABYLON.Texture.WRAP_ADDRESSMODE;
+                    case 33071 /* CLAMP_TO_EDGE */: return BABYLON.Texture.CLAMP_ADDRESSMODE;
+                    case 33648 /* MIRRORED_REPEAT */: return BABYLON.Texture.MIRROR_ADDRESSMODE;
+                    case 10497 /* REPEAT */: return BABYLON.Texture.WRAP_ADDRESSMODE;
                     default:
                         BABYLON.Tools.Warn(context + ": Invalid value (" + mode + ")");
                         return BABYLON.Texture.WRAP_ADDRESSMODE;
@@ -2372,32 +2372,32 @@ var BABYLON;
             };
             GLTFLoader._GetTextureSamplingMode = function (context, sampler) {
                 // Set defaults if undefined
-                var magFilter = sampler.magFilter == undefined ? TextureMagFilter.LINEAR : sampler.magFilter;
-                var minFilter = sampler.minFilter == undefined ? TextureMinFilter.LINEAR_MIPMAP_LINEAR : sampler.minFilter;
-                if (magFilter === TextureMagFilter.LINEAR) {
+                var magFilter = sampler.magFilter == undefined ? 9729 /* LINEAR */ : sampler.magFilter;
+                var minFilter = sampler.minFilter == undefined ? 9987 /* LINEAR_MIPMAP_LINEAR */ : sampler.minFilter;
+                if (magFilter === 9729 /* LINEAR */) {
                     switch (minFilter) {
-                        case TextureMinFilter.NEAREST: return BABYLON.Texture.LINEAR_NEAREST;
-                        case TextureMinFilter.LINEAR: return BABYLON.Texture.LINEAR_LINEAR;
-                        case TextureMinFilter.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.LINEAR_NEAREST_MIPNEAREST;
-                        case TextureMinFilter.LINEAR_MIPMAP_NEAREST: return BABYLON.Texture.LINEAR_LINEAR_MIPNEAREST;
-                        case TextureMinFilter.NEAREST_MIPMAP_LINEAR: return BABYLON.Texture.LINEAR_NEAREST_MIPLINEAR;
-                        case TextureMinFilter.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR;
+                        case 9728 /* NEAREST */: return BABYLON.Texture.LINEAR_NEAREST;
+                        case 9729 /* LINEAR */: return BABYLON.Texture.LINEAR_LINEAR;
+                        case 9984 /* NEAREST_MIPMAP_NEAREST */: return BABYLON.Texture.LINEAR_NEAREST_MIPNEAREST;
+                        case 9985 /* LINEAR_MIPMAP_NEAREST */: return BABYLON.Texture.LINEAR_LINEAR_MIPNEAREST;
+                        case 9986 /* NEAREST_MIPMAP_LINEAR */: return BABYLON.Texture.LINEAR_NEAREST_MIPLINEAR;
+                        case 9987 /* LINEAR_MIPMAP_LINEAR */: return BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR;
                         default:
                             BABYLON.Tools.Warn(context + "/minFilter: Invalid value (" + minFilter + ")");
                             return BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR;
                     }
                 }
                 else {
-                    if (magFilter !== TextureMagFilter.NEAREST) {
+                    if (magFilter !== 9728 /* NEAREST */) {
                         BABYLON.Tools.Warn(context + "/magFilter: Invalid value (" + magFilter + ")");
                     }
                     switch (minFilter) {
-                        case TextureMinFilter.NEAREST: return BABYLON.Texture.NEAREST_NEAREST;
-                        case TextureMinFilter.LINEAR: return BABYLON.Texture.NEAREST_LINEAR;
-                        case TextureMinFilter.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST;
-                        case TextureMinFilter.LINEAR_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_LINEAR_MIPNEAREST;
-                        case TextureMinFilter.NEAREST_MIPMAP_LINEAR: return BABYLON.Texture.NEAREST_NEAREST_MIPLINEAR;
-                        case TextureMinFilter.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.NEAREST_LINEAR_MIPLINEAR;
+                        case 9728 /* NEAREST */: return BABYLON.Texture.NEAREST_NEAREST;
+                        case 9729 /* LINEAR */: return BABYLON.Texture.NEAREST_LINEAR;
+                        case 9984 /* NEAREST_MIPMAP_NEAREST */: return BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST;
+                        case 9985 /* LINEAR_MIPMAP_NEAREST */: return BABYLON.Texture.NEAREST_LINEAR_MIPNEAREST;
+                        case 9986 /* NEAREST_MIPMAP_LINEAR */: return BABYLON.Texture.NEAREST_NEAREST_MIPLINEAR;
+                        case 9987 /* LINEAR_MIPMAP_LINEAR */: return BABYLON.Texture.NEAREST_LINEAR_MIPLINEAR;
                         default:
                             BABYLON.Tools.Warn(context + "/minFilter: Invalid value (" + minFilter + ")");
                             return BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST;
@@ -2409,12 +2409,12 @@ var BABYLON;
                 byteOffset = bufferView.byteOffset + (byteOffset || 0);
                 try {
                     switch (componentType) {
-                        case AccessorComponentType.BYTE: return new Int8Array(buffer, byteOffset, length);
-                        case AccessorComponentType.UNSIGNED_BYTE: return new Uint8Array(buffer, byteOffset, length);
-                        case AccessorComponentType.SHORT: return new Int16Array(buffer, byteOffset, length);
-                        case AccessorComponentType.UNSIGNED_SHORT: return new Uint16Array(buffer, byteOffset, length);
-                        case AccessorComponentType.UNSIGNED_INT: return new Uint32Array(buffer, byteOffset, length);
-                        case AccessorComponentType.FLOAT: return new Float32Array(buffer, byteOffset, length);
+                        case 5120 /* BYTE */: return new Int8Array(buffer, byteOffset, length);
+                        case 5121 /* UNSIGNED_BYTE */: return new Uint8Array(buffer, byteOffset, length);
+                        case 5122 /* SHORT */: return new Int16Array(buffer, byteOffset, length);
+                        case 5123 /* UNSIGNED_SHORT */: return new Uint16Array(buffer, byteOffset, length);
+                        case 5125 /* UNSIGNED_INT */: return new Uint32Array(buffer, byteOffset, length);
+                        case 5126 /* FLOAT */: return new Float32Array(buffer, byteOffset, length);
                         default: throw new Error("Invalid component type " + componentType);
                     }
                 }
@@ -2439,16 +2439,16 @@ var BABYLON;
             };
             GLTFLoader._GetDrawMode = function (context, mode) {
                 if (mode == undefined) {
-                    mode = MeshPrimitiveMode.TRIANGLES;
+                    mode = 4 /* TRIANGLES */;
                 }
                 switch (mode) {
-                    case MeshPrimitiveMode.POINTS: return BABYLON.Material.PointListDrawMode;
-                    case MeshPrimitiveMode.LINES: return BABYLON.Material.LineListDrawMode;
-                    case MeshPrimitiveMode.LINE_LOOP: return BABYLON.Material.LineLoopDrawMode;
-                    case MeshPrimitiveMode.LINE_STRIP: return BABYLON.Material.LineStripDrawMode;
-                    case MeshPrimitiveMode.TRIANGLES: return BABYLON.Material.TriangleFillMode;
-                    case MeshPrimitiveMode.TRIANGLE_STRIP: return BABYLON.Material.TriangleStripDrawMode;
-                    case MeshPrimitiveMode.TRIANGLE_FAN: return BABYLON.Material.TriangleFanDrawMode;
+                    case 0 /* POINTS */: return BABYLON.Material.PointListDrawMode;
+                    case 1 /* LINES */: return BABYLON.Material.LineListDrawMode;
+                    case 2 /* LINE_LOOP */: return BABYLON.Material.LineLoopDrawMode;
+                    case 3 /* LINE_STRIP */: return BABYLON.Material.LineStripDrawMode;
+                    case 4 /* TRIANGLES */: return BABYLON.Material.TriangleFillMode;
+                    case 5 /* TRIANGLE_STRIP */: return BABYLON.Material.TriangleStripDrawMode;
+                    case 6 /* TRIANGLE_FAN */: return BABYLON.Material.TriangleFanDrawMode;
                 }
                 throw new Error(context + ": Invalid mesh primitive mode (" + mode + ")");
             };
@@ -3273,12 +3273,12 @@ var BABYLON;
                         var _this = this;
                         return GLTF2.GLTFLoader.LoadExtensionAsync(context, primitive, this.name, function (extensionContext, extension) {
                             if (primitive.mode != undefined) {
-                                if (primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP &&
-                                    primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
+                                if (primitive.mode !== 5 /* TRIANGLE_STRIP */ &&
+                                    primitive.mode !== 4 /* TRIANGLES */) {
                                     throw new Error(context + ": Unsupported mode " + primitive.mode);
                                 }
                                 // TODO: handle triangle strips
-                                if (primitive.mode === MeshPrimitiveMode.TRIANGLE_STRIP) {
+                                if (primitive.mode === 5 /* TRIANGLE_STRIP */) {
                                     throw new Error(context + ": Mode " + primitive.mode + " is not currently supported");
                                 }
                             }
