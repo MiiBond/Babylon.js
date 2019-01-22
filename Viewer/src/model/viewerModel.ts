@@ -1,5 +1,10 @@
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, IParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
+<<<<<<< HEAD
 import { GLTFFileLoader, GLTF2, InstancedMesh } from "babylonjs-loaders";
+=======
+import { GLTFFileLoader } from "babylonjs-loaders";
+import { IAsset } from "babylonjs-gltf2interface";
+>>>>>>> 36dd3d71de074c99b53c63976177ce4518a10656
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
@@ -90,7 +95,7 @@ export class ViewerModel implements IDisposable {
      */
     public loadId: number;
 
-    public loadInfo: GLTF2.IAsset;
+    public loadInfo: IAsset;
     private _loadedUrl: string;
     private _modelConfiguration: IModelConfiguration;
 
@@ -196,9 +201,11 @@ export class ViewerModel implements IDisposable {
         if (!mesh.parent) {
             mesh.parent = this._pivotMesh;
         }
-        if (!(mesh instanceof InstancedMesh)) {
+
+        if (mesh.getClassName() !== "InstancedMesh") {
             mesh.receiveShadows = !!this.configuration.receiveShadows;
         }
+
         this._meshes.push(mesh);
         if (triggerLoaded) {
             return this.onLoadedObservable.notifyObserversWithPromise(this);
@@ -559,7 +566,7 @@ export class ViewerModel implements IDisposable {
                 material.disableLighting = !this._modelConfiguration.material.directEnabled;
             }
             if (this._configurationContainer && this._configurationContainer.reflectionColor) {
-                material.reflectionColor = this._configurationContainer.reflectionColor;
+                material.reflectionColor = this._configurationContainer.reflectionColor.clone();
             }
         }
         else if (material instanceof MultiMaterial) {
@@ -621,7 +628,7 @@ export class ViewerModel implements IDisposable {
         animations: Animation[],
         duration: number,
         easingFunction: any,
-        easingMode: number = BABYLON.EasingFunction.EASINGMODE_EASEINOUT,
+        easingMode: number = 2, // BABYLON.EasingFunction.EASINGMODE_EASEINOUT,
         onAnimationEnd: () => void): void {
 
         if (easingFunction) {
