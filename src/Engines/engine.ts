@@ -29,6 +29,7 @@ import { Logger } from "../Misc/logger";
 import { EngineStore } from "./engineStore";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { _DevTools } from '../Misc/devTools';
+import { WebRequest } from '../Misc/webRequest';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
@@ -220,6 +221,10 @@ export interface EngineOptions extends WebGLContextAttributes {
      * If not handle, you might need to set it up on your side for expected touch devices behavior.
      */
     doNotHandleTouchAction?: boolean;
+    /**
+     * Defines that engine should compile shaders with high precision floats (if supported). False by default
+     */
+    useHighPrecisionFloats?: boolean;
 }
 
 /**
@@ -491,7 +496,7 @@ export class Engine {
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.22";
+        return "4.0.0-alpha.28";
     }
 
     /**
@@ -695,6 +700,12 @@ export class Engine {
     private _renderingCanvas: Nullable<HTMLCanvasElement>;
     private _windowIsBackground = false;
     private _webGLVersion = 1.0;
+
+    protected _highPrecisionShadersAllowed = true;
+    /** @hidden */
+    public get _shouldUseHighPrecisionShader(): boolean {
+        return this._caps.highPrecisionShaderSupported && this._highPrecisionShadersAllowed;
+    }
 
     /**
      * Gets a boolean indicating that only power of 2 textures are supported
@@ -1098,6 +1109,9 @@ export class Engine {
                 throw new Error("WebGL not supported");
             }
 
+            // Ensures a consistent color space unpacking of textures cross browser.
+            this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
+
             this._onCanvasFocus = () => {
                 this.onCanvasFocusObservable.notifyObservers(this);
             };
@@ -1184,6 +1198,10 @@ export class Engine {
             }
         }
 
+        if (options.useHighPrecisionFloats !== undefined) {
+            this._highPrecisionShadersAllowed = options.useHighPrecisionFloats;
+        }
+
         // Viewport
         const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
 
@@ -1195,16 +1213,19 @@ export class Engine {
         this._initGLContext();
 
         if (canvas) {
+            let anyDoc = document as any;
+
             // Fullscreen
             this._onFullscreenChange = () => {
-                if ((<any>document).fullscreen !== undefined) {
-                    this.isFullscreen = (<any>document).fullscreen;
-                } else if (document.mozFullScreen !== undefined) {
-                    this.isFullscreen = document.mozFullScreen;
-                } else if (document.webkitIsFullScreen !== undefined) {
-                    this.isFullscreen = document.webkitIsFullScreen;
-                } else if (document.msIsFullScreen !== undefined) {
-                    this.isFullscreen = document.msIsFullScreen;
+
+                if (anyDoc.fullscreen !== undefined) {
+                    this.isFullscreen = anyDoc.fullscreen;
+                } else if (anyDoc.mozFullScreen !== undefined) {
+                    this.isFullscreen = anyDoc.mozFullScreen;
+                } else if (anyDoc.webkitIsFullScreen !== undefined) {
+                    this.isFullscreen = anyDoc.webkitIsFullScreen;
+                } else if (anyDoc.msIsFullScreen !== undefined) {
+                    this.isFullscreen = anyDoc.msIsFullScreen;
                 }
 
                 // Pointer lock
@@ -1227,10 +1248,10 @@ export class Engine {
 
             // Pointer lock
             this._onPointerLockChange = () => {
-                this.isPointerLock = (document.mozPointerLockElement === canvas ||
-                    document.webkitPointerLockElement === canvas ||
-                    document.msPointerLockElement === canvas ||
-                    document.pointerLockElement === canvas
+                this.isPointerLock = (anyDoc.mozPointerLockElement === canvas ||
+                    anyDoc.webkitPointerLockElement === canvas ||
+                    anyDoc.msPointerLockElement === canvas ||
+                    anyDoc.pointerLockElement === canvas
                 );
             };
 
@@ -1246,7 +1267,10 @@ export class Engine {
             };
 
             this._onVRDisplayPointerUnrestricted = () => {
-                document.exitPointerLock();
+                if (!anyDoc.exitPointerLock) {
+                    return;
+                }
+                anyDoc.exitPointerLock();
             };
 
             if (DomManagement.IsWindowObjectExist()) {
@@ -2146,7 +2170,11 @@ export class Engine {
         // Submit frame to the vr device, if enabled
         if (this._vrDisplay && this._vrDisplay.isPresenting) {
             // TODO: We should only submit the frame if we read frameData successfully.
-            this._vrDisplay.submitFrame();
+            try {
+                this._vrDisplay.submitFrame();
+            } catch (e) {
+                Tools.Warn("webVR submitFrame has had an unexpected failure: " + e);
+            }
         }
 
         this.onEndFrameObservable.notifyObservers(this);
@@ -4398,7 +4426,7 @@ export class Engine {
             };
 
             if (!buffer) {
-                this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
+                this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: WebRequest, exception?: any) => {
                     onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                 });
             } else {
@@ -5658,7 +5686,7 @@ export class Engine {
             }
         }
 
-        let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
+        let onInternalError = (request?: WebRequest, exception?: any) => {
             if (loader) {
                 const fallbackUrl = loader.getFallbackTextureUrl(texture.url, this._textureFormatInUse);
                 Logger.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
@@ -5720,8 +5748,12 @@ export class Engine {
 
                 let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
                 for (var index = 0; index < faces.length; index++) {
-                    this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
-                    gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+                    if (imgs[index].width !== width || imgs[index].height !== height) {
+                        this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
+                        gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+                    } else {
+                        gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, imgs[index]);
+                    }
                 }
 
                 if (!noMipmap) {
@@ -5943,7 +5975,7 @@ export class Engine {
         texture.url = url;
         this._internalTexturesCache.push(texture);
 
-        var onerror = (request?: XMLHttpRequest, exception?: any) => {
+        var onerror = (request?: WebRequest, exception?: any) => {
             scene._removePendingData(texture);
             if (onError && request) {
                 onError(request.status + " " + request.statusText, exception);
@@ -7451,7 +7483,7 @@ export class Engine {
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
         let request = Tools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
@@ -7481,7 +7513,7 @@ export class Engine {
             }
         };
 
-        const onerror = (request?: XMLHttpRequest, exception?: any) => {
+        const onerror = (request?: WebRequest, exception?: any) => {
             if (onErrorCallBack && request) {
                 onErrorCallBack(request.status + " " + request.statusText, exception);
             }

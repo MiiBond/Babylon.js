@@ -7,7 +7,7 @@ import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTe
 import { PostProcess } from "babylonjs/PostProcesses/postProcess";
 import { PassPostProcess, PassCubePostProcess } from "babylonjs/PostProcesses/passPostProcess";
 
-import { GlobalState } from "components/globalState";
+import { GlobalState } from "../../../components/globalState";
 
 interface ITextureLineComponentProps {
     texture: BaseTexture,
@@ -48,7 +48,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         var size = texture.getSize();
         var ratio = size.width / size.height;
         var width = this.props.width;
-        var height = (width / ratio) | 0;
+        var height = (width / ratio) | 1;
 
         let passPostProcess: PostProcess;
 

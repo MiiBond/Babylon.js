@@ -45,8 +45,10 @@ import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
+import { WebRequest } from './Misc/webRequest';
 
 declare type Ray = import("./Culling/ray").Ray;
+declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
 declare type Animation = import("./Animations/animation").Animation;
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
@@ -526,6 +528,16 @@ export class Scene extends AbstractScene implements IAnimatable {
     public onMeshRemovedObservable = new Observable<AbstractMesh>();
 
     /**
+     * An event triggered when a skeleton is created
+     */
+    public onNewSkeletonAddedObservable = new Observable<Skeleton>();
+
+    /**
+    * An event triggered when a skeleton is removed
+    */
+    public onSkeletonRemovedObservable = new Observable<Skeleton>();
+
+    /**
     * An event triggered when a material is created
     */
     public onNewMaterialAddedObservable = new Observable<Material>();
@@ -590,6 +602,12 @@ export class Scene extends AbstractScene implements IAnimatable {
      * This Observable will when a mesh has been imported into the scene.
      */
     public onMeshImportedObservable = new Observable<AbstractMesh>();
+
+    /**
+     * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
+     * By default this function is undefined and Babylon.js will select LOD based on distance to camera
+     */
+    public customLODSelector: (mesh: AbstractMesh, camera: Camera) => Nullable<AbstractMesh>;
 
     // Animations
 
@@ -1792,14 +1810,17 @@ export class Scene extends AbstractScene implements IAnimatable {
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
             }
-            if (pickResult.pickedMesh.actionManager && !clickInfo.ignore) {
-                pickResult.pickedMesh.actionManager.processTrigger(Constants.ACTION_OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+            let actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
+            if (actionManager && !clickInfo.ignore) {
+                actionManager.processTrigger(Constants.ACTION_OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
 
                 if (!clickInfo.hasSwiped && clickInfo.singleClick) {
-                    pickResult.pickedMesh.actionManager.processTrigger(Constants.ACTION_OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    actionManager.processTrigger(Constants.ACTION_OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                 }
-                if (clickInfo.doubleClick && pickResult.pickedMesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
-                    pickResult.pickedMesh.actionManager.processTrigger(Constants.ACTION_OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+
+                let doubleClickActionManager = pickResult.pickedMesh._getActionManagerForTrigger(Constants.ACTION_OnDoublePickTrigger);
+                if (clickInfo.doubleClick && doubleClickActionManager) {
+                    doubleClickActionManager.processTrigger(Constants.ACTION_OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                 }
             }
         }
@@ -1811,11 +1832,11 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
         }
 
-        if (this._pickedDownMesh &&
-            this._pickedDownMesh.actionManager &&
-            this._pickedDownMesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnPickOutTrigger) &&
-            this._pickedDownMesh !== this._pickedUpMesh) {
-            this._pickedDownMesh.actionManager.processTrigger(Constants.ACTION_OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
+        if (this._pickedDownMesh && this._pickedDownMesh !== this._pickedUpMesh) {
+            let pickedDownActionManager = this._pickedDownMesh._getActionManagerForTrigger(Constants.ACTION_OnPickOutTrigger);
+            if (pickedDownActionManager) {
+                pickedDownActionManager.processTrigger(Constants.ACTION_OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
+            }
         }
 
         let type = 0;
@@ -2026,7 +2047,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             if (!this.pointerMovePredicate) {
-                this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined));
+                this.pointerMovePredicate = (mesh: AbstractMesh): boolean => (mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)) && (!this.cameraToUseForPointers || (this.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0));
             }
 
             // Meshes
@@ -2064,7 +2085,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             if (!this.pointerDownPredicate) {
                 this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
-                    return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
+                    return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (!this.cameraToUseForPointers || (this.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
                 };
             }
 
@@ -2092,8 +2113,6 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
-                this._pointerCaptures[evt.pointerId] = false;
-
                 // PreObservable support
                 if (this.onPrePointerObservable.hasObservers()) {
                     if (!clickInfo.ignore) {
@@ -2115,13 +2134,18 @@ export class Scene extends AbstractScene implements IAnimatable {
                     }
                 }
 
+                if (!this._pointerCaptures[evt.pointerId]) {
+                    return;
+                }
+
+                this._pointerCaptures[evt.pointerId] = false;
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }
 
                 if (!this.pointerUpPredicate) {
                     this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (!this.cameraToUseForPointers || (this.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
                     };
                 }
 
@@ -2700,6 +2724,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (index !== -1) {
             // Remove from the scene if found
             this.skeletons.splice(index, 1);
+            this.onSkeletonRemovedObservable.notifyObservers(toRemove);
         }
 
         return index;
@@ -2916,6 +2941,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public addSkeleton(newSkeleton: Skeleton): void {
         this.skeletons.push(newSkeleton);
+        this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
     }
 
     /**
@@ -3889,7 +3915,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             // Switch to current LOD
-            const meshLOD = mesh.getLOD(this.activeCamera);
+            const meshLOD = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
             if (meshLOD === undefined || meshLOD === null) {
                 continue;
             }
@@ -3987,7 +4013,8 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         var engine = this._engine;
 
-        this.activeCamera = camera;
+        // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
+        this._activeCamera = camera;
 
         if (!this.activeCamera) {
             throw new Error("Active camera not set");
@@ -4116,8 +4143,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             this._renderForCamera(camera._rigCameras[index], camera);
         }
 
-        this.activeCamera = camera;
-        this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+        // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
+        this._activeCamera = camera;
+        this.setTransformMatrix(this._activeCamera.getViewMatrix(), this._activeCamera.getProjectionMatrix());
     }
 
     private _checkIntersections(): void {
@@ -4515,6 +4543,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.onTransformNodeRemovedObservable.clear();
         this.onNewMeshAddedObservable.clear();
         this.onMeshRemovedObservable.clear();
+        this.onNewSkeletonAddedObservable.clear();
+        this.onSkeletonRemovedObservable.clear();
         this.onNewMaterialAddedObservable.clear();
         this.onMaterialRemovedObservable.clear();
         this.onNewTextureAddedObservable.clear();
@@ -4552,7 +4582,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             this.meshes[0].dispose(true);
         }
         while (this.transformNodes.length) {
-            this.removeTransformNode(this.transformNodes[0]);
+            this.transformNodes[0].dispose(true);
         }
 
         // Release cameras
@@ -4740,9 +4770,13 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
      * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
      * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+    public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
+        fastCheck?: boolean, camera?: Nullable<Camera>,
+        trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3) => boolean
+    ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();
         pi._pickingUnavailable = true;
@@ -4753,9 +4787,11 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param ray The ray to use to pick meshes
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
      * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
+    public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean,
+        trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
         throw _DevTools.WarnImport("Ray");
     }
 
@@ -4765,9 +4801,11 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param y Y position on screen
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
      * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
+    public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera,
+        trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _DevTools.WarnImport("Ray");
     }
 
@@ -4775,9 +4813,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Launch a ray to try to pick a mesh in the scene
      * @param ray Ray to use
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
+    public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _DevTools.WarnImport("Ray");
     }
 
@@ -4790,13 +4829,20 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
 
-        if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-            this._pointerOverMesh.actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+        let actionManager: Nullable<AbstractActionManager>;
+        if (this._pointerOverMesh) {
+            actionManager = this._pointerOverMesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOutTrigger);
+            if (actionManager) {
+                actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+            }
         }
 
         this._pointerOverMesh = mesh;
-        if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-            this._pointerOverMesh.actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+        if (this._pointerOverMesh) {
+            actionManager = this._pointerOverMesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOverTrigger);
+            if (actionManager) {
+                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+            }
         }
     }
 
@@ -4985,7 +5031,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
         let request = Tools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {

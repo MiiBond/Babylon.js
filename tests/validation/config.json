@@ -2,6 +2,16 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Anisotropic",
+      "playgroundId": "#MAXCNU#1",
+      "referenceImage": "anisotropic.png"
+    },
+    {
+      "title": "Clear Coat",
+      "playgroundId": "#YACNQS#2",
+      "referenceImage": "clearCoat.png"
+    },
+    {
       "title": "GUI Transform StackPanel",
       "playgroundId": "#BS60AB#0",
       "referenceImage": "TransformStackPanel.png"
@@ -92,7 +102,7 @@
     },
     {
       "title": "Chibi Rex",
-      "playgroundId": "#QATUCH#4",
+      "playgroundId": "#QATUCH#11",
       "renderCount": 50,
       "referenceImage": "chibi_rex.png"
     },

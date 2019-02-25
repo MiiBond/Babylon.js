@@ -70,44 +70,6 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     }
 
     /**
-     * Return the active textures of the material.
-     */
-    public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
-
-        if (this.diffuseTexture) {
-            activeTextures.push(this.diffuseTexture);
-        }
-
-        if (this.specularGlossinessTexture) {
-            activeTextures.push(this.specularGlossinessTexture);
-        }
-
-        return activeTextures;
-    }
-
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param texture - Base texture to use.
-     * @returns - Boolean specifying if a texture is used in the material.
-     */
-    public hasTexture(texture: BaseTexture): boolean {
-        if (super.hasTexture(texture)) {
-            return true;
-        }
-
-        if (this.diffuseTexture === texture) {
-            return true;
-        }
-
-        if (this.specularGlossinessTexture === texture) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Makes a duplicate of the current material.
      * @param name - name to use for the new material.
      */
@@ -116,6 +78,11 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
 
         clone.id = name;
         clone.name = name;
+
+        this.clearCoat.copyTo(clone.clearCoat);
+        this.anisotropy.copyTo(clone.anisotropy);
+        this.brdf.copyTo(clone.brdf);
+        this.sheen.copyTo(clone.sheen);
 
         return clone;
     }
@@ -126,6 +93,12 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.PBRSpecularGlossinessMaterial";
+
+        serializationObject.clearCoat = this.clearCoat.serialize();
+        serializationObject.anisotropy = this.anisotropy.serialize();
+        serializationObject.brdf = this.brdf.serialize();
+        serializationObject.sheen = this.sheen.serialize();
+
         return serializationObject;
     }
 
@@ -133,7 +106,20 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
      * Parses a JSON object correponding to the serialize function.
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial {
-        return SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);
+        const material = SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);
+        if (source.clearCoat) {
+            material.clearCoat.parse(source.clearCoat);
+        }
+        if (source.anisotropy) {
+            material.anisotropy.parse(source.anisotropy);
+        }
+        if (source.brdf) {
+            material.brdf.parse(source.brdf);
+        }
+        if (source.sheen) {
+            material.sheen.parse(source.brdf);
+        }
+        return material;
     }
 }
 

@@ -6,6 +6,7 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Light } from "babylonjs/Lights/light";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
 
 import { MeshTreeItemComponent } from "./entities/meshTreeItemComponent";
 import { CameraTreeItemComponent } from "./entities/cameraTreeItemComponent";
@@ -22,6 +23,14 @@ import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture"
 import { AdvancedDynamicTextureTreeItemComponent } from "./entities/gui/advancedDynamicTextureTreeItemComponent";
 import { AnimationGroupItemComponent } from "./entities/animationGroupTreeItemComponent";
 import { GlobalState } from "../globalState";
+import { PostProcessItemComponent } from './entities/postProcessTreeItemComponent';
+import { RenderingPipelineItemComponent } from './entities/renderingPipelineTreeItemComponent';
+import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
+import { SkeletonTreeItemComponent } from './entities/skeletonTreeItemComponent';
+import { Skeleton } from 'babylonjs/Bones/skeleton';
+import { BoneTreeItemComponent } from './entities/boneTreeItemComponent';
+import { Bone } from 'babylonjs/Bones/bone';
+
 
 interface ITreeItemSpecializedComponentProps {
     label: string,
@@ -59,6 +68,14 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
                 }
             }
 
+            if (className.indexOf("Skeleton") !== -1) {
+                return (<SkeletonTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} skeleton={entity as Skeleton} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("Bone") !== -1) {
+                return (<BoneTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} bone={entity as Bone} onClick={() => this.onClick()} />);
+            }
+
             if (className.indexOf("TransformNode") !== -1) {
                 return (<TransformNodeItemComponent extensibilityGroups={this.props.extensibilityGroups} transformNode={entity as TransformNode} onClick={() => this.onClick()} />);
             }
@@ -85,6 +102,14 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
 
             if (className.indexOf("Texture") !== -1) {
                 return (<TextureTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} texture={entity as Texture} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("RenderingPipeline") !== -1) {
+                return (<RenderingPipelineItemComponent extensibilityGroups={this.props.extensibilityGroups} renderPipeline={entity as PostProcessRenderPipeline} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("PostProcess") !== -1) {
+                return (<PostProcessItemComponent extensibilityGroups={this.props.extensibilityGroups} postProcess={entity as PostProcess} onClick={() => this.onClick()} />);
             }
 
             if (entity._host) {

@@ -11,6 +11,7 @@ import { _TypeStore } from "./typeStore";
 import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from './precisionDate';
 import { _DevTools } from './devTools';
+import { WebRequest } from './webRequest';
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -140,12 +141,12 @@ export class LoadFileError extends Error {
     /**
      * Creates a new LoadFileError
      * @param message defines the message of the error
-     * @param request defines the optional XHR request
+     * @param request defines the optional web request
      */
     constructor(
         message: string,
-        /** defines the optional XHR request */
-        public request?: XMLHttpRequest
+        /** defines the optional web request */
+        public request?: WebRequest
     ) {
         super(message);
         this.name = "LoadFileError";
@@ -165,7 +166,7 @@ export class RetryStrategy {
      * @returns the strategy function to use
      */
     public static ExponentialBackoff(maxRetries = 3, baseInterval = 500) {
-        return (url: string, request: XMLHttpRequest, retryIndex: number): number => {
+        return (url: string, request: WebRequest, retryIndex: number): number => {
             if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
                 return -1;
             }
@@ -190,9 +191,6 @@ export interface IFileRequest {
     abort: () => void;
 }
 
-// Screenshots
-var screenshotCanvas: HTMLCanvasElement;
-
 /**
  * Class containing a set of static utilities functions
  */
@@ -211,10 +209,9 @@ export class Tools {
 
     /**
      * Custom HTTP Request Headers to be sent with XMLHttpRequests
-     * i.e. when loading files, where the server/service expects an Authorization header.
-     * @see InjectCustomRequestHeaders injects them to an XMLHttpRequest
+     * i.e. when loading files, where the server/service expects an Authorization header
      */
-    public static CustomRequestHeaders: { [key: string]: string } = {};
+    public static CustomRequestHeaders = WebRequest.CustomRequestHeaders;
 
     /**
      * Gets or sets the retry strategy to apply when an error happens while loading an asset
@@ -678,17 +675,19 @@ export class Tools {
      * Asks the browser to exit fullscreen mode
      */
     public static ExitFullscreen(): void {
+        let anyDoc = document as any;
+
         if (document.exitFullscreen) {
             document.exitFullscreen();
         }
-        else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
+        else if (anyDoc.mozCancelFullScreen) {
+            anyDoc.mozCancelFullScreen();
         }
-        else if (document.webkitCancelFullScreen) {
-            document.webkitCancelFullScreen();
+        else if (anyDoc.webkitCancelFullScreen) {
+            anyDoc.webkitCancelFullScreen();
         }
-        else if (document.msCancelFullScreen) {
-            document.msCancelFullScreen();
+        else if (anyDoc.msCancelFullScreen) {
+            anyDoc.msCancelFullScreen();
         }
     }
 
@@ -763,20 +762,19 @@ export class Tools {
         Tools.SetCorsBehavior(url, img);
 
         const loadHandler = () => {
+            img.removeEventListener("load", loadHandler);
+            img.removeEventListener("error", errorHandler);
+
+            onLoad(img);
+
+            // Must revoke the URL after calling onLoad to avoid security exceptions in
+            // certain scenarios (e.g. when hosted in vscode).
             if (usingObjectURL && img.src) {
                 URL.revokeObjectURL(img.src);
             }
-
-            img.removeEventListener("load", loadHandler);
-            img.removeEventListener("error", errorHandler);
-            onLoad(img);
         };
 
         const errorHandler = (err: any) => {
-            if (usingObjectURL && img.src) {
-                URL.revokeObjectURL(img.src);
-            }
-
             img.removeEventListener("load", loadHandler);
             img.removeEventListener("error", errorHandler);
 
@@ -784,6 +782,10 @@ export class Tools {
 
             if (onError) {
                 onError("Error while trying to load image: " + input, err);
+            }
+
+            if (usingObjectURL && img.src) {
+                URL.revokeObjectURL(img.src);
             }
         };
 
@@ -842,7 +844,7 @@ export class Tools {
      * @param onError callback called when the file fails to load
      * @returns a file request object
      */
-    public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+    public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
         url = Tools.CleanUrl(url);
 
         url = Tools.PreprocessUrl(url);
@@ -864,7 +866,7 @@ export class Tools {
         };
 
         const requestFile = () => {
-            let request = new XMLHttpRequest();
+            let request = new WebRequest();
             let retryHandle: Nullable<number> = null;
 
             fileRequest.abort = () => {
@@ -881,7 +883,7 @@ export class Tools {
             };
 
             const retryLoop = (retryIndex: number) => {
-                request.open('GET', loadUrl, true);
+                request.open('GET', loadUrl);
 
                 if (useArrayBuffer) {
                     request.responseType = "arraybuffer";
@@ -920,7 +922,7 @@ export class Tools {
                             if (waitTime !== -1) {
                                 // Prevent the request from completing for retry.
                                 request.removeEventListener("loadend", onLoadEnd);
-                                request = new XMLHttpRequest();
+                                request = new WebRequest();
                                 retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
                                 return;
                             }
@@ -936,10 +938,6 @@ export class Tools {
                 };
 
                 request.addEventListener("readystatechange", onReadyStateChange);
-
-                if (Tools.UseCustomRequestHeaders) {
-                    Tools.InjectCustomRequestHeaders(request);
-                }
 
                 request.send();
             };
@@ -1188,6 +1186,11 @@ export class Tools {
     }
 
     /**
+     * @ignore
+     */
+    public static _ScreenshotCanvas: HTMLCanvasElement;
+
+    /**
      * Dumps the current bound framebuffer
      * @param width defines the rendering width
      * @param height defines the rendering height
@@ -1218,12 +1221,12 @@ export class Tools {
         }
 
         // Create a 2D canvas to store the result
-        if (!screenshotCanvas) {
-            screenshotCanvas = document.createElement('canvas');
+        if (!Tools._ScreenshotCanvas) {
+            Tools._ScreenshotCanvas = document.createElement('canvas');
         }
-        screenshotCanvas.width = width;
-        screenshotCanvas.height = height;
-        var context = screenshotCanvas.getContext('2d');
+        Tools._ScreenshotCanvas.width = width;
+        Tools._ScreenshotCanvas.height = height;
+        var context = Tools._ScreenshotCanvas.getContext('2d');
 
         if (context) {
             // Copy the pixels to a 2D canvas
@@ -1273,11 +1276,11 @@ export class Tools {
      */
     static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
         if (successCallback) {
-            var base64Image = screenshotCanvas.toDataURL(mimeType);
+            var base64Image = Tools._ScreenshotCanvas.toDataURL(mimeType);
             successCallback(base64Image);
         }
         else {
-            this.ToBlob(screenshotCanvas, function(blob) {
+            this.ToBlob(Tools._ScreenshotCanvas, function(blob) {
                 //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                 if (("download" in document.createElement("a"))) {
                     if (!fileName) {
@@ -1592,19 +1595,6 @@ export class Tools {
 
         if (console.time) {
             console.timeEnd(counterName);
-        }
-    }
-
-    /**
-     * Injects the @see CustomRequestHeaders into the given request
-     * @param request the request that should be used for injection
-     */
-    public static InjectCustomRequestHeaders(request: XMLHttpRequest): void {
-        for (let key in Tools.CustomRequestHeaders) {
-            const val = Tools.CustomRequestHeaders[key];
-            if (val) {
-                request.setRequestHeader(key, val);
-            }
         }
     }
 

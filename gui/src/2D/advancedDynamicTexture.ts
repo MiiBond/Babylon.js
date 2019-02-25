@@ -647,7 +647,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (!scene) {
                 return;
             }
-
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
             let engine = scene.getEngine();
 
@@ -760,7 +759,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 }
             } else if (pi.type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], true);
                 }
                 delete this._lastControlOver[pointerId];
             }

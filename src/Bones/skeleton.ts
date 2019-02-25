@@ -15,6 +15,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
+import { IInspectable } from '../Misc/iInspectable';
 
 /**
  * Class used to handle skinning animations
@@ -66,11 +67,19 @@ export class Skeleton implements IAnimatable {
      */
     public doNotSerialize = false;
 
+    private _useTextureToStoreBoneMatrices = true;
     /**
      * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
      * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
      */
-    public useTextureToStoreBoneMatrices = true;
+    public get useTextureToStoreBoneMatrices(): boolean {
+        return this._useTextureToStoreBoneMatrices;
+    }
+
+    public set useTextureToStoreBoneMatrices(value: boolean) {
+        this._useTextureToStoreBoneMatrices = value;
+        this._markAsDirty();
+    }
 
     private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
@@ -87,6 +96,12 @@ export class Skeleton implements IAnimatable {
     public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
         this._animationPropertiesOverride = value;
     }
+
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
 
     // Events
 
@@ -117,13 +132,29 @@ export class Skeleton implements IAnimatable {
 
         this._scene = scene || EngineStore.LastCreatedScene;
 
-        this._scene.skeletons.push(this);
+        this._scene.addSkeleton(this);
 
         //make sure it will recalculate the matrix next time prepare is called.
         this._isDirty = true;
 
         const engineCaps = this._scene.getEngine().getCaps();
         this._canUseTextureForBones = engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
+    }
+
+    /**
+     * Gets the current object class name.
+     * @return the class name
+     */
+    public getClassName(): string {
+        return "Skeleton";
+    }
+
+    /**
+     * Returns an array containing the root bones
+     * @returns an array containing the root bones
+     */
+    public getChildren(): Array<Bone> {
+        return this.bones.filter((b) => !b.getParent());
     }
 
     // Members
@@ -247,10 +278,8 @@ export class Skeleton implements IAnimatable {
     public getAnimationRanges(): Nullable<AnimationRange>[] {
         var animationRanges: Nullable<AnimationRange>[] = [];
         var name: string;
-        var i: number = 0;
         for (name in this._ranges) {
-            animationRanges[i] = this._ranges[name];
-            i++;
+            animationRanges.push(this._ranges[name]);
         }
         return animationRanges;
     }

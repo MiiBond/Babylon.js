@@ -4,6 +4,7 @@ import { serialize } from "../../Misc/decorators";
 import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
 import { PostProcessRenderEffect } from "./postProcessRenderEffect";
+import { IInspectable } from '../../Misc/iInspectable';
 /**
  * PostProcessRenderPipeline
  * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
@@ -14,6 +15,12 @@ export class PostProcessRenderPipeline {
     private _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
 
     /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
+
+    /**
      * @hidden
      */
     protected _cameras: Camera[];
@@ -21,6 +28,13 @@ export class PostProcessRenderPipeline {
     /** @hidden */
     @serialize()
     public _name: string;
+
+    /**
+     * Gets pipeline name
+     */
+    public get name(): string {
+        return this._name;
+    }
 
     /**
      * Initializes a PostProcessRenderPipeline
@@ -37,7 +51,7 @@ export class PostProcessRenderPipeline {
     }
 
     /**
-     * "PostProcessRenderPipeline"
+     * Gets the class name
      * @returns "PostProcessRenderPipeline"
      */
     public getClassName(): string {
@@ -45,7 +59,7 @@ export class PostProcessRenderPipeline {
     }
 
     /**
-     * If all the render effects in the pipeline are support
+     * If all the render effects in the pipeline are supported
      */
     public get isSupported(): boolean {
         for (var renderEffectName in this._renderEffects) {

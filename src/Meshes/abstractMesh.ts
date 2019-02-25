@@ -24,6 +24,7 @@ import { AbstractActionManager } from '../Actions/abstractActionManager';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
+declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 
 /** @hidden */
 class _FacetDataStorage {
@@ -656,6 +657,26 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
         }
         return ret;
+    }
+
+    /** @hidden */
+    public _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
+        if (this.actionManager && (initialCall || this.actionManager.isRecursive)) {
+            if (trigger) {
+                if (this.actionManager.hasSpecificTrigger(trigger)) {
+                    return this.actionManager;
+                }
+            }
+            else {
+                return this.actionManager;
+            }
+        }
+
+        if (!this.parent) {
+            return null;
+        }
+
+        return this.parent._getActionManagerForTrigger(trigger, false);
     }
 
     /** @hidden */
@@ -1423,10 +1444,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Checks if the passed Ray intersects with the mesh
      * @param ray defines the ray to use
      * @param fastCheck defines if fast mode (but less precise) must be used (false by default)
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns the picking info
      * @see http://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
      */
-    public intersects(ray: Ray, fastCheck?: boolean): PickingInfo {
+    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): PickingInfo {
         var pickingInfo = new PickingInfo();
         const intersectionThreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionThreshold : 0;
         const boundingInfo = this._boundingInfo;
@@ -1450,7 +1472,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 continue;
             }
 
-            var currentIntersectInfo = subMesh.intersects(ray, (<Vector3[]>this._positions), (<IndicesArray>this.getIndices()), fastCheck);
+            var currentIntersectInfo = subMesh.intersects(ray, (<Vector3[]>this._positions),
+                (<IndicesArray>this.getIndices()), fastCheck,
+                trianglePredicate);
 
             if (currentIntersectInfo) {
                 if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
@@ -1598,7 +1622,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         if (disposeMaterialAndTextures) {
             if (this.material) {
-                this.material.dispose(false, true);
+                if (this.material.getClassName() === "MultiMaterial") {
+                    this.material.dispose(false, true, true);
+                } else {
+                    this.material.dispose(false, true);
+                }
             }
         }
 
@@ -1765,7 +1793,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 data.depthSortedIndices[f * 3 + 1] = indices![sind + 1];
                 data.depthSortedIndices[f * 3 + 2] = indices![sind + 2];
             }
-            this.updateIndices(data.depthSortedIndices);
+            this.updateIndices(data.depthSortedIndices, undefined, true);
         }
 
         return this;
@@ -2004,9 +2032,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Updates the AbstractMesh indices array
      * @param indices defines the data source
+     * @param offset defines the offset in the index buffer where to store the new data (can be null)
+     * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
      * @returns the current mesh
      */
-    public updateIndices(indices: IndicesArray): AbstractMesh {
+    public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): AbstractMesh {
         return this;
     }
 

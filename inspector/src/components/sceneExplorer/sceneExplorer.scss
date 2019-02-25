@@ -13,6 +13,19 @@
     display: none;
 }
 
+.context-menu {
+    background: #222222;
+
+    .react-contextmenu-item {
+        padding: 10px;
+        cursor: pointer;
+
+        &:hover {
+            background: #555555;
+        }
+    }
+}
+
 #sceneExplorer {
     background: #333333;
     height: 100%;
@@ -373,7 +386,7 @@
         .lightTools {
             grid-column: 2;
             display: grid;
-            grid-template-columns: 1fr 20px auto 5px;
+            grid-template-columns: 1fr 20px 20px auto 5px;
             align-items: center;
 
             .enableLight {
@@ -387,6 +400,30 @@
         }
 
         .materialTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }
+
+        .postProcessTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }
+
+        .renderingPipelineTools {
             grid-column: 2;
             display: grid;
             grid-template-columns: 1fr auto 5px;
@@ -462,6 +499,18 @@
                 grid-column: 2;
             }
         }    
+
+        .skeletonTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }  
 
         .title {
             grid-column: 1;

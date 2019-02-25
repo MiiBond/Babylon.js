@@ -7,6 +7,8 @@ import { serialize } from "./Misc/decorators";
 import { Observable, Observer } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
 import { _DevTools } from './Misc/devTools';
+import { AbstractActionManager } from './Actions/abstractActionManager';
+import { IInspectable } from './Misc/iInspectable';
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -91,6 +93,12 @@ export class Node implements IBehaviorAware<Node> {
      * For internal use only. Please do not use.
      */
     public reservedDataStore: any = null;
+
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
 
     /**
      * Gets or sets a boolean used to define if the node must be serialized
@@ -402,6 +410,15 @@ export class Node implements IBehaviorAware<Node> {
         this._updateCache();
     }
 
+    /** @hidden */
+    public _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
+        if (!this.parent) {
+            return null;
+        }
+
+        return this.parent._getActionManagerForTrigger(trigger, false);
+    }
+
     // override it in derived class if you add new variables to the cache
     // and call the parent class method if !ignoreParentClass
     /** @hidden */
@@ -548,7 +565,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Get all child-meshes of this node
-     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: false)
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
      * @returns an array of AbstractMesh
      */
@@ -643,6 +660,19 @@ export class Node implements IBehaviorAware<Node> {
      */
     public getAnimationRange(name: string): Nullable<AnimationRange> {
         return this._ranges[name];
+    }
+
+    /**
+     * Gets the list of all animation ranges defined on this node
+     * @returns an array
+     */
+    public getAnimationRanges(): Nullable<AnimationRange>[] {
+        var animationRanges: Nullable<AnimationRange>[] = [];
+        var name: string;
+        for (name in this._ranges) {
+            animationRanges.push(this._ranges[name]);
+        }
+        return animationRanges;
     }
 
     /**

@@ -81,7 +81,10 @@ export class CubeTexture extends BaseTexture {
     private _noMipmap: boolean;
     private _files: string[];
     private _extensions: string[];
+
+    @serialize("textureMatrix")
     private _textureMatrix: Matrix;
+
     private _format: number;
     private _createPolynomials: boolean;
 
@@ -122,7 +125,7 @@ export class CubeTexture extends BaseTexture {
      * @param scene defines the scene the texture is attached to
      * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
      * @param noMipmap defines if mipmaps should be created or not
-     * @param files defines the six files to load for the different faces
+     * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
      * @param onLoad defines a callback triggered at the end of the file load if no errors occured
      * @param onError defines a callback triggered in case of error during load
      * @param format defines the internal format to use for the texture once loaded
@@ -355,3 +358,5 @@ export class CubeTexture extends BaseTexture {
 }
 
 Texture._CubeTextureParser = CubeTexture.Parse;
+// Some exporters relies on Tools.Instantiate
+_TypeStore.RegisteredTypes["BABYLON.CubeTexture"] = CubeTexture;

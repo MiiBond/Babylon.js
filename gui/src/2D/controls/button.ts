@@ -84,7 +84,7 @@ export class Button extends Rectangle {
     // While being a container, the button behaves like a control.
     /** @hidden */
     public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
-        if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
+        if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
 
@@ -111,12 +111,12 @@ export class Button extends Rectangle {
     }
 
     /** @hidden */
-    public _onPointerOut(target: Control): void {
+    public _onPointerOut(target: Control, force = false): void {
         if (this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
 
-        super._onPointerOut(target);
+        super._onPointerOut(target, force);
     }
 
     /** @hidden */

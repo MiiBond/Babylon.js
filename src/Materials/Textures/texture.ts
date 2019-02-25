@@ -9,6 +9,7 @@ import { Constants } from "../../Engines/constants";
 import { _AlphaState } from "../../States/index";
 import { _TypeStore } from '../../Misc/typeStore';
 import { _DevTools } from '../../Misc/devTools';
+import { IInspectable } from '../../Misc/iInspectable';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -179,6 +180,12 @@ export class Texture extends BaseTexture {
         return this._noMipmap;
     }
 
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
+
     private _noMipmap: boolean;
     /** @hidden */
     public _invertY: boolean;
@@ -303,7 +310,7 @@ export class Texture extends BaseTexture {
             return;
         }
 
-        this._texture = this._getFromCache(this.url, noMipmap, samplingMode);
+        this._texture = this._getFromCache(this.url, noMipmap, samplingMode, invertY);
 
         if (!this._texture) {
             if (!scene.useDelayedTextureLoading) {
@@ -364,7 +371,7 @@ export class Texture extends BaseTexture {
         }
 
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-        this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode);
+        this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
 
         if (!this._texture) {
             this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
