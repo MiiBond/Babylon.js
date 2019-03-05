@@ -7648,6 +7648,7 @@ declare module BABYLON {
         /**
          * Defines the passed node as the parent of the current node.
          * The node will remain exactly where it is and its position / rotation will be updated accordingly
+         * @see https://doc.babylonjs.com/how_to/parenting
          * @param node the node ot set as the parent
          * @returns this TransformNode.
          */
@@ -18336,6 +18337,7 @@ declare module BABYLON {
         private _ranges;
         private _lastAbsoluteTransformsUpdateId;
         private _canUseTextureForBones;
+        private _uniqueId;
         /** @hidden */numBonesWithLinkedTransformNode: number;
         /**
          * Specifies if the skeleton should be serialized
@@ -18365,6 +18367,10 @@ declare module BABYLON {
          * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
          */
         readonly isUsingTextureForMatrices: boolean;
+        /**
+         * Gets the unique ID of this skeleton
+         */
+        readonly uniqueId: number;
         /**
          * Creates a new skeleton
          * @param name defines the skeleton name
@@ -19211,6 +19217,7 @@ declare module BABYLON {
         setBodyVelocityIterations?(impostor: PhysicsImpostor, velocityIterations: number): void;
         getBodyPositionIterations?(impostor: PhysicsImpostor): number;
         setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
+        appendAnchor?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
         sleepBody(impostor: PhysicsImpostor): void;
         wakeUpBody(impostor: PhysicsImpostor): void;
         raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
@@ -19782,6 +19789,16 @@ declare module BABYLON {
          * @returns The physics imposter
          */
         addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
+        /**
+         * Add an anchor to a soft impostor
+         * @param otherImpostor rigid impostor as the anchor
+         * @param width ratio across width from 0 to 1
+         * @param height ratio up height from 0 to 1
+         * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+         * @returns impostor the soft imposter
+         */
+        addAnchor(otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor;
         /**
          * Will keep this body still, in a sleep mode.
          * @returns the physics imposter
@@ -20558,6 +20575,7 @@ declare module BABYLON {
         flipFaces(flipNormals?: boolean): Mesh;
         /**
          * Increase the number of facets and hence vertices in a mesh
+         * Vertex normals are interpolated from existing vertex normals
          * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
          * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
          */
@@ -23642,10 +23660,11 @@ declare module BABYLON {
         getBoundingInfo(): BoundingInfo;
         /**
          * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
-         * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box
+         * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
+         * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
          * @returns the current mesh
          */
-        normalizeToUnitCube(includeDescendants?: boolean): AbstractMesh;
+        normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean): AbstractMesh;
         /**
          * Overwrite the current bounding info
          * @param boundingInfo defines the new bounding info
@@ -24220,7 +24239,8 @@ declare module BABYLON {
          */
         isDisposed(): boolean;
         /**
-         * Gets or sets the parent of the node
+         * Gets or sets the parent of the node (without keeping the current position in the scene)
+         * @see https://doc.babylonjs.com/how_to/parenting
          */
         parent: Nullable<Node>;
         private addToSceneRootNodes;
@@ -26161,8 +26181,6 @@ declare module BABYLON {
         canUseTimestampForTimerQuery: boolean;
         /** Function used to let the system compiles shaders in background */
         parallelShaderCompile: {
-            MAX_SHADER_COMPILER_THREADS_KHR: number;
-            maxShaderCompilerThreadsKHR: (thread: number) => void;
             COMPLETION_STATUS_KHR: number;
         };
     }
@@ -26442,6 +26460,10 @@ declare module BABYLON {
         static readonly SCALEMODE_NEAREST: number;
         /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
         static readonly SCALEMODE_CEILING: number;
+        /**
+         * Returns the current npm package of the sdk
+         */
+        static readonly NpmPackage: string;
         /**
          * Returns the current version of the framework
          */
@@ -26900,6 +26922,21 @@ declare module BABYLON {
          * Sets the current depth function to LESS
          */
         setDepthFunctionToLess(): void;
+        private _cachedStencilBuffer;
+        private _cachedStencilFunction;
+        private _cachedStencilMask;
+        private _cachedStencilOperationPass;
+        private _cachedStencilOperationFail;
+        private _cachedStencilOperationDepthFail;
+        private _cachedStencilReference;
+        /**
+         * Caches the the state of the stencil buffer
+         */
+        cacheStencilState(): void;
+        /**
+         * Restores the state of the stencil buffer
+         */
+        restoreStencilState(): void;
         /**
          * Sets the current depth function to LEQUAL
          */
@@ -32104,6 +32141,12 @@ declare module BABYLON {
          */
         getAnimationGroupByName(name: string): Nullable<AnimationGroup>;
         /**
+         * Get a material using its unique id
+         * @param uniqueId defines the material's unique id
+         * @return the material or null if none found.
+         */
+        getMaterialByUniqueID(uniqueId: number): Nullable<Material>;
+        /**
          * get a material using its id
          * @param id defines the material's ID
          * @return the material or null if none found.
@@ -32213,6 +32256,12 @@ declare module BABYLON {
          */
         getTransformNodeByID(id: string): Nullable<TransformNode>;
         /**
+         * Gets a transform node with its auto-generated unique id
+         * @param uniqueId efines the unique id to search for
+         * @return the found transform node or null if not found at all.
+         */
+        getTransformNodeByUniqueID(uniqueId: number): Nullable<TransformNode>;
+        /**
          * Gets a list of transform nodes using their id
          * @param id defines the id to search for
          * @returns a list of transform nodes
@@ -32266,6 +32315,12 @@ declare module BABYLON {
          * @return the found skeleton or null if not found at all.
          */
         getLastSkeletonByID(id: string): Nullable<Skeleton>;
+        /**
+         * Gets a skeleton using a given auto generated unique id
+         * @param  uniqueId defines the unique id to search for
+         * @return the found skeleton or null if not found at all.
+         */
+        getSkeletonByUniqueId(uniqueId: number): Nullable<Skeleton>;
         /**
          * Gets a skeleton using a given id (if many are found, this function will pick the first one)
          * @param id defines the id to search for
@@ -42891,7 +42946,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrFunctions: {
+    export var pbrFragmentExtraDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrFragmentSamplersDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrHelperFunctions: {
         name: string;
         shader: string;
     };
@@ -42905,21 +42974,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrPreLightingFunctions: {
+    export var pbrDirectLightingSetupFunctions: {
         name: string;
         shader: string;
     };
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrFalloffLightingFunctions: {
+    export var pbrDirectLightingFalloffFunctions: {
         name: string;
         shader: string;
     };
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrLightingFunctions: {
+    export var pbrBRDFFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrDirectLightingFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrIBLFunctions: {
         name: string;
         shader: string;
     };
@@ -50189,6 +50272,16 @@ declare module BABYLON {
          */
         setBodyPositionIterations(impostor: PhysicsImpostor, positionIterations: number): void;
         /**
+        * Append an anchor to a soft object
+        * @param impostor soft impostor to add anchor to
+        * @param otherImpostor rigid impostor as the anchor
+        * @param width ratio across width from 0 to 1
+        * @param height ratio up height from 0 to 1
+        * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
+        * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+        */
+        appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence?: number, noCollisionBetweenLinkedBodies?: boolean): void;
+        /**
          * Sleeps the physics body and stops it from being active
          * @param impostor impostor to sleep
          */
@@ -52843,6 +52936,10 @@ declare module BABYLON {
      * It should not be used directly but through the available method on mesh.
      */
     export class OutlineRenderer implements ISceneComponent {
+        /**
+         * Stencil value used to avoid outline being seen within the mesh when the mesh is transparent
+         */
+        private static _StencilReference;
         /**
          * The name of the component. Each component must have a unique name.
          */
@@ -59566,9 +59663,10 @@ declare module BABYLON.GLTF2 {
         /**
          * Define this method to modify the default behavior when loading uris.
          * @param context The context when loading the asset
+         * @param property The glTF property associated with the uri
          * @param uri The uri to load
          * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
-         */loadUriAsync?(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
+         */loadUriAsync?(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
     }
 }
 declare module BABYLON.GLTF2 {
@@ -59594,10 +59692,6 @@ declare module BABYLON.GLTF2 {
      * The glTF 2.0 loader
      */
     export class GLTFLoader implements IGLTFLoader {
-        /** The glTF object parsed from the JSON. */
-        gltf: IGLTF;
-        /** The Babylon scene when loading the asset. */
-        babylonScene: Scene;
         /** @hidden */completePromises: Promise<any>[];
         private _disposed;
         private _parent;
@@ -59606,6 +59700,8 @@ declare module BABYLON.GLTF2 {
         private _rootUrl;
         private _fileName;
         private _uniqueRootUrl;
+        private _gltf;
+        private _babylonScene;
         private _rootBabylonMesh;
         private _defaultBabylonMaterialData;
         private _progressCallback?;
@@ -59629,6 +59725,18 @@ declare module BABYLON.GLTF2 {
          * Gets the loader state.
          */
         readonly state: Nullable<GLTFLoaderState>;
+        /**
+         * The glTF object parsed from the JSON.
+         */
+        readonly gltf: IGLTF;
+        /**
+         * The Babylon scene when loading the asset.
+         */
+        readonly babylonScene: Scene;
+        /**
+         * The root Babylon mesh when loading the asset.
+         */
+        readonly rootBabylonMesh: Mesh;
         /** @hidden */
         constructor(parent: GLTFFileLoader);
         /** @hidden */
@@ -59767,10 +59875,11 @@ declare module BABYLON.GLTF2 {
         /**
          * Loads a glTF uri.
          * @param context The context when loading the asset
+         * @param property The glTF property associated with the uri
          * @param uri The base64 or relative uri
          * @returns A promise that resolves with the loaded data when the load is complete
          */
-        loadUriAsync(context: string, uri: string): Promise<ArrayBufferView>;
+        loadUriAsync(context: string, property: IProperty, uri: string): Promise<ArrayBufferView>;
         private _onProgress;
         /**
          * Adds a JSON pointer to the metadata of the Babylon object at `<object>.metadata.gltf.pointers`.
@@ -60034,7 +60143,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
-        /** @hidden */loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
+        /** @hidden */loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
         /**
          * Gets an array of LOD properties from lowest to highest.
          */

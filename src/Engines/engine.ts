@@ -176,8 +176,6 @@ export class EngineCapabilities {
     public canUseTimestampForTimerQuery: boolean;
     /** Function used to let the system compiles shaders in background */
     public parallelShaderCompile: {
-        MAX_SHADER_COMPILER_THREADS_KHR: number;
-        maxShaderCompilerThreadsKHR: (thread: number) => void;
         COMPLETION_STATUS_KHR: number;
     };
 }
@@ -493,10 +491,18 @@ export class Engine {
     public static readonly SCALEMODE_CEILING = Constants.SCALEMODE_CEILING;
 
     /**
+     * Returns the current npm package of the sdk
+     */
+    // Not mixed with Version for tooling purpose.
+    public static get NpmPackage(): string {
+        return "babylonjs@4.0.0-alpha.30";
+    }
+
+    /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.29";
+        return "4.0.0-alpha.30";
     }
 
     /**
@@ -1468,10 +1474,6 @@ export class Engine {
 
         // Shader compiler threads
         this._caps.parallelShaderCompile = this._gl.getExtension('KHR_parallel_shader_compile');
-        if (this._caps.parallelShaderCompile) {
-            const threads = this._gl.getParameter(this._caps.parallelShaderCompile.MAX_SHADER_COMPILER_THREADS_KHR);
-            this._caps.parallelShaderCompile.maxShaderCompilerThreadsKHR(threads);
-        }
 
         // Depth Texture
         if (this._webGLVersion > 1) {
@@ -1767,6 +1769,40 @@ export class Engine {
      */
     public setDepthFunctionToLess(): void {
         this._depthCullingState.depthFunc = this._gl.LESS;
+    }
+
+    private _cachedStencilBuffer: boolean;
+    private _cachedStencilFunction: number;
+    private _cachedStencilMask: number;
+    private _cachedStencilOperationPass: number;
+    private _cachedStencilOperationFail: number;
+    private _cachedStencilOperationDepthFail: number;
+    private _cachedStencilReference: number;
+
+    /**
+     * Caches the the state of the stencil buffer
+     */
+    public cacheStencilState() {
+        this._cachedStencilBuffer = this.getStencilBuffer();
+        this._cachedStencilFunction = this.getStencilFunction();
+        this._cachedStencilMask = this.getStencilMask();
+        this._cachedStencilOperationPass = this.getStencilOperationPass();
+        this._cachedStencilOperationFail = this.getStencilOperationFail();
+        this._cachedStencilOperationDepthFail = this.getStencilOperationDepthFail();
+        this._cachedStencilReference = this.getStencilFunctionReference();
+    }
+
+    /**
+     * Restores the state of the stencil buffer
+     */
+    public restoreStencilState() {
+        this.setStencilFunction(this._cachedStencilFunction);
+        this.setStencilMask(this._cachedStencilMask);
+        this.setStencilBuffer(this._cachedStencilBuffer);
+        this.setStencilOperationPass(this._cachedStencilOperationPass);
+        this.setStencilOperationFail(this._cachedStencilOperationFail);
+        this.setStencilOperationDepthFail(this._cachedStencilOperationDepthFail);
+        this.setStencilFunctionReference(this._cachedStencilReference);
     }
 
     /**
