@@ -31,6 +31,25 @@
     uniform sampler2D opacitySampler;
 #endif
 
+#ifdef SCENETEXTURE
+    uniform sampler2D sceneSampler;
+    uniform vec2 sceneTextureSize;
+    #ifdef SCENEDEPTHTEXTURE
+        uniform sampler2D sceneDepthSampler;
+    #endif
+#endif
+
+#ifdef TRANSMISSION
+    #if TRANSMISSIONDIRECTUV == 1
+        #define vTransmissionUV vMainUV1
+    #elif TRANSMISSIONDIRECTUV == 2
+        #define vTransmissionUV vMainUV2
+    #else
+        varying vec2 vTransmissionUV;
+    #endif
+    uniform sampler2D transmissionSampler;
+#endif
+
 #ifdef EMISSIVE
     #if EMISSIVEDIRECTUV == 1
         #define vEmissiveUV vMainUV1
@@ -160,6 +179,10 @@
             uniform samplerCube refractionSamplerLow;
             uniform samplerCube refractionSamplerHigh;
         #endif
+    #endif
+
+    #ifdef SCENEDEPTHTEXTURE
+        varying vec3 vPosCameraSpace;
     #endif
 #endif
 

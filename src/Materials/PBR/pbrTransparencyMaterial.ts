@@ -156,3 +156,5 @@ export class PBRTransparencyMaterial extends PBRBaseSimpleMaterial {
         return SerializationHelper.Parse(() => new PBRTransparencyMaterial(source.name, scene), source, scene, rootUrl);
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.PBRTransparencyMaterial"] = PBRTransparencyMaterial;
