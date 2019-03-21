@@ -44,6 +44,9 @@ uniform Material
     uniform vec3 vEmissiveColor;
 
     uniform float pointSize;
+    uniform float opticalTransmission;
+	uniform vec3 interiorColor;
+	uniform float interiorDensity;
 
     uniform vec2 vClearCoatParams;
     uniform vec4 vClearCoatRefractionParams;
@@ -65,9 +68,7 @@ uniform Material
     uniform vec2 vSheenInfos;
     uniform mat4 sheenMatrix;
 
-    uniform float opticalTransmission;
-	uniform vec3 interiorColor;
-	uniform float interiorDensity;
+    
 };
 
 uniform Scene {

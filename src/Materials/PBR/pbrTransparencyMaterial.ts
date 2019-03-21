@@ -4,7 +4,7 @@ import { Color3 } from "../../Maths/math";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
+import { PBRMaterial } from "./pbrMaterial";
 import { _TypeStore } from '../../Misc/typeStore';
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 /**
@@ -13,7 +13,7 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
  * This fits to the PBR convention in the GLTF definition:
  * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
  */
-export class PBRTransparencyMaterial extends PBRBaseSimpleMaterial {
+export class PBRTransparencyMaterial extends PBRMaterial {
 
     /**
      * The base color has two different interhttp://localhost:1338/Playground/index-local.htmlpretations depending on the value of metalness.

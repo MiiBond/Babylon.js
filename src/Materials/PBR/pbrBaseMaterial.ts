@@ -1248,7 +1248,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
-            "sceneTextureSize", "opticalTransmission", "interiorColor", "interiorDensity",
+            "opticalTransmission", "interiorColor", "interiorDensity",
             "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vTransmissionInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
             "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos", "vSceneRefractionInfos",
             "mBones",
@@ -1667,21 +1667,21 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("albedoMatrix", 16);
         this._uniformBuffer.addUniform("ambientMatrix", 16);
         this._uniformBuffer.addUniform("opacityMatrix", 16);
-        this._uniformBuffer.addUniform("transmissionMatrix", 16);
         this._uniformBuffer.addUniform("emissiveMatrix", 16);
+        this._uniformBuffer.addUniform("transmissionMatrix", 16);
         this._uniformBuffer.addUniform("lightmapMatrix", 16);
         this._uniformBuffer.addUniform("reflectivityMatrix", 16);
         this._uniformBuffer.addUniform("microSurfaceSamplerMatrix", 16);
         this._uniformBuffer.addUniform("bumpMatrix", 16);
         this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
         this._uniformBuffer.addUniform("refractionMatrix", 16);
-        this._uniformBuffer.addUniform("sceneRefractionMatrix", 16);
-        this._uniformBuffer.addUniform("cameraMinMaxZ", 2);
         this._uniformBuffer.addUniform("reflectionMatrix", 16);
 
         this._uniformBuffer.addUniform("vReflectionColor", 3);
         this._uniformBuffer.addUniform("vAlbedoColor", 4);
         this._uniformBuffer.addUniform("vLightingIntensity", 4);
+        this._uniformBuffer.addUniform("sceneRefractionMatrix", 16);
+        this._uniformBuffer.addUniform("cameraMinMaxZ", 2);
 
         this._uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 3);
         this._uniformBuffer.addUniform("vSceneRefractionMicrosurfaceInfos", 3);
@@ -1693,7 +1693,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("opticalTransmission", 1);
         this._uniformBuffer.addUniform("interiorColor", 3);
         this._uniformBuffer.addUniform("interiorDensity", 1);
-        this._uniformBuffer.addUniform("sceneTextureSize", 2);
 
         PBRClearCoatConfiguration.PrepareUniformBuffer(this._uniformBuffer);
         PBRAnisotropicConfiguration.PrepareUniformBuffer(this._uniformBuffer);
@@ -1786,10 +1785,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         MaterialHelper.BindTextureMatrix(this._transmissionTexture, this._uniformBuffer, "transmission");
                     }
 
-                    if (this._sceneTexture) {
-                        const engine = this.getScene().getEngine();
-                        this._uniformBuffer.updateFloat2("sceneTextureSize", engine.getRenderWidth(), engine.getRenderHeight());
-                    }
+                    // if (this._sceneTexture) {
+                    //     const engine = this.getScene().getEngine();
+                    //     this._uniformBuffer.updateFloat2("sceneTextureSize", engine.getRenderWidth(), engine.getRenderHeight());
+                    // }
 
                     if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                         this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
@@ -1921,6 +1920,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 const alpha = this._disableAlphaBlending ? mesh.visibility : this.alpha * mesh.visibility;
                 this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, alpha);
                 this._uniformBuffer.updateFloat("opticalTransmission", this._opticalTransmission);
+                if (defines.INTERIORCOLOR) {
+                    this._uniformBuffer.updateColor3("interiorColor", this._interiorColor);
+                    this._uniformBuffer.updateFloat("interiorDensity", this._interiorDensity);
+                }
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;

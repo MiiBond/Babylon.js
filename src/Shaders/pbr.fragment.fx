@@ -145,10 +145,6 @@ float transmissionFinal = opticalTransmission;
     #endif
 #endif
 
-#ifdef VERTEXCOLOR
-    surfaceAlbedo *= vColor.rgb;
-#endif
-
 // _____________________________ AO    Information _______________________________
     vec3 ambientOcclusionColor = vec3(1., 1., 1.);
 
@@ -204,6 +200,10 @@ float transmissionFinal = opticalTransmission;
         // Diffuse is used as the base of the reflectivity.
         vec3 baseColor = surfaceAlbedo;
 
+        #ifdef ADOBETRANSPARENCY
+            metallicRoughness.r *= 1.0 - transmissionFinal;
+        #endif
+
         #ifdef REFLECTANCE
             // Following Frostbite Remapping,
             // https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf page 115
@@ -217,10 +217,6 @@ float transmissionFinal = opticalTransmission;
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
             // we are here fixing our default reflectance to a common value for none metallic surface.
-
-            #ifdef ADOBETRANSPARENCY
-                metallicRoughness.r *= 1.0 - transmissionFinal;
-            #endif
             // Default specular reflectance at normal incidence.
             // 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.
             const vec3 DefaultSpecularReflectanceDielectric = vec3(0.04, 0.04, 0.04);
@@ -437,13 +433,13 @@ float transmissionFinal = opticalTransmission;
         
         // If both refractionTexture and sceneTexture are being used, blend between them based on fresnel and roughness.
         #if defined(REFRACTIONMAP_3D) && defined(SCENETEXTURE)
-            float sceneRefractionLOD = getLodFromAlphaG(vSceneRefractionMicrosurfaceInfos.x, alphaG, 1.0);
+            float sceneRefractionLOD = getLodFromAlphaG(vSceneRefractionMicrosurfaceInfos.x, alphaG);
             sceneRefractionLOD = sceneRefractionLOD * vSceneRefractionMicrosurfaceInfos.y + vSceneRefractionMicrosurfaceInfos.z;
             vec3 sceneRefraction = toLinearSpace(texture2DLodEXT(sceneSampler, refractionCoords2d, sceneRefractionLOD).rgb);
             
             float opacity0 = 0.04;
             float opacity90 = fresnelGrazingReflectance(opacity0);
-            float refractFresnel = fresnelSchlickEnvironmentGGX(NdotV, vec3(opacity0), vec3(opacity90), sqrt(1.0 - roughness)).x;
+            float refractFresnel = getReflectanceFromAnalyticalBRDFLookup_Jones(NdotV, vec3(opacity0), vec3(opacity90), sqrt(1.0 - roughness)).x;
             environmentRefraction.rgb = mix(sceneRefraction, environmentRefraction.rgb, clamp(refractFresnel + roughness, 0.0, 1.0));
         #endif
 
@@ -1224,6 +1220,7 @@ float transmissionFinal = opticalTransmission;
     finalColor.rgb *= finalColor.a;
 #endif
 
+gl_FragColor = finalColor;
 
 #include<pbrDebug>
 }
