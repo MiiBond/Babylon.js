@@ -2,6 +2,8 @@
 
 #include<__decl__pbrVertex>
 
+#define CUSTOM_VERTEX_BEGIN
+
 // Attributes
 attribute vec3 position;
 #ifdef NORMAL
@@ -133,8 +135,12 @@ varying vec3 vPosCameraSpace;
 #endif
 
 #include<logDepthDeclaration>
+#define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void) {
+
+	#define CUSTOM_VERTEX_MAIN_BEGIN
+
     vec3 positionUpdated = position;
 #ifdef NORMAL
     vec3 normalUpdated = normal;
@@ -152,6 +158,10 @@ void main(void) {
         vPositionUVW = positionUpdated;
     #endif
 #endif 
+
+#define CUSTOM_VERTEX_UPDATE_POSITION
+
+#define CUSTOM_VERTEX_UPDATE_NORMAL
 
 #include<instancesVertex>
 #include<bonesVertex>
@@ -399,4 +409,7 @@ void main(void) {
 
     // Log. depth
 #include<logDepthVertex>
+
+#define CUSTOM_VERTEX_MAIN_END
+
 }

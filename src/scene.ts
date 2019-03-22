@@ -5,7 +5,7 @@ import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Tmp, Frustum } from "./Maths/math";
+import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Frustum } from "./Maths/math";
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
@@ -870,7 +870,8 @@ export class Scene extends AbstractScene implements IAnimatable {
     /** All of the active cameras added to this scene. */
     public activeCameras = new Array<Camera>();
 
-    private _activeCamera: Nullable<Camera>;
+    /** @hidden */
+    public _activeCamera: Nullable<Camera>;
     /** Gets or sets the current active camera */
     public get activeCamera(): Nullable<Camera> {
         return this._activeCamera;
@@ -1113,17 +1114,17 @@ export class Scene extends AbstractScene implements IAnimatable {
     public _activeAnimatables = new Array<Animatable>();
 
     private _transformMatrix = Matrix.Zero();
-    private _transformMatrixR = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
-    private _multiviewSceneUbo: UniformBuffer;
 
-    private _viewMatrix: Matrix;
+    /** @hidden */
+    public _viewMatrix: Matrix;
     private _projectionMatrix: Matrix;
     private _wheelEventName = "";
     /** @hidden */
     public _forcedViewPosition: Nullable<Vector3>;
 
-    private _frustumPlanes: Plane[];
+    /** @hidden */
+    public _frustumPlanes: Plane[];
     /**
      * Gets the list of frustum planes (built from the active camera)
      */
@@ -1364,6 +1365,14 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._engine.onNewSceneAddedObservable.notifyObservers(this);
     }
 
+    /**
+     * Gets a string idenfifying the name of the class
+     * @returns "Scene" string
+     */
+    public getClassName(): string {
+        return "Scene";
+    }
+
     private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
         data: [],
         length: 0
@@ -1596,13 +1605,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._sceneUbo = new UniformBuffer(this._engine, undefined, true);
         this._sceneUbo.addUniform("viewProjection", 16);
         this._sceneUbo.addUniform("view", 16);
-    }
-
-    private _createMultiviewUbo(): void {
-        this._multiviewSceneUbo = new UniformBuffer(this._engine, undefined, true);
-        this._multiviewSceneUbo.addUniform("viewProjection", 16);
-        this._multiviewSceneUbo.addUniform("viewProjectionR", 16);
-        this._multiviewSceneUbo.addUniform("view", 16);
     }
 
     // Pointers handling
@@ -2566,9 +2568,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._projectionMatrix = projectionL;
 
         this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
-        if (viewR && projectionR) {
-            viewR.multiplyToRef(projectionR, this._transformMatrixR);
-        }
 
         // Update frustum
         if (!this._frustumPlanes) {
@@ -2577,17 +2576,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
         }
 
-        if (viewR && projectionR) {
-            viewR.multiplyToRef(projectionR, Tmp.Matrix[0]);
-            Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
-        }
-
         if (this._multiviewSceneUbo && this._multiviewSceneUbo.useUbo) {
-            this._multiviewSceneUbo.updateMatrix("viewProjection", this._transformMatrix);
-            this._multiviewSceneUbo.updateMatrix("viewProjectionR", this._transformMatrixR);
-            this._multiviewSceneUbo.updateMatrix("view", this._viewMatrix);
-            this._multiviewSceneUbo.update();
-        }else if (this._sceneUbo.useUbo) {
+            this._updateMultiviewUbo(viewR, projectionR);
+        } else if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
             this._sceneUbo.update();
@@ -4023,7 +4014,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             var useMultiview = this.getEngine().getCaps().multiview && this.activeCamera.outputRenderTarget && this.activeCamera.outputRenderTarget.getViewCount() > 1;
             if (useMultiview) {
                 this.activeCamera.outputRenderTarget._bindFrameBuffer();
-            }else {
+            } else {
                 var internalTexture = this.activeCamera.outputRenderTarget.getInternalTexture();
                 if (internalTexture) {
                     this.getEngine().bindFramebuffer(internalTexture);
@@ -4037,7 +4028,8 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
     /** @hidden */
     public _allowPostProcessClearColor = true;
-    private _renderForCamera(camera: Camera, rigParent?: Camera): void {
+    /** @hidden */
+    public _renderForCamera(camera: Camera, rigParent?: Camera): void {
         if (camera && camera._skipRendering) {
             return;
         }
@@ -4061,7 +4053,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
         if (useMultiview) {
             this.setTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
-        }else {
+        } else {
             this.updateTransformMatrix();
         }
 
@@ -4144,7 +4136,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Finalize frame
-        if (this.postProcessManager  && !camera._multiviewTexture) {
+        if (this.postProcessManager && !camera._multiviewTexture) {
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
         }
 
@@ -4161,29 +4153,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         if (camera._useMultiviewToSingleView) {
-            // Multiview is only able to be displayed directly for API's such as webXR
-            // This displays a multiview image by rendering to the multiview image and then
-            // copying the result into the sub cameras instead of rendering them and proceeding as normal from there
-
-            // Render to a multiview texture
-            camera._resizeOrCreateMultiviewTexture(this.getEngine().getRenderWidth(true) / 2, this.getEngine().getRenderHeight(true));
-            if (!this._multiviewSceneUbo) {
-                this._createMultiviewUbo();
-            }
-            camera.outputRenderTarget = camera._multiviewTexture;
-            this._renderForCamera(camera);
-            camera.outputRenderTarget = null;
-
-            // Consume the multiview texture through a shader for each eye
-            for (var index = 0; index < camera._rigCameras.length; index++) {
-                var engine = this._engine;
-                this._activeCamera = camera._rigCameras[index];
-                engine.setViewport(this._activeCamera.viewport);
-                if (this.postProcessManager) {
-                    this.postProcessManager._prepareFrame();
-                    this.postProcessManager._finalizeFrame(this._activeCamera.isIntermediate);
-                }
-            }
+            this._renderMultiviewToSingleView(camera);
         } else {
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
@@ -4204,7 +4174,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 continue;
             }
 
-            for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
+            for (var actionIndex = 0; sourceMesh.actionManager && actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                 var action = sourceMesh.actionManager.actions[actionIndex];
 
                 if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {

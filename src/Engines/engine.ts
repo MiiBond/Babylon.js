@@ -243,12 +243,17 @@ export interface IDisplayChangedEventArgs {
 export class Engine {
     /** Use this array to turn off some WebGL2 features on known buggy browsers version */
     public static ExceptionList = [
-        { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
-        { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
-        { key: "Firefox/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        { key: "Chrome\/63\.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
+        { key: "Firefox\/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        { key: "Firefox\/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
         { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         { key: "iPhone", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
-        { key: "iPad", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] }
+        { key: "iPad", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
+        { key: "Chrome\/72.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Chrome\/73.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Chrome\/74.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome\/71", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome\/72", capture: null, captureConstraint: null, targets: ["vao"] }
     ];
 
     /** Gets the list of created engines */
@@ -497,14 +502,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.0.0-alpha.32";
+        return "babylonjs@4.0.0-alpha.33";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.32";
+        return "4.0.0-alpha.33";
     }
 
     /**
@@ -856,6 +861,11 @@ export class Engine {
         return this._performanceMonitor;
     }
 
+    /**
+     * Gets or sets a boolean indicating that vertex array object must be disabled even if they are supported
+     */
+    public disableVertexArrayObjects = false;
+
     // States
     /** @hidden */
     protected _depthCullingState = new _DepthCullingState();
@@ -1054,8 +1064,9 @@ export class Engine {
                 for (var exception of Engine.ExceptionList) {
                     let key = exception.key;
                     let targets = exception.targets;
+                    let check = new RegExp(key);
 
-                    if (ua.indexOf(key) > -1) {
+                    if (check.test(ua)) {
                         if (exception.capture && exception.captureConstraint) {
                             let capture = exception.capture;
                             let constraint = exception.captureConstraint;
@@ -1075,6 +1086,9 @@ export class Engine {
                             switch (target) {
                                 case "uniformBuffer":
                                     this.disableUniformBuffers = true;
+                                    break;
+                                case "vao":
+                                    this.disableVertexArrayObjects = true;
                                     break;
                                 case "textureBindingOptimization":
                                     this.disableTextureBindingOptimization = true;
@@ -1491,7 +1505,9 @@ export class Engine {
         }
 
         // Vertex array object
-        if (this._webGLVersion > 1) {
+        if (this.disableVertexArrayObjects) {
+            this._caps.vertexArrayObject = false;
+        } else if (this._webGLVersion > 1) {
             this._caps.vertexArrayObject = true;
         } else {
             var vertexArrayObjectExtension = this._gl.getExtension('OES_vertex_array_object');
@@ -3411,13 +3427,6 @@ export class Engine {
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
 
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            let log = gl.getShaderInfoLog(shader);
-            if (log) {
-                throw new Error(log);
-            }
-        }
-
         return shader;
     }
 
@@ -3470,6 +3479,10 @@ export class Engine {
             throw new Error("Unable to create program");
         }
 
+        if (this._caps.parallelShaderCompile) {
+            shaderProgram.isParallelCompiled = true;
+        }
+
         context.attachShader(shaderProgram, vertexShader);
         context.attachShader(shaderProgram, fragmentShader);
 
@@ -3491,10 +3504,8 @@ export class Engine {
         shaderProgram.vertexShader = vertexShader;
         shaderProgram.fragmentShader = fragmentShader;
 
-        if (!this._caps.parallelShaderCompile) {
+        if (!shaderProgram.isParallelCompiled) {
             this._finalizeProgram(shaderProgram);
-        } else {
-            shaderProgram.isParallelCompiled = true;
         }
 
         return shaderProgram;
@@ -3507,7 +3518,24 @@ export class Engine {
 
         var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
-        if (!linked) {
+        if (!linked) { // Get more info
+
+            // Vertex
+            if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
+                let log = this._gl.getShaderInfoLog(vertexShader);
+                if (log) {
+                    throw new Error(log);
+                }
+            }
+
+            // Fragment
+            if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
+                let log = this._gl.getShaderInfoLog(fragmentShader);
+                if (log) {
+                    throw new Error(log);
+                }
+            }
+
             var error = context.getProgramInfoLog(shaderProgram);
             if (error) {
                 throw new Error(error);
@@ -5602,53 +5630,6 @@ export class Engine {
     }
 
     /**
-     * Creates a new multiview render target
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @returns the created multiview texture
-     */
-    public createMultiviewRenderTargetTexture(width: number, height: number) {
-        var gl = this._gl;
-
-        if (!this.getCaps().multiview) {
-            throw "Multiview is not supported";
-        }
-
-        var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_UNKNOWN, true);
-        internalTexture.width = width;
-        internalTexture.height = height;
-        internalTexture._framebuffer = gl.createFramebuffer();
-
-        internalTexture._colorTextureArray = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._colorTextureArray);
-        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, 2);
-
-        internalTexture._depthStencilTextureArray = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._depthStencilTextureArray);
-        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH32F_STENCIL8, width, height, 2);
-        internalTexture.isReady = true;
-        return internalTexture;
-    }
-
-    /**
-     * Binds a multiview framebuffer to be drawn to
-     * @param multiviewTexture texture to bind
-     */
-    public bindMultiviewFramebuffer(multiviewTexture: InternalTexture) {
-        var gl: any = this._gl;
-        var ext = this.getCaps().multiview;
-
-        this.bindFramebuffer(multiviewTexture, undefined, undefined, undefined, true);
-        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, multiviewTexture._framebuffer);
-        if (multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray) {
-            ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
-            ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
-        }else {
-            throw "Invalid multiview frame buffer";
-        }
-    }
-
-    /**
      * Creates a new render target cube texture
      * @param size defines the size of the texture
      * @param options defines the options used to create the texture
@@ -5799,8 +5780,12 @@ export class Engine {
                 if (loader.supportCascades) {
                     this._cascadeLoadFiles(scene, onloaddata, files, onError);
                 }
-                else if (onError) {
-                    onError("Textures type does not support cascades.");
+                else {
+                    if (onError) {
+                        onError("Textures type does not support cascades.");
+                    } else {
+                        Logger.Warn("Texture loader does not support cascades.");
+                    }
                 }
             }
             else {
@@ -6510,7 +6495,7 @@ export class Engine {
 
             if (texture && texture.isMultiview) {
                 this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
-            }else {
+            } else {
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
             }
 
@@ -6708,7 +6693,7 @@ export class Engine {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, internalTexture, isPartOfTextureArray);
             }
-        }else if (internalTexture && internalTexture.is3D) {
+        } else if (internalTexture && internalTexture.is3D) {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
             }

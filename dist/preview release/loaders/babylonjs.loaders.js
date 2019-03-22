@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -7628,12 +7628,23 @@ var GLTFFileLoader = /** @class */ (function () {
         return this._parseAsync(scene, data, rootUrl, fileName).then(function (loaderData) {
             _this._log("Loading " + (fileName || ""));
             _this._loader = _this._getLoader(loaderData);
+            // Get materials/textures when loading to add to container
+            var materials = [];
+            _this.onMaterialLoadedObservable.add(function (material) {
+                materials.push(material);
+            });
+            var textures = [];
+            _this.onTextureLoadedObservable.add(function (texture) {
+                textures.push(texture);
+            });
             return _this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fileName).then(function (result) {
                 var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                 Array.prototype.push.apply(container.skeletons, result.skeletons);
                 Array.prototype.push.apply(container.animationGroups, result.animationGroups);
+                Array.prototype.push.apply(container.materials, materials);
+                Array.prototype.push.apply(container.textures, textures);
                 container.removeAllFromScene();
                 return container;
             });

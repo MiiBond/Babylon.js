@@ -14,7 +14,7 @@ uniform Material
     uniform vec4 vSceneRefractionInfos;
     uniform vec2 vReflectionInfos;
     uniform vec3 vReflectionPosition;
-    uniform vec3 vReflectionSize;	
+    uniform vec3 vReflectionSize;
     uniform vec3 vBumpInfos;
     uniform mat4 albedoMatrix;
     uniform mat4 ambientMatrix;
@@ -40,13 +40,15 @@ uniform Material
 	uniform vec3 vSceneRefractionMicrosurfaceInfos;
     uniform vec3 vReflectionMicrosurfaceInfos;
 
+    uniform float pointSize;
+
     uniform vec4 vReflectivityColor;
     uniform vec3 vEmissiveColor;
 
-    uniform float pointSize;
     uniform float opticalTransmission;
 	uniform vec3 interiorColor;
 	uniform float interiorDensity;
+    uniform float visibility;
 
     uniform vec2 vClearCoatParams;
     uniform vec4 vClearCoatRefractionParams;

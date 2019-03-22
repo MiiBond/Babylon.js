@@ -3,7 +3,7 @@ import { Observer } from "../../Misc/observable";
 import { IAnimatable } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
-import { TextureTools } from "../../Misc/textureTools";
+import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
@@ -39,9 +39,9 @@ import "../../Shaders/pbr.vertex";
 
 /**
  * Manages the defines for the PBR Material.
- * @hiddenChildren
+ * @hidden
  */
-class PBRMaterialDefines extends MaterialDefines
+export class PBRMaterialDefines extends MaterialDefines
     implements IImageProcessingConfigurationDefines,
     IMaterialClearCoatDefines,
     IMaterialAnisotropicDefines,
@@ -764,6 +764,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly sheen = new PBRSheenConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     /**
+     * Custom callback helping to override the default shader used in the material.
+     */
+    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
+
+    /**
      * Instantiates a new PBRMaterial instance.
      *
      * @param name The material name
@@ -789,7 +794,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return this._renderTargets;
         };
 
-        this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
     }
 
     /**
@@ -812,14 +817,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public getClassName(): string {
         return "PBRBaseMaterial";
-    }
-
-    /**
-     * Gets the name of the material shader.
-     * @returns - string that specifies the shader program of the material.
-     */
-    public getShaderName(): string {
-        return "pbr";
     }
 
     /**
@@ -1246,7 +1243,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
-        var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
+        var shaderName = "pbr";
+
+        var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "visibility", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
             "opticalTransmission", "interiorColor", "interiorDensity",
             "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vTransmissionInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
@@ -1294,8 +1293,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             maxSimultaneousLights: this._maxSimultaneousLights
         });
 
+        if (this.customShaderNameResolve) {
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
+        }
+
         var join = defines.toString();
-        return engine.createEffect(this.getShaderName(), <EffectCreationOptions>{
+        return engine.createEffect(shaderName, <EffectCreationOptions>{
             attributes: attribs,
             uniformsNames: uniforms,
             uniformBuffersNames: uniformBuffers,
@@ -1317,13 +1320,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         defines._needNormals = true;
 
         // Multiview
-        if (scene.activeCamera) {
-            var previousMultiview = defines.MULTIVIEW;
-            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
-            if (defines.MULTIVIEW != previousMultiview) {
-                defines.markAsUnprocessed();
-            }
-        }
+        MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
@@ -1686,13 +1683,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 3);
         this._uniformBuffer.addUniform("vSceneRefractionMicrosurfaceInfos", 3);
         this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
+        this._uniformBuffer.addUniform("pointSize", 1);
         this._uniformBuffer.addUniform("vReflectivityColor", 4);
         this._uniformBuffer.addUniform("vEmissiveColor", 3);
 
-        this._uniformBuffer.addUniform("pointSize", 1);
         this._uniformBuffer.addUniform("opticalTransmission", 1);
         this._uniformBuffer.addUniform("interiorColor", 3);
         this._uniformBuffer.addUniform("interiorDensity", 1);
+        this._uniformBuffer.addUniform("visibility", 1);
 
         PBRClearCoatConfiguration.PrepareUniformBuffer(this._uniformBuffer);
         PBRAnisotropicConfiguration.PrepareUniformBuffer(this._uniformBuffer);
@@ -1916,6 +1914,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 this._uniformBuffer.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
+                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
 
                 const alpha = this._disableAlphaBlending ? mesh.visibility : this.alpha * mesh.visibility;
                 this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, alpha);
@@ -1924,6 +1923,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     this._uniformBuffer.updateColor3("interiorColor", this._interiorColor);
                     this._uniformBuffer.updateFloat("interiorDensity", this._interiorDensity);
                 }
+                // Visibility
+                this._uniformBuffer.updateFloat("visibility", mesh.visibility);
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
