@@ -107,6 +107,19 @@ uniform mat4 view;
     #endif
 #endif
 
+// Transparency
+#ifdef TRANSPARENCY
+    uniform float transparency;
+
+    #ifdef TRANSPARENCY_TEXTURE
+        uniform vec2 vTransparencyInfos;
+        uniform mat4 transparencyMatrix;
+    #endif
+    #ifdef TRANSPARENCY_FRONT_DEPTH
+        uniform vec4 transparencyDepthValues;
+    #endif
+#endif
+
 // SubSurface
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION

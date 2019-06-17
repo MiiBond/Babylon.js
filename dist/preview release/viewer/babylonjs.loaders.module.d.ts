@@ -1644,6 +1644,26 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         endPerformanceCounter(counterName: string): void;
     }
 }
+declare module "babylonjs-loaders/glTF/2.0/Extensions/ADOBE_materials_thin_transparency" {
+    import { Nullable } from "babylonjs/types";
+    import { Material } from "babylonjs/Materials/material";
+    import { IMaterial } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        onLoading(): void;
+        /** @hidden */
+        dispose(): void;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+    }
+}
 declare module "babylonjs-loaders/glTF/2.0/Extensions/EXT_lights_image_based" {
     import { Nullable } from "babylonjs/types";
     import { IScene } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
@@ -1923,6 +1943,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_sRGBFactors" {
     }
 }
 declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/ADOBE_materials_thin_transparency";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/EXT_lights_image_based";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_draco_mesh_compression";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_lights_punctual";
@@ -2296,6 +2317,7 @@ declare module "babylonjs-loaders/legacy/legacy" {
     export * from "babylonjs-loaders/legacy/legacy-objFileLoader";
     export * from "babylonjs-loaders/legacy/legacy-stlFileLoader";
 }
+
 declare module "babylonjs-loaders" {
     export * from "babylonjs-loaders/legacy/legacy";
 }
@@ -3859,6 +3881,21 @@ declare module BABYLON.GLTF2 {
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
+    export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        onLoading(): void;
+        /** @hidden */
+        dispose(): void;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
      */
@@ -4364,4 +4401,4 @@ declare module BABYLON {
         private _parseBinary;
         private _parseASCII;
     }
-}
+}

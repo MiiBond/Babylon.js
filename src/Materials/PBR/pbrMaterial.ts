@@ -366,6 +366,10 @@ export class PBRMaterial extends PBRBaseMaterial {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useAutoMicroSurfaceFromReflectivityMap = false;
 
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public useAdobeGBufferRendering = false;
+
     /**
      * BJS is using an harcoded light falloff based on a manually sets up range.
      * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
@@ -721,6 +725,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
+        this.transparency.copyTo(clone.transparency);
 
         return clone;
     }
@@ -737,6 +742,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();
         serializationObject.sheen = this.sheen.serialize();
+        serializationObject.transparency = this.transparency.serialize();
 
         return serializationObject;
     }
@@ -762,6 +768,9 @@ export class PBRMaterial extends PBRBaseMaterial {
         }
         if (source.sheen) {
             material.sheen.parse(source.brdf);
+        }
+        if (source.transparency) {
+            material.transparency.parse(source.brdf);
         }
         return material;
     }

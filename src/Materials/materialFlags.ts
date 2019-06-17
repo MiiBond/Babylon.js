@@ -246,6 +246,54 @@ export class MaterialFlags {
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    private static _TransparencyTextureEnabled = true;
+    /**
+     * Are transparency textures enabled in the application.
+     */
+    public static get TransparencyTextureEnabled(): boolean {
+        return this._TransparencyTextureEnabled;
+    }
+    public static set TransparencyTextureEnabled(value: boolean) {
+        if (this._TransparencyTextureEnabled === value) {
+            return;
+        }
+
+        this._TransparencyTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private static _TransparencyFrontDepthTextureEnabled = true;
+    /**
+     * Are transparency textures enabled in the application.
+     */
+    public static get TransparencyFrontDepthEnabled(): boolean {
+        return this._TransparencyFrontDepthTextureEnabled;
+    }
+    public static set TransparencyFrontDepthEnabled(value: boolean) {
+        if (this._TransparencyFrontDepthTextureEnabled === value) {
+            return;
+        }
+
+        this._TransparencyFrontDepthTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private static _TransparencyBackDepthTextureEnabled = true;
+    /**
+     * Are transparency textures enabled in the application.
+     */
+    public static get TransparencyBackDepthEnabled(): boolean {
+        return this._TransparencyBackDepthTextureEnabled;
+    }
+    public static set TransparencyBackDepthEnabled(value: boolean) {
+        if (this._TransparencyBackDepthTextureEnabled === value) {
+            return;
+        }
+
+        this._TransparencyBackDepthTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
     private static _AnisotropicTextureEnabled = true;
     /**
      * Are anisotropic textures enabled in the application.

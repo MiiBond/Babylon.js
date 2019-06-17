@@ -53,6 +53,11 @@ uniform Material
     uniform vec2 vSheenInfos;
     uniform mat4 sheenMatrix;
 
+    uniform float transparency;
+    uniform vec2 vTransparencyInfos;
+    uniform mat4 transparencyMatrix;
+    uniform vec4 transparencyDepthValues;
+
     uniform vec3 vRefractionMicrosurfaceInfos;
     uniform vec4 vRefractionInfos;
     uniform mat4 refractionMatrix;

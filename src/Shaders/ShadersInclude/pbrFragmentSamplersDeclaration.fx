@@ -123,6 +123,25 @@
     #endif
 #endif
 
+#ifdef TRANSPARENCY
+    #ifdef TRANSPARENCY_TEXTURE
+        #if TRANSPARENCY_TEXTUREDIRECTUV == 1
+            #define vTransparencyUV vMainUV1
+        #elif TRANSPARENCY_TEXTUREDIRECTUV == 2
+            #define vTransparencyUV vMainUV2
+        #else
+            varying vec2 vTransparencyUV;
+        #endif
+        uniform sampler2D transparencySampler;
+    #endif
+    #ifdef TRANSPARENCY_FRONT_DEPTH
+        uniform sampler2D frontDepthTexture;
+    #endif
+    #ifdef TRANSPARENCY_BACK_DEPTH
+        uniform sampler2D backDepthTexture;
+    #endif
+#endif
+
 #ifdef ANISOTROPIC
     #ifdef ANISOTROPIC_TEXTURE
         #if ANISOTROPIC_TEXTUREDIRECTUV == 1

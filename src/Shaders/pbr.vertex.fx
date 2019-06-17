@@ -86,6 +86,12 @@ varying vec2 vBumpUV;
     #endif
 #endif
 
+#ifdef TRANSPARENCY
+    #if defined(TRANSPARENCY_TEXTURE) && TRANSPARENCY_TEXTUREDIRECTUV == 0 
+        varying vec2 vTransparencyUV;
+    #endif
+#endif
+
 #ifdef ANISOTROPIC
     #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0 
         varying vec2 vAnisotropyUV;
@@ -351,6 +357,19 @@ void main(void) {
         else
         {
             vSheenUV = vec2(sheenMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+#endif
+
+#ifdef TRANSPARENCY
+    #if defined(TRANSPARENCY_TEXTURE) && TRANSPARENCY_TEXTUREDIRECTUV == 0 
+        if (vTransparencyInfos.x == 0.)
+        {
+            vTransparencyUV = vec2(transparencyMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vTransparencyUV = vec2(transparencyMatrix * vec4(uv2, 1.0, 0.0));
         }
     #endif
 #endif

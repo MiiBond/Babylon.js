@@ -27,6 +27,9 @@ export class DepthRenderer {
     private _cachedDefines: string;
     private _camera: Nullable<Camera>;
 
+    public useDepthPeeling: boolean = false;
+    public depthPeelingMap: Nullable<RenderTargetTexture>;
+
     /**
      * Specifiess that the depth renderer will only be used within
      * the camera it is created for.
@@ -45,15 +48,16 @@ export class DepthRenderer {
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      */
-    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null) {
+    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, size: Nullable<number>) {
         this._scene = scene;
         DepthRenderer._SceneComponentInitialization(this._scene);
 
         this._camera = camera;
         var engine = scene.getEngine();
-
+        var width = size ? size : engine.getRenderWidth();
+        var height = size ? size : engine.getRenderHeight();
         // Render target
-        this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type);
+        this._depthMap = new RenderTargetTexture("depthMap", { width, height }, this._scene, false, true, type);
         this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.refreshRate = 1;
@@ -82,7 +86,11 @@ export class DepthRenderer {
             }
 
             // Culling and reverse (right handed system)
-            engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
+            if (this.useDepthPeeling) {
+                engine.setState(false, 0, false, scene.useRightHandedSystem);
+            } else {
+                engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
+            }
 
             // Managing instances
             var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -110,6 +118,11 @@ export class DepthRenderer {
                         this._effect.setTexture("diffuseSampler", alphaTexture);
                         this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                     }
+                }
+
+                if (this.useDepthPeeling && this.depthPeelingMap) {
+                    this._effect.setTexture("depthSampler", this.depthPeelingMap);
+                    this._effect.setFloat2("depthPeelInfos", this.depthPeelingMap.getRenderWidth(), this.depthPeelingMap.getRenderHeight());
                 }
 
                 // Bones
@@ -175,6 +188,11 @@ export class DepthRenderer {
             }
         }
 
+        // Depth Peeling
+        if (this.useDepthPeeling && this.depthPeelingMap) {
+            defines.push("#define DEPTHPEEL");
+        }
+
         // Bones
         if (mesh.useBones && mesh.computeBonesUsingShaders) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
@@ -204,8 +222,8 @@ export class DepthRenderer {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("depth",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues"],
-                ["diffuseSampler"], join);
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "depthPeelInfos"],
+                ["diffuseSampler", "depthSampler"], join);
         }
 
         return this._effect.isReady();

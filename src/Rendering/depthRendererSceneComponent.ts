@@ -45,7 +45,7 @@ Scene.prototype.enableDepthRenderer = function(camera?: Nullable<Camera>): Depth
         } else {
             throw "Depth renderer does not support int texture type";
         }
-        this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera);
+        this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera, null);
     }
 
     return this._depthRenderer[camera.id];

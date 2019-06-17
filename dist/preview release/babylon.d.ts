@@ -38574,6 +38574,11 @@ declare module BABYLON {
          * Are opacity textures enabled in the application.
          */
         static OpacityTextureEnabled: boolean;
+        private static _TransmissionTextureEnabled;
+        /**
+         * Are transmission textures enabled in the application.
+         */
+        static TransmissionTextureEnabled: boolean;
         private static _ReflectionTextureEnabled;
         /**
          * Are reflection textures enabled in the application.
@@ -38634,6 +38639,11 @@ declare module BABYLON {
          * Are sheen textures enabled in the application.
          */
         static SheenTextureEnabled: boolean;
+        private static _TransparencyTextureEnabled;
+        /**
+         * Are transparency textures enabled in the application.
+         */
+        static TransparencyTextureEnabled: boolean;
         private static _AnisotropicTextureEnabled;
         /**
          * Are anisotropic textures enabled in the application.
@@ -44091,61 +44101,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
-     * As a subclass of TransformNode, this allow parenting to the camera with different locations in the scene.
-     * This class achieves its effect with a Texture and a correctly configured BackgroundMaterial on an inverted sphere.
-     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
-     */
-    export class PhotoDome extends TransformNode {
-        private _useDirectMapping;
-        /**
-         * The texture being displayed on the sphere
-         */
-        protected _photoTexture: Texture;
-        /**
-         * Gets or sets the texture being displayed on the sphere
-         */
-        photoTexture: Texture;
-        /**
-         * Observable raised when an error occured while loading the 360 image
-         */
-        onLoadErrorObservable: Observable<string>;
-        /**
-         * The skybox material
-         */
-        protected _material: BackgroundMaterial;
-        /**
-         * The surface used for the skybox
-         */
-        protected _mesh: Mesh;
-        /**
-         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
-         * Also see the options.resolution property.
-         */
-        fovMultiplier: number;
-        /**
-         * Create an instance of this class and pass through the parameters to the relevant classes, Texture, StandardMaterial, and Mesh.
-         * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOfPhoto defines the url of the photo to display
-         * @param options defines an object containing optional or exposed sub element properties
-         * @param onError defines a callback called when an error occured while loading the texture
-         */
-        constructor(name: string, urlOfPhoto: string, options: {
-            resolution?: number;
-            size?: number;
-            useDirectMapping?: boolean;
-            faceForward?: boolean;
-        }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
-        /**
-         * Releases resources associated with this node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
-    }
-}
-declare module BABYLON {
     /** @hidden */
     export var rgbdDecodePixelShader: {
         name: string;
@@ -44721,6 +44676,132 @@ declare module BABYLON {
     /**
      * @hidden
      */
+    export interface IMaterialTransparencyDefines {
+        TRANSPARENCY: boolean;
+        TRANSPARENCY_TEXTURE: boolean;
+        TRANSPARENCY_TEXTUREDIRECTUV: number;
+        /** @hidden */
+        _areTexturesDirty: boolean;
+    }
+    /**
+     * Define the code related to the Transparency parameters of the pbr material.
+     */
+    export class PBRTransparencyConfiguration {
+        private _isEnabled;
+        /**
+         * Defines if the material uses transparency.
+         */
+        isEnabled: boolean;
+        /**
+         * Defines the transparency factor.
+         */
+        factor: number;
+        private _texture;
+        /**
+         * Stores the transparency tint values in a texture.
+         * rgb is tint
+         * a is a intensity
+         */
+        texture: Nullable<BaseTexture>;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsTexturesDirty;
+        /** @hidden */
+        _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Instantiate a new instance of transparency configuration.
+         * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsTexturesDirty: () => void);
+        /**
+         * Specifies that the submesh is ready to be used.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         * @returns - boolean indicating that the submesh is ready or not.
+         */
+        isReadyForSubMesh(defines: IMaterialTransparencyDefines, scene: Scene): boolean;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         */
+        prepareDefines(defines: IMaterialTransparencyDefines, scene: Scene): void;
+        /**
+         * Binds the material data.
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param scene defines the scene the material belongs to.
+         * @param isFrozen defines wether the material is frozen or not.
+         */
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Returns an array of the actively used textures.
+         * @param activeTextures Array of BaseTextures
+         */
+        getActiveTextures(activeTextures: BaseTexture[]): void;
+        /**
+         * Returns the animatable textures.
+         * @param animatables Array of animatable textures.
+         */
+        getAnimatables(animatables: IAnimatable[]): void;
+        /**
+         * Disposes the resources of the material.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
+        /**
+        * Get the current class name of the texture useful for serialization or dynamic coding.
+        * @returns "PBRTransparencyConfiguration"
+        */
+        getClassName(): string;
+        /**
+         * Add fallbacks to the effect fallbacks list.
+         * @param defines defines the Base texture to use.
+         * @param fallbacks defines the current fallback list.
+         * @param currentRank defines the current fallback rank.
+         * @returns the new fallback rank.
+         */
+        static AddFallbacks(defines: IMaterialTransparencyDefines, fallbacks: EffectFallbacks, currentRank: number): number;
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
+        /**
+         * Add the required uniforms to the current buffer.
+         * @param uniformBuffer defines the current uniform buffer.
+         */
+        static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+        /**
+         * Add the required samplers to the current list.
+         * @param samplers defines the current sampler list.
+         */
+        static AddSamplers(samplers: string[]): void;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param transparencyConfiguration define the config where to copy the info
+         */
+        copyTo(transparencyConfiguration: PBRTransparencyConfiguration): void;
+        /**
+         * Serializes this BRDF configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a Transparency Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
     export interface IMaterialSubSurfaceDefines {
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
@@ -44960,6 +45041,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var mrtFragmentDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var pbrFragmentDeclaration: {
         name: string;
         shader: string;
@@ -45068,7 +45156,7 @@ declare module BABYLON {
      * Manages the defines for the PBR Material.
      * @hidden
      */
-    export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines, IMaterialSubSurfaceDefines {
+    export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines, IMaterialTransparencyDefines, IMaterialSubSurfaceDefines {
         PBR: boolean;
         MAINUV1: boolean;
         MAINUV2: boolean;
@@ -45081,9 +45169,11 @@ declare module BABYLON {
         AMBIENTDIRECTUV: number;
         AMBIENTINGRAYSCALE: boolean;
         OPACITY: boolean;
+        TRANSMISSION: boolean;
         VERTEXALPHA: boolean;
         OPACITYDIRECTUV: number;
         OPACITYRGB: boolean;
+        TRANSMISSIONRGB: boolean;
         ALPHATEST: boolean;
         DEPTHPREPASS: boolean;
         ALPHABLEND: boolean;
@@ -45201,6 +45291,9 @@ declare module BABYLON {
         SHEEN_TEXTURE: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
+        TRANSPARENCY: boolean;
+        TRANSPARENCY_TEXTURE: boolean;
+        TRANSPARENCY_TEXTUREDIRECTUV: number;
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
         SS_TRANSLUCENCY: boolean;
@@ -45214,6 +45307,7 @@ declare module BABYLON {
         SS_RGBDREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
+        ADOBE_G_BUFFER: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
@@ -45319,6 +45413,10 @@ declare module BABYLON {
          * Stores the alpha values in a texture.
          */
         protected _opacityTexture: Nullable<BaseTexture>;
+        /**
+         * Stores the transmission values in a texture.
+         */
+        protected _transmissionTexture: Nullable<BaseTexture>;
         /**
          * Stores the reflection values in a texture.
          */
@@ -45434,6 +45532,7 @@ declare module BABYLON {
          * The material will try to infer what glossiness each pixel should be.
          */
         protected _useAutoMicroSurfaceFromReflectivityMap: boolean;
+        protected useAdobeGBufferRendering: boolean;
         /**
          * Defines the  falloff type used in this material.
          * It by default is Physical.
@@ -45591,6 +45690,10 @@ declare module BABYLON {
          * Defines the Sheen parameters for the material.
          */
         readonly sheen: PBRSheenConfiguration;
+        /**
+         * Defines the Transparency parameters for the material.
+         */
+        readonly transparency: PBRTransparencyConfiguration;
         /**
          * Defines the SubSurface parameters for the material.
          */
@@ -45933,6 +46036,7 @@ declare module BABYLON {
          * The material will try to infer what glossiness each pixel should be.
          */
         useAutoMicroSurfaceFromReflectivityMap: boolean;
+        useAdobeGBufferRendering: boolean;
         /**
          * BJS is using an harcoded light falloff based on a manually sets up range.
          * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
@@ -46138,6 +46242,190 @@ declare module BABYLON {
          * @returns - PBRMaterial
          */
         static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial;
+    }
+}
+declare module BABYLON {
+    /**
+     *
+     */
+    export interface IAdobeTransparencyCompositorOptions {
+        /**
+         * The size of the render buffers
+         */
+        renderSize: number;
+    }
+    /**
+     *
+     */
+    export class AdobeTransparencyCompositor {
+        /**
+         * Creates the default options for the helper.
+         */
+        private static _getDefaultOptions;
+        backgroundTexture: Texture;
+        transparentTextures: MultiRenderTarget;
+        compositedTexture: RenderTargetTexture;
+        /**
+         * Stores the creation options.
+         */
+        private _options;
+        private _compositeMaterial;
+        private _scene;
+        private _engine;
+        private _camera;
+        /**
+         * This observable will be notified with any error during the creation of the environment,
+         * mainly texture creation errors.
+         */
+        onErrorObservable: Observable<{
+            message?: string;
+            exception?: any;
+        }>;
+        /**
+         * constructor
+         * @param options Defines the options we want to customize the helper
+         * @param scene The scene to add the material to
+         */
+        constructor(options: Partial<IAdobeTransparencyCompositorOptions>, engine: Engine);
+        /**
+         * Updates the background according to the new options
+         * @param options
+         */
+        updateOptions(options: Partial<IAdobeTransparencyCompositorOptions>): void;
+        render(): void;
+        setTransparentTextures(mrt: MultiRenderTarget): void;
+        private _setupScene;
+        private _setupCompositePass;
+        /**
+         * Dispose all the elements created by the Helper.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     *
+     */
+    export interface IAdobeTransparencyHelperOptions {
+        /**
+         * 4 by default.
+         */
+        numPasses: number;
+        /**
+         * The size of the render buffers
+         */
+        renderSize: number;
+    }
+    /**
+     *
+     */
+    export class AdobeTransparencyHelper {
+        /**
+         * Creates the default options for the helper.
+         */
+        private static _getDefaultOptions;
+        /**
+         * Gets the skybox material created by the helper.
+         */
+        /**
+         * Stores the creation options.
+         */
+        private readonly _scene;
+        private _options;
+        private _opaqueRenderTarget;
+        private _mrtRenderTargets;
+        private _opaqueMeshesCache;
+        private _transparentMeshesCache;
+        private _compositor;
+        /**
+         * This observable will be notified with any error during the creation of the environment,
+         * mainly texture creation errors.
+         */
+        onErrorObservable: Observable<{
+            message?: string;
+            exception?: any;
+        }>;
+        /**
+         * constructor
+         * @param options Defines the options we want to customize the helper
+         * @param scene The scene to add the material to
+         */
+        constructor(options: Partial<IAdobeTransparencyHelperOptions>, scene: Scene);
+        /**
+         * Updates the background according to the new options
+         * @param options
+         */
+        updateOptions(options: Partial<IAdobeTransparencyHelperOptions>): void;
+        getRenderTarget(pass?: number): Nullable<Texture>;
+        getRenderTargetTexture(pass?: number, mrtIndex?: number): Nullable<Texture>;
+        getFinalComposite(): Nullable<Texture>;
+        removeMesh(mesh: AbstractMesh): void;
+        getNumPasses(): number;
+        private _parseScene;
+        /**
+         * Setup the image processing according to the specified options.
+         */
+        private _setupRenderTargets;
+        private _setupCompositePass;
+        /**
+         * Dispose all the elements created by the Helper.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
+     * As a subclass of TransformNode, this allow parenting to the camera with different locations in the scene.
+     * This class achieves its effect with a Texture and a correctly configured BackgroundMaterial on an inverted sphere.
+     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
+     */
+    export class PhotoDome extends TransformNode {
+        private _useDirectMapping;
+        /**
+         * The texture being displayed on the sphere
+         */
+        protected _photoTexture: Texture;
+        /**
+         * Gets or sets the texture being displayed on the sphere
+         */
+        photoTexture: Texture;
+        /**
+         * Observable raised when an error occured while loading the 360 image
+         */
+        onLoadErrorObservable: Observable<string>;
+        /**
+         * The skybox material
+         */
+        protected _material: BackgroundMaterial;
+        /**
+         * The surface used for the skybox
+         */
+        protected _mesh: Mesh;
+        /**
+         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
+         * Also see the options.resolution property.
+         */
+        fovMultiplier: number;
+        /**
+         * Create an instance of this class and pass through the parameters to the relevant classes, Texture, StandardMaterial, and Mesh.
+         * @param name Element's name, child elements will append suffixes for their own names.
+         * @param urlsOfPhoto defines the url of the photo to display
+         * @param options defines an object containing optional or exposed sub element properties
+         * @param onError defines a callback called when an error occured while loading the texture
+         */
+        constructor(name: string, urlOfPhoto: string, options: {
+            resolution?: number;
+            size?: number;
+            useDirectMapping?: boolean;
+            faceForward?: boolean;
+        }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
     }
 }
 declare module BABYLON {
@@ -53280,13 +53568,6 @@ declare module BABYLON {
          */
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
     }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var mrtFragmentDeclaration: {
-        name: string;
-        shader: string;
-    };
 }
 declare module BABYLON {
     /** @hidden */

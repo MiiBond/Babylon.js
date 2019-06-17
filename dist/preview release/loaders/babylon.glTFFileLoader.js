@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*******************************************************************!*\
+  !*** /Users/mbond/dev/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*******************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2676,6 +2676,161 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./glTF/2.0/Extensions/ADOBE_materials_thin_transparency.ts":
+/*!******************************************************************!*\
+  !*** ./glTF/2.0/Extensions/ADOBE_materials_thin_transparency.ts ***!
+  \******************************************************************/
+/*! exports provided: ADOBE_materials_thin_transparency */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ADOBE_materials_thin_transparency", function() { return ADOBE_materials_thin_transparency; });
+/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+
+var NAME = "ADOBE_materials_thin_transparency";
+var ADOBE_materials_thin_transparency = /** @class */ (function () {
+    function ADOBE_materials_thin_transparency(loader) {
+        /** The name of this extension. */
+        this.name = NAME;
+        /** Defines whether this extension is enabled. */
+        this.enabled = true;
+        this._loader = loader;
+        loader._parent.transparencyAsCoverage = true;
+    }
+    /** @hidden */
+    ADOBE_materials_thin_transparency.prototype.onLoading = function () {
+        var extensions = this._loader.gltf.extensions;
+        if (extensions && extensions[this.name]) {
+            // const extension = extensions[this.name] as ILights;
+            // this._lights = extension.lights;
+        }
+    };
+    /** @hidden */
+    ADOBE_materials_thin_transparency.prototype.dispose = function () {
+        delete this._loader;
+        // delete this._lights;
+    };
+    // Using the map from nodes to materials, setup the meshes that need a two-pass material by cloning them and
+    // setting the second-pass material to the new mesh.
+    // loadNodeAsync(context: string, nodeDef: INode, assign: any): any {
+    //   return this._loader.loadNodeAsync(context, nodeDef, assign).then((node: TransformNode) => {
+    //     // if (this.viewer.nodeMaterialMap[nodeDef.index]) {
+    //     //   // clone the mesh and assign the new material.
+    //     //   let childMeshes = [node];
+    //     //   if (this.viewer.nodeMaterialMap[nodeDef.index].length > 1) {
+    //     //     childMeshes = node.getChildMeshes(true) as Mesh[];
+    //     //     if (childMeshes.length !== this.viewer.nodeMaterialMap[nodeDef.index].length) {
+    //     //       return;
+    //     //     }
+    //     //   }
+    //     //   this.viewer.nodeMaterialMap[nodeDef.index].forEach((matIdx: number, primIdx: number) => {
+    //     //     if (this.renderer.multiPassMaterials[matIdx]) {
+    //     //       const mesh = childMeshes[primIdx] as Mesh;
+    //     //       // mesh.renderingGroupId = AdobeViewer.BACKSIDE_PASS_RENDER_GROUP_ID;
+    //     //       mesh.material = this.renderer.multiPassMaterials[matIdx].backside;
+    //     //       // mesh.visibility = 0;
+    //     //       const frontPassMesh = mesh.clone(mesh.name + "_front_pass", mesh.parent);
+    //     //       // frontPassMesh.renderingGroupId = AdobeViewer.FRONTSIDE_PASS_RENDER_GROUP_ID;
+    //     //       frontPassMesh.material = this.renderer.multiPassMaterials[matIdx].frontside;
+    //     //       frontPassMesh.visibility = 1;
+    //     //       // console.log(`Frontside mesh ${frontPassMesh.name}`, frontPassMesh);
+    //     //       // console.log(`Backside mesh ${mesh.name}`, mesh);
+    //     //     }
+    //     //   });
+    //     // }
+    //     return Promise.resolve(node);
+    //   });
+    // }
+    ADOBE_materials_thin_transparency.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
+        // const promises = [];
+        if (material.extensions && material.extensions.ADOBE_materials_thin_transparency) {
+            console.log(material.extensions.ADOBE_materials_thin_transparency);
+            console.log(babylonMaterial);
+            var transparencyExtension = material.extensions.ADOBE_materials_thin_transparency;
+            var pbrMaterial_1 = babylonMaterial;
+            pbrMaterial_1.transparencyMode = 0;
+            pbrMaterial_1.transparency.factor = 1;
+            if (transparencyExtension.transmissionTexture) {
+                return this._loader.loadTextureInfoAsync(context, transparencyExtension.transmissionTexture)
+                    .then(function (texture) {
+                    pbrMaterial_1.transparency.texture = texture;
+                });
+            }
+            // Record the materials for use by node-loading.
+            // const pbrMaterial = babylonMaterial as PBRMaterial;
+            // const transparencyMaterial = new PBRMaterial(babylonMaterial.name, this._loader.babylonScene);
+            // this.viewer.sceneManager.scene.removeMaterial(babylonMaterial);
+            // const transparencyExtension = material.extensions.ADOBE_materials_thin_transparency;
+            // transparencyMaterial.linkRefractionWithTransparency = false;
+            // transparencyMaterial.alpha = 1;
+            // // transparencyMaterial.opticalTransmission = transparencyExtension.transmissionFactor !== undefined ? transparencyExtension.transmissionFactor : 1.0;
+            // transparencyMaterial.sideOrientation = Material.ClockWiseSideOrientation;
+            // transparencyMaterial.twoSidedLighting = false;
+            // transparencyMaterial.backFaceCulling = true;
+            // transparencyMaterial.indexOfRefraction = 1.0 / transparencyExtension.ior;
+            // transparencyMaterial.zOffset = 1;
+            // transparencyMaterial.useSpecularOverAlpha = false;
+            // transparencyMaterial.useRadianceOverAlpha = false;
+            // const interiorProps = (material.extras && material.extras.ADOBE_transparency) ? material.extras.ADOBE_transparency : {};
+            // const density = interiorProps.density || 0;
+            // interiorColor.scaleToRef(Math.min(density, 1), interiorColor);
+            // if (density) {
+            // transparencyMaterial.interiorColor.copyFromFloats(interiorProps.interiorColor[0], interiorProps.interiorColor[1], interiorProps.interiorColor[2]);
+            // transparencyMaterial.interiorDensity = density;
+            // }
+            // We need a tint pass if this material is anything other than white.
+            // const needsTint = !!(material.pbrMetallicRoughness.baseColorFactor || material.pbrMetallicRoughness.baseColorTexture);
+            // const needsSeparateGloss = (transparencyExtension.transmissionFactor !== undefined) || transparencyExtension.transmissionTexture;
+            return this._loader.loadMaterialPropertiesAsync(context, material, pbrMaterial_1);
+            // .then(() => {
+            //   const createBacksideMaterial = (transparencyMaterial: PBRMaterial) => {
+            //     const backsideMaterial = transparencyMaterial.clone(transparencyMaterial.name + "_back");
+            //     backsideMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
+            //     backsideMaterial.backFaceCulling = true;
+            //     backsideMaterial.twoSidedLighting = false;
+            //     backsideMaterial.zOffset = 1;
+            //     backsideMaterial.forceNormalForward = true;
+            //     // backsideMaterial.interiorDensity = 0.0;
+            //     // this.renderer.multiPassMaterials[material.index] = {backside: backsideMaterial, frontside: transparencyMaterial};
+            //   }
+            //   if (transparencyExtension.transmissionTexture) {
+            //     return this._loader.loadTextureInfoAsync(context, transparencyExtension.transmissionTexture).then((texture: BaseTexture) => {
+            //       texture.getAlphaFromRGB = true;
+            //       // transparencyMaterial.transmissionTexture = texture;
+            //       createBacksideMaterial(transparencyMaterial);
+            //     });
+            //   } else {
+            //     createBacksideMaterial(transparencyMaterial);
+            //     return Promise.resolve();
+            //   }
+            // });
+        }
+        else {
+            return this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
+            // .then(() => {
+            //   if (babylonMaterial.needAlphaBlending()) {
+            //     const pbrMaterial = babylonMaterial as PBRMaterial;
+            //     pbrMaterial.sideOrientation = Mesh.FRONTSIDE;
+            //     pbrMaterial.twoSidedLighting = false;
+            //     const backsideMaterial = pbrMaterial.clone(pbrMaterial.name + "_back");
+            //     backsideMaterial.sideOrientation = Mesh.BACKSIDE;
+            //     backsideMaterial.backFaceCulling = true;
+            //     backsideMaterial.twoSidedLighting = false;
+            //     // this.renderer.multiPassMaterials[material.index] = {backside: backsideMaterial, frontside: pbrMaterial};
+            //   }
+            //   return Promise.resolve();
+            // });
+        }
+    };
+    return ADOBE_materials_thin_transparency;
+}());
+
+_glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new ADOBE_materials_thin_transparency(loader); });
+
+
+/***/ }),
+
 /***/ "./glTF/2.0/Extensions/EXT_lights_image_based.ts":
 /*!*******************************************************!*\
   !*** ./glTF/2.0/Extensions/EXT_lights_image_based.ts ***!
@@ -3824,40 +3979,44 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 /*!**************************************!*\
   !*** ./glTF/2.0/Extensions/index.ts ***!
   \**************************************/
-/*! exports provided: EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors */
+/*! exports provided: ADOBE_materials_thin_transparency, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _EXT_lights_image_based__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./EXT_lights_image_based */ "./glTF/2.0/Extensions/EXT_lights_image_based.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_lights_image_based", function() { return _EXT_lights_image_based__WEBPACK_IMPORTED_MODULE_0__["EXT_lights_image_based"]; });
+/* harmony import */ var _ADOBE_materials_thin_transparency__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ADOBE_materials_thin_transparency */ "./glTF/2.0/Extensions/ADOBE_materials_thin_transparency.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ADOBE_materials_thin_transparency", function() { return _ADOBE_materials_thin_transparency__WEBPACK_IMPORTED_MODULE_0__["ADOBE_materials_thin_transparency"]; });
 
-/* harmony import */ var _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./KHR_draco_mesh_compression */ "./glTF/2.0/Extensions/KHR_draco_mesh_compression.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_draco_mesh_compression", function() { return _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_1__["KHR_draco_mesh_compression"]; });
+/* harmony import */ var _EXT_lights_image_based__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./EXT_lights_image_based */ "./glTF/2.0/Extensions/EXT_lights_image_based.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_lights_image_based", function() { return _EXT_lights_image_based__WEBPACK_IMPORTED_MODULE_1__["EXT_lights_image_based"]; });
 
-/* harmony import */ var _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KHR_lights_punctual */ "./glTF/2.0/Extensions/KHR_lights_punctual.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights", function() { return _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_2__["KHR_lights"]; });
+/* harmony import */ var _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KHR_draco_mesh_compression */ "./glTF/2.0/Extensions/KHR_draco_mesh_compression.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_draco_mesh_compression", function() { return _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_2__["KHR_draco_mesh_compression"]; });
 
-/* harmony import */ var _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./KHR_materials_pbrSpecularGlossiness */ "./glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_pbrSpecularGlossiness", function() { return _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_3__["KHR_materials_pbrSpecularGlossiness"]; });
+/* harmony import */ var _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./KHR_lights_punctual */ "./glTF/2.0/Extensions/KHR_lights_punctual.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights", function() { return _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_3__["KHR_lights"]; });
 
-/* harmony import */ var _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./KHR_materials_unlit */ "./glTF/2.0/Extensions/KHR_materials_unlit.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_unlit", function() { return _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_4__["KHR_materials_unlit"]; });
+/* harmony import */ var _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./KHR_materials_pbrSpecularGlossiness */ "./glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_pbrSpecularGlossiness", function() { return _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_4__["KHR_materials_pbrSpecularGlossiness"]; });
 
-/* harmony import */ var _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./KHR_texture_transform */ "./glTF/2.0/Extensions/KHR_texture_transform.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_5__["KHR_texture_transform"]; });
+/* harmony import */ var _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./KHR_materials_unlit */ "./glTF/2.0/Extensions/KHR_materials_unlit.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_unlit", function() { return _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_5__["KHR_materials_unlit"]; });
 
-/* harmony import */ var _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./MSFT_audio_emitter */ "./glTF/2.0/Extensions/MSFT_audio_emitter.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_audio_emitter", function() { return _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_6__["MSFT_audio_emitter"]; });
+/* harmony import */ var _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./KHR_texture_transform */ "./glTF/2.0/Extensions/KHR_texture_transform.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_6__["KHR_texture_transform"]; });
 
-/* harmony import */ var _MSFT_lod__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./MSFT_lod */ "./glTF/2.0/Extensions/MSFT_lod.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_lod", function() { return _MSFT_lod__WEBPACK_IMPORTED_MODULE_7__["MSFT_lod"]; });
+/* harmony import */ var _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./MSFT_audio_emitter */ "./glTF/2.0/Extensions/MSFT_audio_emitter.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_audio_emitter", function() { return _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_7__["MSFT_audio_emitter"]; });
 
-/* harmony import */ var _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./MSFT_minecraftMesh */ "./glTF/2.0/Extensions/MSFT_minecraftMesh.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_minecraftMesh", function() { return _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_8__["MSFT_minecraftMesh"]; });
+/* harmony import */ var _MSFT_lod__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./MSFT_lod */ "./glTF/2.0/Extensions/MSFT_lod.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_lod", function() { return _MSFT_lod__WEBPACK_IMPORTED_MODULE_8__["MSFT_lod"]; });
 
-/* harmony import */ var _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./MSFT_sRGBFactors */ "./glTF/2.0/Extensions/MSFT_sRGBFactors.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_9__["MSFT_sRGBFactors"]; });
+/* harmony import */ var _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./MSFT_minecraftMesh */ "./glTF/2.0/Extensions/MSFT_minecraftMesh.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_minecraftMesh", function() { return _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_9__["MSFT_minecraftMesh"]; });
+
+/* harmony import */ var _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./MSFT_sRGBFactors */ "./glTF/2.0/Extensions/MSFT_sRGBFactors.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_10__["MSFT_sRGBFactors"]; });
+
 
 
 
@@ -5888,7 +6047,7 @@ _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFFileLoader"]._CreateGLTF2Loade
 /*!***************************!*\
   !*** ./glTF/2.0/index.ts ***!
   \***************************/
-/*! exports provided: ArrayItem, GLTFLoader, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors */
+/*! exports provided: ArrayItem, GLTFLoader, ADOBE_materials_thin_transparency, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5899,6 +6058,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFLoader", function() { return _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"]; });
 
 /* harmony import */ var _Extensions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Extensions */ "./glTF/2.0/Extensions/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ADOBE_materials_thin_transparency", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["ADOBE_materials_thin_transparency"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_lights_image_based", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["EXT_lights_image_based"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_draco_mesh_compression", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_draco_mesh_compression"]; });

@@ -1558,6 +1558,21 @@ declare module BABYLON.GLTF2 {
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
+    export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        onLoading(): void;
+        /** @hidden */
+        dispose(): void;
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
      */
@@ -2063,4 +2078,4 @@ declare module BABYLON {
         private _parseBinary;
         private _parseASCII;
     }
-}
+}
