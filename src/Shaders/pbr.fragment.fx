@@ -24,7 +24,7 @@ precision highp float;
 #endif
 
 #ifdef ADOBE_TRANSPARENCY_G_BUFFER
-    #include<mrtFragmentDeclaration>[4]
+    #include<mrtFragmentDeclaration>[5]
 #else
     #include<mrtFragmentDeclaration>[1]
 #endif
@@ -64,24 +64,6 @@ void main(void) {
     #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
     #include<clipPlaneFragment>
-#ifdef ADOBE_TRANSPARENCY_G_BUFFER
-    #ifdef TRANSPARENCY_FRONT_DEPTH
-        vec2 screenCoords = vec2(gl_FragCoord.x / transparencyDepthValues.z, gl_FragCoord.y / transparencyDepthValues.w);
-        float frontDepth = texture2D(frontDepthTexture, screenCoords).r;
-        frontDepth = (transparencyDepthValues.y * frontDepth);
-        // frontDepth /= gl_FragCoord.w;
-        #ifdef TRANSPARENCY_BACK_DEPTH
-            float backDepth = texture2D(backDepthTexture, screenCoords).r;
-            backDepth = transparencyDepthValues.y * backDepth;
-            // backDepth *= gl_FragCoord.w;
-        #endif
-        float z = gl_FragCoord.z / gl_FragCoord.w;
-        // z = (transparencyDepthValues.x + (transparencyDepthValues.y - transparencyDepthValues.x) * z);
-        if (frontDepth >= z || backDepth <= z) {
-            discard;
-        }
-    #endif
-#endif
 
 // _____________________________ Geometry Information ____________________________
     vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
@@ -90,6 +72,27 @@ void main(void) {
     vec3 normalW = normalize(vNormalW);
 #else
     vec3 normalW = normalize(cross(dFdx(vPositionW), dFdy(vPositionW))) * vEyePosition.w;
+#endif
+
+#ifdef TRANSPARENCY
+    float sceneDepth = gl_FragCoord.z * 2. - 1.; // Depth range being 0 to 1 -> transform to -1 - 1
+    sceneDepth = sceneDepth / gl_FragCoord.w; // Revert to the projection space z
+    sceneDepth = (sceneDepth + transparencyDepthValues.x) / transparencyDepthValues.y - 0.00001; // Apply camera setup to transform back to 0 - 1 but in a linear way
+#endif
+
+#ifdef ADOBE_TRANSPARENCY_G_BUFFER
+    #ifdef TRANSPARENCY_FRONT_DEPTH
+        // Handle depth-peeling against current depth textures.
+        vec2 screenCoords = vec2(gl_FragCoord.x / transparencyDepthValues.z, gl_FragCoord.y / transparencyDepthValues.w);
+        float frontDepth = texture2D(frontDepthTexture, screenCoords).r;
+        #ifdef TRANSPARENCY_BACK_DEPTH
+            float backDepth = texture2D(backDepthTexture, screenCoords).r;
+        #endif
+        if (frontDepth >= sceneDepth || backDepth <= sceneDepth) {
+            discard;
+        }
+        
+    #endif
 #endif
 
 #ifdef CLEARCOAT
@@ -376,6 +379,28 @@ float transmission = 0.0;
             refractionVector.y = refractionVector.y * vRefractionInfos.w;
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
+        #elif defined TRANSPARENCY
+            vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW, 1.0)));
+            vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+            refractionCoords.y = 1.0 - refractionCoords.y;
+            float refraction_thickness = (1.0 - sampleRefractionLod(refractionSampler, refractionCoords, 0.0).a) - sceneDepth;
+            if (refraction_thickness > 0.5) {
+                refraction_thickness = 0.0;
+            }
+
+            #ifdef TRANSPARENCY_INTERIOR
+                // Do density calculation here.
+                float thickness_scale = 10.0*refraction_thickness;
+                vec3 clamped_color = clamp(vInteriorTransparency.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
+                float density = vInteriorTransparency.a;
+                float scene_scale = 60.0;
+                vec3 absorption_coeff = pow(clamped_color*density*scene_scale, vec3(1.0 + thickness_scale));
+                vec3 scattering_coeff = density*scene_scale*vec3(0.6931472);
+            #endif
+            
+            vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * 12.0 * refraction_thickness, 1.0)));
+            refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+            refractionCoords.y = 1.0 - refractionCoords.y;
         #else
             vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
@@ -409,7 +434,9 @@ float transmission = 0.0;
                 float requestedRefractionLOD = refractionLOD;
             #endif
 
-            environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+            environmentRefraction.rgb = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD).rgb;
+
+            
         #else
             float lodRefractionNormalized = saturate(refractionLOD / log2(vRefractionMicrosurfaceInfos.x));
             float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
@@ -440,6 +467,10 @@ float transmission = 0.0;
 
         // _____________________________ Levels _____________________________________
         environmentRefraction.rgb *= vRefractionInfos.x;
+
+        #ifdef TRANSPARENCY_INTERIOR
+            environmentRefraction.rgb *= absorption_coeff;
+        #endif
     #endif
 
     // _____________________________ Reflection Info _______________________________________
@@ -1230,9 +1261,10 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
     // gl_FragData[0] = vec4(vec3(1.0, 0.0, 0.0), 1.0);
     #ifndef UNLIT
         #ifdef REFLECTION
-            float depth = gl_FragCoord.z / gl_FragCoord.w / transparencyDepthValues.y;
-            gl_FragData[1] = vec4(finalReflectedLight + finalEmissiveLight, depth);
-            vec4 norm = view * vec4(normalW, 1.0);
+            gl_FragData[1] = vec4(finalReflectedLight + finalEmissiveLight, 1.0 - sceneDepth);
+            // gl_FragData[1] = vec4(vec3(z), 1.0);
+            vec2 norm = (view * vec4(normalW, 1.0)).xy;
+            norm = norm * 0.5 + 0.5;
             // #ifdef TRANSPARENCY_FRONT_DEPTH
             // // vec3 depthDude = vec3(frontDepth * 3.0, frontDepth * 3.0 - 1.0, frontDepth * 3.0 - 2.0);
             //     gl_FragData[1] = vec4(vec3(frontDepth, 0.0, 0.0), 1.0);
@@ -1250,18 +1282,25 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
             // #endif
             // gl_FragData[2] = vec4(vec3(0.0, 0.0, 1.0), 1.0);
             // gl_FragData[2] = vec4(norm.x, norm.y, 1.0, 1.0);
+            // Add thick/thin volume here?
+            
         #else
             gl_FragData[1] = vec4(1.0);
             gl_FragData[2] = vec4(1.0);
+            // gl_FragData[3] = vec4(1.0);
         #endif
     #else
         gl_FragData[1] = vec4(1.0);
         gl_FragData[2] = vec4(1.0);
+        // gl_FragData[3] = vec4(1.0);
     #endif
-    gl_FragData[3] = vec4(finalEmissiveLight, gl_FrontFacing);
-    // if INTERIOR
-    // gl_FragData[3] = vec4(interiorColor, gl_);
-    // endif
+    gl_FragData[3] = vec4(vInteriorTransparency.xyz, gl_FrontFacing);
+    
+    #ifdef TRANSPARENCY_INTERIOR
+        gl_FragData[4] = vec4(vInteriorTransparency);
+    #else
+        gl_FragData[4] = vec4(1.0);
+    #endif
 #else
     // Reflection already includes the environment intensity.
     vec4 finalColor = vec4(finalDiffuseLight + finalReflectedLight + finalRefractedLight + finalEmissiveLight, alpha);
@@ -1302,6 +1341,7 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
 
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
     // gl_FragColor = finalColor;
+
     gl_FragData[0] = finalColor;
     // gl_FragData[1] = vec4(0.0);
     // gl_FragData[2] = vec4(0.0);

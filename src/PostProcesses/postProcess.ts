@@ -484,11 +484,11 @@ export class PostProcess {
 
                 let textureSize = { width: this.width, height: this.height };
                 let textureOptions = {
-                    generateMipMaps: false,
+                    generateMipMaps: true,
                     generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0,
                     generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
                     samplingMode: this.renderTargetSamplingMode,
-                    type: this._textureType
+                    type: this._textureType,
                 };
 
                 this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));

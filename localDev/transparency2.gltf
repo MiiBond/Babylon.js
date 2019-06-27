@@ -1,0 +1,765 @@
+{
+    "asset": {
+        "copyright": "2019 (c) Adobe Inc.",
+        "generator": "Adobe Dimension - 5382d06ef3602aa2463810b9e9409e51e1d3a5e7",
+        "version": "2.0"
+    },
+    "accessors": [
+        {
+            "componentType": 5126,
+            "count": 11300,
+            "type": "VEC3",
+            "max": [
+                0.09998819231987,
+                0.10022319108247757,
+                0.09978877753019333
+            ],
+            "min": [
+                -0.09998826682567597,
+                -9.99999993922529e-9,
+                -0.09979099780321121
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 11300,
+            "type": "VEC3"
+        },
+        {
+            "componentType": 5126,
+            "count": 11300,
+            "type": "VEC2"
+        },
+        {
+            "componentType": 5125,
+            "count": 16800,
+            "type": "SCALAR",
+            "max": [
+                11299.0
+            ],
+            "min": [
+                0.0
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 3719,
+            "type": "VEC3",
+            "max": [
+                0.10000002384185791,
+                0.20000006258487702,
+                0.10000000894069672
+            ],
+            "min": [
+                -0.1000000387430191,
+                0.0,
+                -0.1000000536441803
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 3719,
+            "type": "VEC3"
+        },
+        {
+            "componentType": 5126,
+            "count": 3719,
+            "type": "VEC2"
+        },
+        {
+            "componentType": 5125,
+            "count": 21240,
+            "type": "SCALAR",
+            "max": [
+                3718.0
+            ],
+            "min": [
+                0.0
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 4649,
+            "type": "VEC3",
+            "max": [
+                0.03652588278055191,
+                0.0958651453256607,
+                0.036525871604681018
+            ],
+            "min": [
+                -0.03652709722518921,
+                0.00018495001131668687,
+                -0.036527108401060107
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 4649,
+            "type": "VEC3"
+        },
+        {
+            "componentType": 5126,
+            "count": 4649,
+            "type": "VEC2"
+        },
+        {
+            "componentType": 5125,
+            "count": 26208,
+            "type": "SCALAR",
+            "max": [
+                4648.0
+            ],
+            "min": [
+                0.0
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 2419,
+            "type": "VEC3",
+            "max": [
+                0.03519311919808388,
+                0.04831010848283768,
+                0.035193052142858508
+            ],
+            "min": [
+                -0.035193201154470447,
+                0.0028415799606591465,
+                -0.035193268209695819
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 2419,
+            "type": "VEC3"
+        },
+        {
+            "componentType": 5126,
+            "count": 2419,
+            "type": "VEC2"
+        },
+        {
+            "componentType": 5125,
+            "count": 13248,
+            "type": "SCALAR",
+            "max": [
+                2418.0
+            ],
+            "min": [
+                0.0
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 3456,
+            "type": "VEC3",
+            "max": [
+                0.09999999403953552,
+                0.19949111342430116,
+                0.09999999403953552
+            ],
+            "min": [
+                -0.09999999403953552,
+                -0.0005088699981570244,
+                -0.09999999403953552
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 3456,
+            "type": "VEC3"
+        },
+        {
+            "componentType": 5126,
+            "count": 3456,
+            "type": "VEC2"
+        },
+        {
+            "componentType": 5125,
+            "count": 5172,
+            "type": "SCALAR",
+            "max": [
+                3455.0
+            ],
+            "min": [
+                0.0
+            ]
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteOffset": 0,
+            "byteLength": 80045
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 80045,
+            "byteLength": 17372
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 97417,
+            "byteLength": 22751
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 120168,
+            "byteLength": 14318
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 134486,
+            "byteLength": 22497
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 156983,
+            "uri": "transparency2_binary.bin"
+        }
+    ],
+    "cameras": [
+        {
+            "perspective": {
+                "znear": 0.000010000000656873454,
+                "yfov": 0.6024156808853149,
+                "zfar": 2.0,
+                "aspectRatio": 1.3333333730697632
+            },
+            "type": "perspective",
+            "extras": {
+                "ADOBE_camera_extras": {
+                    "isDefaultCamera": false,
+                    "isWorkingCamera": true
+                }
+            },
+            "name": "render_camera"
+        },
+        {
+            "perspective": {
+                "znear": 0.000010000000656873454,
+                "yfov": 0.6024156808853149,
+                "zfar": 2.0,
+                "aspectRatio": 1.3333333730697632
+            },
+            "type": "perspective",
+            "extras": {
+                "ADOBE_camera_extras": {
+                    "isDefaultCamera": true,
+                    "isWorkingCamera": false
+                }
+            },
+            "name": "render_camera3"
+        },
+        {
+            "perspective": {
+                "znear": 0.000010000000656873454,
+                "yfov": 0.6024156808853149,
+                "zfar": 2.0,
+                "aspectRatio": 1.3333333730697632
+            },
+            "type": "perspective",
+            "name": "render_camera4"
+        }
+    ],
+    "images": [
+        {
+            "name": "texture35166_0",
+            "uri": "transparency2_images/texture35166_0.jpg",
+            "mimeType": "image/jpeg"
+        },
+        {
+            "name": "image_1",
+            "uri": "transparency2_images/image_1.jpg",
+            "mimeType": "image/jpeg"
+        },
+        {
+            "name": "damaged_glass_normal",
+            "uri": "transparency2_images/damaged_glass_normal.png",
+            "mimeType": "image/png"
+        },
+        {
+            "name": "vitrage_glass_baseColor",
+            "uri": "transparency2_images/vitrage_glass_baseColor.jpg",
+            "mimeType": "image/jpeg"
+        },
+        {
+            "name": "vitrage_glass_normal",
+            "uri": "transparency2_images/vitrage_glass_normal.png",
+            "mimeType": "image/png"
+        },
+        {
+            "name": "360photo",
+            "uri": "transparency2_images/360photo.jpg",
+            "mimeType": "image/jpeg"
+        }
+    ],
+    "materials": [
+        {
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.9800001978874207,
+                    0.9499999284744263,
+                    0.8600000143051148,
+                    1.0
+                ],
+                "metallicFactor": 0.0,
+                "metallicRoughnessTexture": {
+                    "index": 0
+                }
+            },
+            "alphaMode": "BLEND",
+            "name": "Olive Oil",
+            "extensions": {
+                "ADOBE_materials_thin_transparency": {
+                    "ior": 1.4700000286102296,
+                    "transmissionFactor": 1
+                }
+            },
+            "extras": {
+                "ADOBE_transparency": {
+                    "density": 0.029999999329447744,
+                    "interiorColor": [
+                        0.8209798336029053,
+                        0.8378604650497437,
+                        0.7186444997787476
+                    ]
+                }
+            }
+        },
+        {
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    1.0,
+                    0.854263961315155,
+                    0.3094690442085266,
+                    1.0
+                ],
+                "metallicFactor": 0.0,
+                "roughnessFactor": 0.07999999821186066
+            },
+            "alphaMode": "BLEND",
+            "name": "Beer",
+            "extensions": {
+                "ADOBE_materials_thin_transparency": {
+                    "ior": 1.600000023841858,
+                    "transmissionFactor": 1,
+                    "density": 0.009999999776482582,
+                    "interiorColor": [
+                        0.45490145683288576,
+                        0.14442667365074159,
+                        0
+                    ]
+                }
+            },
+            "extras": {
+                "ADOBE_transparency": {
+                    
+                }
+            }
+        },
+        {
+            "pbrMetallicRoughness": {
+                "metallicFactor": 0.0,
+                "metallicRoughnessTexture": {
+                    "index": 1
+                }
+            },
+            "normalTexture": {
+                "index": 2
+            },
+            "alphaMode": "BLEND",
+            "name": "Damaged Glass",
+            "extensions": {
+                "ADOBE_materials_thin_transparency": {
+                    "ior": 1.5,
+                    "transmissionFactor": 1
+                }
+            }
+        },
+        {
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.5840358734130859,
+                    0.08687649667263031,
+                    0.08687649667263031,
+                    1.0
+                ],
+                "metallicFactor": 0.0,
+                "roughnessFactor": 0.0
+            },
+            "alphaMode": "BLEND",
+            "name": "wine_Mat",
+            "extensions": {
+                "ADOBE_materials_thin_transparency": {
+                    "ior": 1.600000023841858,
+                    "transmissionFactor": 1,
+                    "density": 0.15000000596046449,
+                    "interiorColor": [
+                        0.9063317179679871,
+                        0.5838314890861511,
+                        0.5838314890861511
+                    ]
+                }
+            },
+            "extras": {
+                "ADOBE_transparency": {
+                    
+                }
+            }
+        },
+        {
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 3
+                },
+                "metallicFactor": 0.0,
+                "roughnessFactor": 0.0
+            },
+            "normalTexture": {
+                "index": 4
+            },
+            "alphaMode": "BLEND",
+            "name": "Vitrage Glass",
+            "extensions": {
+                "ADOBE_materials_thin_transparency": {
+                    "ior": 1.3200000524520875,
+                    "transmissionFactor": 1
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "name": "MODEL_HALF_HOLLOW_SPHERE_PART_1_N3D",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 0,
+                        "NORMAL": 1,
+                        "TEXCOORD_0": 2
+                    },
+                    "indices": 3,
+                    "material": 0,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 0,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "sphere_N3D",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TEXCOORD_0": 6,
+                        "NORMAL": 5,
+                        "POSITION": 4
+                    },
+                    "indices": 7,
+                    "material": 1,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 1,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "b_wine_glass_2_125_glass_N3D",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 8,
+                        "NORMAL": 9,
+                        "TEXCOORD_0": 10
+                    },
+                    "indices": 11,
+                    "material": 2,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 2,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "b_wine_glass_2_125_wine_N3D",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 12,
+                        "NORMAL": 13,
+                        "TEXCOORD_0": 14
+                    },
+                    "indices": 15,
+                    "material": 3,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 3,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "MODEL_ROUNDED_CUBE_PART_1_N3D",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TEXCOORD_0": 18,
+                        "NORMAL": 17,
+                        "POSITION": 16
+                    },
+                    "indices": 19,
+                    "material": 4,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 4,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                -0.2829907238483429,
+                0.3076034188270569,
+                0.3035362660884857
+            ],
+            "rotation": [
+                -0.2275208681821823,
+                -0.3026272654533386,
+                -0.07463525235652924,
+                0.9225403070449829
+            ],
+            "camera": 0,
+            "name": "render_camera_n3d"
+        },
+        {
+            "name": "ground_plane_n3d",
+            "extras": {
+                "ADOBE_ground_plane": {
+                    "reflectionFresnel": 0,
+                    "reflectionOpacity": 0,
+                    "reflectionRoughness": 0,
+                    "shadowOpacity": 1
+                }
+            }
+        },
+        {
+            "mesh": 0,
+            "name": "Hollow Sphere"
+        },
+        {
+            "translation": [
+                -1.4037579987302707e-8,
+                0.022765979170799257,
+                -1.7546975428217594e-8
+            ],
+            "scale": [
+                0.2640264928340912,
+                0.2640264928340912,
+                0.2640264928340912
+            ],
+            "mesh": 1,
+            "name": "Sphere"
+        },
+        {
+            "translation": [
+                0.045993659645318988,
+                0.20741502940654756,
+                0.24431352317333222
+            ],
+            "rotation": [
+                -0.2828488349914551,
+                0.09248395264148712,
+                0.02741164155304432,
+                0.9543017745018005
+            ],
+            "scale": [
+                1.0,
+                0.9999999403953552,
+                1.0
+            ],
+            "camera": 1,
+            "name": "カメラ１"
+        },
+        {
+            "translation": [
+                0.045993659645318988,
+                0.20741502940654756,
+                0.24431352317333222
+            ],
+            "rotation": [
+                -0.2828488349914551,
+                0.09248395264148712,
+                0.02741164155304432,
+                0.9543017745018005
+            ],
+            "scale": [
+                1.0,
+                0.9999999403953552,
+                1.0
+            ],
+            "camera": 2,
+            "name": "カメラ２"
+        },
+        {
+            "children": [
+                7,
+                8
+            ],
+            "translation": [
+                -0.15326066315174104,
+                0.0,
+                -0.02988433837890625
+            ],
+            "name": "b_wine_glass_2_125"
+        },
+        {
+            "mesh": 2,
+            "name": "b_wine_glass_2_125_glass"
+        },
+        {
+            "mesh": 3,
+            "name": "b_wine_glass_2_125_wine"
+        },
+        {
+            "translation": [
+                0.0,
+                0.01936822198331356,
+                -0.08209623396396637
+            ],
+            "scale": [
+                0.2790195345878601,
+                0.2790195345878601,
+                0.2790195345878601
+            ],
+            "mesh": 4,
+            "name": "Rounded Cube"
+        }
+    ],
+    "samplers": [
+        {},
+        {},
+        {},
+        {},
+        {},
+        {}
+    ],
+    "scenes": [
+        {
+            "nodes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                9
+            ],
+            "name": "scene",
+            "extras": {
+                "ADOBE_background": {
+                    "color": [
+                        1,
+                        1,
+                        1
+                    ],
+                    "opacity": 1,
+                    "texture": 5,
+                    "textureAspect": 2,
+                    "transform": [
+                        0.6666666865348816,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        1
+                    ]
+                },
+                "ADOBE_canvas": {
+                    "height": 768,
+                    "width": 1024
+                }
+            }
+        }
+    ],
+    "textures": [
+        {
+            "name": "texture35166_0_texture",
+            "sampler": 0,
+            "source": 0
+        },
+        {
+            "name": "image_1_texture",
+            "sampler": 1,
+            "source": 1
+        },
+        {
+            "name": "damaged_glass::normal::sampler",
+            "sampler": 2,
+            "source": 2
+        },
+        {
+            "name": "vitrage_glass::baseColor::sampler",
+            "sampler": 3,
+            "source": 3
+        },
+        {
+            "name": "vitrage_glass::normal::sampler",
+            "sampler": 4,
+            "source": 4
+        },
+        {
+            "name": "background_sampler",
+            "sampler": 5,
+            "source": 5
+        }
+    ],
+    "scene": 0,
+    "extensionsUsed": [
+        "ADOBE_materials_thin_transparency",
+        "KHR_draco_mesh_compression"
+    ],
+    "extensionsRequired": [
+        "KHR_draco_mesh_compression"
+    ]
+}
