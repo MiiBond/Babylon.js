@@ -5751,9 +5751,113 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class representing spherical harmonics coefficients to the 3rd degree
+     */
+    export class SphericalHarmonics {
+        /**
+         * Defines whether or not the harmonics have been prescaled for rendering.
+         */
+        preScaled: boolean;
+        /**
+         * The l0,0 coefficients of the spherical harmonics
+         */
+        l00: Vector3;
+        /**
+         * The l1,-1 coefficients of the spherical harmonics
+         */
+        l1_1: Vector3;
+        /**
+         * The l1,0 coefficients of the spherical harmonics
+         */
+        l10: Vector3;
+        /**
+         * The l1,1 coefficients of the spherical harmonics
+         */
+        l11: Vector3;
+        /**
+         * The l2,-2 coefficients of the spherical harmonics
+         */
+        l2_2: Vector3;
+        /**
+         * The l2,-1 coefficients of the spherical harmonics
+         */
+        l2_1: Vector3;
+        /**
+         * The l2,0 coefficients of the spherical harmonics
+         */
+        l20: Vector3;
+        /**
+         * The l2,1 coefficients of the spherical harmonics
+         */
+        l21: Vector3;
+        /**
+         * The l2,2 coefficients of the spherical harmonics
+         */
+        l22: Vector3;
+        /**
+         * Adds a light to the spherical harmonics
+         * @param direction the direction of the light
+         * @param color the color of the light
+         * @param deltaSolidAngle the delta solid angle of the light
+         */
+        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
+        /**
+         * Scales the spherical harmonics by the given amount
+         * @param scale the amount to scale
+         */
+        scaleInPlace(scale: number): void;
+        /**
+         * Convert from incident radiance (Li) to irradiance (E) by applying convolution with the cosine-weighted hemisphere.
+         *
+         * ```
+         * E_lm = A_l * L_lm
+         * ```
+         *
+         * In spherical harmonics this convolution amounts to scaling factors for each frequency band.
+         * This corresponds to equation 5 in "An Efficient Representation for Irradiance Environment Maps", where
+         * the scaling factors are given in equation 9.
+         */
+        convertIncidentRadianceToIrradiance(): void;
+        /**
+         * Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
+         *
+         * ```
+         * L = (1/pi) * E * rho
+         * ```
+         *
+         * This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
+         */
+        convertIrradianceToLambertianRadiance(): void;
+        /**
+         * Integrates the reconstruction coefficients directly in to the SH preventing further
+         * required operations at run time.
+         *
+         * This is simply done by scaling back the SH with Ylm constants parameter.
+         * The trigonometric part being applied by the shader at run time.
+         */
+        preScaleForRendering(): void;
+        /**
+         * Constructs a spherical harmonics from an array.
+         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
+         * @returns the spherical harmonics
+         */
+        static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
+        /**
+         * Gets the spherical harmonics from polynomial
+         * @param polynomial the spherical polynomial
+         * @returns the spherical harmonics
+         */
+        static FromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
+    }
+    /**
      * Class representing spherical polynomial coefficients to the 3rd degree
      */
     export class SphericalPolynomial {
+        private _harmonics;
+        /**
+         * The spherical harmonics used to create the polynomials.
+         */
+        readonly preScaledHarmonics: SphericalHarmonics;
         /**
          * The x coefficients of the spherical polynomial
          */
@@ -5799,7 +5903,7 @@ declare module BABYLON {
          * Scales the spherical polynomial by the given amount
          * @param scale the amount to scale
          */
-        scale(scale: number): void;
+        scaleInPlace(scale: number): void;
         /**
          * Gets the spherical polynomial from harmonics
          * @param harmonics the spherical harmonics
@@ -5812,93 +5916,6 @@ declare module BABYLON {
          * @returns the spherical polynomial
          */
         static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalPolynomial;
-    }
-    /**
-     * Class representing spherical harmonics coefficients to the 3rd degree
-     */
-    export class SphericalHarmonics {
-        /**
-         * The l0,0 coefficients of the spherical harmonics
-         */
-        l00: Vector3;
-        /**
-         * The l1,-1 coefficients of the spherical harmonics
-         */
-        l1_1: Vector3;
-        /**
-         * The l1,0 coefficients of the spherical harmonics
-         */
-        l10: Vector3;
-        /**
-         * The l1,1 coefficients of the spherical harmonics
-         */
-        l11: Vector3;
-        /**
-         * The l2,-2 coefficients of the spherical harmonics
-         */
-        l2_2: Vector3;
-        /**
-         * The l2,-1 coefficients of the spherical harmonics
-         */
-        l2_1: Vector3;
-        /**
-         * The l2,0 coefficients of the spherical harmonics
-         */
-        l20: Vector3;
-        /**
-         * The l2,1 coefficients of the spherical harmonics
-         */
-        l21: Vector3;
-        /**
-         * The l2,2 coefficients of the spherical harmonics
-         */
-        lL22: Vector3;
-        /**
-         * Adds a light to the spherical harmonics
-         * @param direction the direction of the light
-         * @param color the color of the light
-         * @param deltaSolidAngle the delta solid angle of the light
-         */
-        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
-        /**
-         * Scales the spherical harmonics by the given amount
-         * @param scale the amount to scale
-         */
-        scale(scale: number): void;
-        /**
-         * Convert from incident radiance (Li) to irradiance (E) by applying convolution with the cosine-weighted hemisphere.
-         *
-         * ```
-         * E_lm = A_l * L_lm
-         * ```
-         *
-         * In spherical harmonics this convolution amounts to scaling factors for each frequency band.
-         * This corresponds to equation 5 in "An Efficient Representation for Irradiance Environment Maps", where
-         * the scaling factors are given in equation 9.
-         */
-        convertIncidentRadianceToIrradiance(): void;
-        /**
-         * Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
-         *
-         * ```
-         * L = (1/pi) * E * rho
-         * ```
-         *
-         * This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
-         */
-        convertIrradianceToLambertianRadiance(): void;
-        /**
-         * Gets the spherical harmonics from polynomial
-         * @param polynomial the spherical polynomial
-         * @returns the spherical harmonics
-         */
-        static FromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
-        /**
-         * Constructs a spherical harmonics from an array.
-         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
-         * @returns the spherical harmonics
-         */
-        static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
     }
 }
 declare module BABYLON {
@@ -34809,6 +34826,7 @@ declare module BABYLON {
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
+        private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param element Defines the element the controls should be listened from
@@ -43913,6 +43931,7 @@ declare module BABYLON {
     export interface IMaterialBRDFDefines {
         BRDF_V_HEIGHT_CORRELATED: boolean;
         MS_BRDF_ENERGY_CONSERVATION: boolean;
+        SPHERICAL_HARMONICS: boolean;
         /** @hidden */
         _areMiscDirty: boolean;
     }
@@ -43930,12 +43949,27 @@ declare module BABYLON {
          * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
          */
         static DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED: boolean;
+        /**
+         * Default value used for the IBL diffuse part.
+         * This can help switching back to the polynomials mode globally which is a tiny bit
+         * less GPU intensive at the drawback of a lower quality.
+         */
+        static DEFAULT_USE_SPHERICAL_HARMONICS: boolean;
         private _useEnergyConservation;
         /**
          * Defines if the material uses energy conservation.
          */
         useEnergyConservation: boolean;
         private _useSmithVisibilityHeightCorrelated;
+        private _useSphericalHarmonics;
+        /**
+         * LEGACY Mode set to false
+         * Defines if the material uses spherical harmonics vs spherical polynomials for the
+         * diffuse part of the IBL.
+         * The harmonics despite a tiny bigger cost has been proven to provide closer results
+         * to the ground truth.
+         */
+        useSphericalHarmonics: boolean;
         /**
          * LEGACY Mode set to false
          * Defines if the material uses height smith correlated visibility term.
@@ -44297,6 +44331,7 @@ declare module BABYLON {
         REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED: boolean;
         INVERTCUBICMAP: boolean;
         USESPHERICALFROMREFLECTIONMAP: boolean;
+        SPHERICAL_HARMONICS: boolean;
         USESPHERICALINVERTEX: boolean;
         REFLECTIONMAP_OPPOSITEZ: boolean;
         LODINREFLECTIONALPHA: boolean;
@@ -44366,6 +44401,13 @@ declare module BABYLON {
         SHEEN_TEXTURE: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
+        ADOBETRANSPARENCY: boolean;
+        SCENETEXTURE: boolean;
+        SCENEDEPTHTEXTURE: boolean;
+        TRANSMISSION: boolean;
+        TRANSMISSIONRGB: boolean;
+        TRANSMISSIONDIRECTUV: number;
+        INTERIORCOLOR: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
@@ -44472,6 +44514,26 @@ declare module BABYLON {
          */
         protected _opacityTexture: BaseTexture;
         /**
+         * Stuff
+         */
+        protected _transmissionTexture: BaseTexture;
+        /**
+         * Stuff
+         */
+        protected _sceneTexture: RenderTargetTexture;
+        /**
+         * Stuff
+         */
+        protected _sceneDepthTexture: RenderTargetTexture;
+        /**
+         * Stuff
+         */
+        protected _interiorColor: Color3;
+        /**
+         * Stuff
+         */
+        protected _interiorDensity: number;
+        /**
          * Stores the reflection values in a texture.
          */
         protected _reflectionTexture: BaseTexture;
@@ -44522,6 +44584,10 @@ declare module BABYLON {
          * AKA Diffuse Color in other nomenclature.
          */
         protected _albedoColor: Color3;
+        /**
+         * Stuff
+         */
+        protected _opticalTransmission: number;
         /**
          * AKA Specular Color in other nomenclature.
          */
@@ -44839,6 +44905,11 @@ declare module BABYLON {
          * @returns boolean specifiying if the material uses metallic roughness workflow.
         */
         isMetallicWorkflow(): boolean;
+        /**
+         * Stuff
+         * @returns Whether the material uses transparency from the Adobe standard material.
+         */
+        useAdobeTransparency(): boolean;
         private _prepareEffect;
         private _prepareDefines;
         /**
@@ -48537,6 +48608,78 @@ declare module BABYLON {
          * Parses a JSON object correponding to the serialize function.
          */
         static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial;
+    }
+}
+declare module BABYLON {
+    /**
+     * The PBR material of BJS following the metal roughness convention.
+     *
+     * This fits to the PBR convention in the GLTF definition:
+     * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
+     */
+    export class PBRTransparencyMaterial extends PBRMaterial {
+        /**
+         * The base color has two different interhttp://localhost:1338/Playground/index-local.htmlpretations depending on the value of metalness.
+         * When the material is a metal, the base color is the specific measured reflectance value
+         * at normal incidence (F0). For a non-metal the base color represents the reflected diffuse color
+         * of the material.
+         */
+        interiorColor: Color3;
+        /**
+         * Stuff
+         */
+        interiorDensity: number;
+        /**
+         * Stuff
+         */
+        transmissionTexture: BaseTexture;
+        /**
+         * Stuff
+         */
+        opticalTransmission: number;
+        /**
+         * Stuff
+         */
+        sceneTexture: RenderTargetTexture;
+        /**
+         * Stuff
+         */
+        sceneDepthTexture: RenderTargetTexture;
+        /**
+         * Instantiates a new PBRMetalRoughnessMaterial instance.
+         *
+         * @param name The material name
+         * @param scene The scene the material will be use in.
+         */
+        constructor(name: string, scene: Scene);
+        /**
+         * Return the currrent class name of the material.
+         */
+        getClassName(): string;
+        useAdobeTransparency(): boolean;
+        /**
+         * Return the active textures of the material.
+         */
+        getActiveTextures(): BaseTexture[];
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Makes a duplicate of the current material.
+         * @param name - name to use for the new material.
+         */
+        clone(name: string): PBRTransparencyMaterial;
+        /**
+         * Serialize the material to a parsable JSON object.
+         */
+        serialize(): any;
+        /**
+         * Parses a JSON object correponding to the serialize function.
+         */
+        static Parse(source: any, scene: Scene, rootUrl: string): PBRTransparencyMaterial;
     }
 }
 declare module BABYLON {
@@ -55843,6 +55986,12 @@ declare module BABYLON {
          * @returns This path cursor
          */
         onchange(f: (cursor: PathCursor) => void): PathCursor;
+    }
+}
+declare module BABYLON {
+    export class DepthPeelingHelper {
+        layers: number;
+        constructor(layers: number);
     }
 }
 declare module BABYLON {

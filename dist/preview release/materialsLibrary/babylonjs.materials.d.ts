@@ -979,4 +979,4 @@ declare module BABYLON {
         static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): WaterMaterial;
         static CreateDefaultMesh(name: string, scene: BABYLON.Scene): BABYLON.Mesh;
     }
-}
+}

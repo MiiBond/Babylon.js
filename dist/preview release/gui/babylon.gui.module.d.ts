@@ -3841,6 +3841,7 @@ declare module "babylonjs-gui/index" {
 declare module "babylonjs-gui/legacy/legacy" {
     export * from "babylonjs-gui/index";
 }
+
 declare module "babylonjs-gui" {
     export * from "babylonjs-gui/legacy/legacy";
 }
@@ -7420,4 +7421,4 @@ declare module BABYLON.GUI {
         constructor(isVertical?: boolean);
         protected _arrangeChildren(): void;
     }
-}
+}

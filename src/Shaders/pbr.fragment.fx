@@ -553,7 +553,7 @@ float transmissionFinal = opticalTransmission;
                     irradianceVector.z *= -1.0;
                 #endif
 
-                environmentIrradiance = environmentIrradianceJones(irradianceVector);
+                environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
             #endif
         #endif
 

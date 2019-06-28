@@ -112,8 +112,11 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         if (window.getSelection) {
             var range = document.createRange();
             range.selectNode(element);
-            window.getSelection().removeAllRanges();
-            window.getSelection().addRange(range);
+            var stuff = window.getSelection();
+            if (stuff) {
+                stuff.removeAllRanges();
+                stuff.addRange(range);
+            }
         }
 
         document.execCommand('copy');
