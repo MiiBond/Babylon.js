@@ -82,8 +82,9 @@ export class AdobeTransparencyHelper {
     private readonly _scene: Scene;
     private _options: IAdobeTransparencyHelperOptions;
     private _opaqueRenderTarget: RenderTargetTexture;
-    private _mrtRenderTargets: MultiRenderTarget[];
-    private _depthRenderers: DepthRenderer[];
+    private _opaqueDepthRenderer: DepthRenderer;
+    private _mrtRenderTargets: MultiRenderTarget[] = [];
+    private _depthRenderers: DepthRenderer[] = [];
     private _opaqueMeshesCache: Mesh[] = [];
     private _transparentMeshesCache: Mesh[] = [];
     private _compositor: AdobeTransparencyCompositor;
@@ -122,17 +123,8 @@ export class AdobeTransparencyHelper {
         };
 
         this._options = newOptions;
-        this._parseScene();
         this._setupRenderTargets();
     }
-
-    // Store a list of meshes that will be rendered with transparency
-    // Generate a list of every other mesh?
-    // Build a list of RT for each pass
-    // Assign the transparent mesh materials the appropriate flags to make them render to MRT0-4
-    // Each frame, do depth peeling and then composite final render targets together.
-// MRT isn't supported on iOS so what do we do in that case?
-// No depth-peeling - just render one layer with scene
 
     public getRenderTarget(pass: number = 0): Nullable<Texture> {
         if (this._mrtRenderTargets.length <= pass) {
@@ -251,25 +243,67 @@ export class AdobeTransparencyHelper {
             floatTextureType = Engine.TEXTURETYPE_FLOAT;
         // }
 
+        if (this._scene.layers) {
+            this._scene.layers.forEach((layer) => {
+                let idx = layer.renderTargetTextures.indexOf(this._opaqueRenderTarget);
+                if (idx >= 0) {
+                    layer.renderTargetTextures.splice(idx, 1);
+                }
+            });
+        }
+        let rt_idx = this._scene.customRenderTargets.indexOf(this._opaqueRenderTarget);
+        if (this._opaqueRenderTarget) {
+            this._opaqueRenderTarget.dispose();
+        }
         this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true);
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
-        var backDepthTexture = new DepthRenderer(this._scene, Engine.TEXTURETYPE_FLOAT, null, this._options.renderSize);
-        backDepthTexture.getDepthMap().renderList = this._opaqueMeshesCache;
-        backDepthTexture.getDepthMap().updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
+        if (rt_idx >= 0) {
+            this._scene.customRenderTargets.splice(rt_idx, 0, this._opaqueRenderTarget);
+        } else {
+            this._scene.customRenderTargets.push(this._opaqueRenderTarget);
+        }
 
-        this._scene.customRenderTargets.push(this._opaqueRenderTarget);
-        this._scene.customRenderTargets.push(backDepthTexture.getDepthMap());
+        if (this._opaqueDepthRenderer) {
+            rt_idx = this._scene.customRenderTargets.indexOf(this._opaqueDepthRenderer.getDepthMap());
+            this._opaqueDepthRenderer.dispose();
+        }
+        this._opaqueDepthRenderer = new DepthRenderer(this._scene, Engine.TEXTURETYPE_FLOAT, null, this._options.renderSize);
+        this._opaqueDepthRenderer.getDepthMap().renderList = this._opaqueMeshesCache;
+        this._opaqueDepthRenderer.getDepthMap().updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
+
+        if (rt_idx >= 0) {
+            this._scene.customRenderTargets.splice(rt_idx, 0, this._opaqueDepthRenderer.getDepthMap());
+        } else {
+            this._scene.customRenderTargets.push(this._opaqueDepthRenderer.getDepthMap());
+        }
+        
+        // Before creating MRT's and depth passes, remove the existing ones.
+        let new_targets = [];
+        this._depthRenderers.forEach((renderer) => {
+            renderer.dispose();
+        });
+        this._mrtRenderTargets.forEach((mrt) => {
+            mrt.onBeforeRenderObservable.clear();
+            mrt.onAfterRenderObservable.clear();
+            mrt.dispose();
+        });
+
+        this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
+            if (this.renderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
+                mesh.material.refractionTexture = null;
+            }
+        });
 
         // Create all the render targets for the depth-peeling passes
-        this._depthRenderers = [];
         this._mrtRenderTargets = [];
+        this._depthRenderers = [];
         for (let idx = 0; idx < this._options.numPasses; idx++) {
             const depthRenderer = new DepthRenderer(this._scene, Engine.TEXTURETYPE_FLOAT, null, this._options.renderSize);
             depthRenderer.getDepthMap().renderList = this._transparentMeshesCache;
             depthRenderer.getDepthMap().updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
 
-            const multiRenderTarget = new MultiRenderTarget(name, this._options.renderSize, 5, this._scene, {
+            const multiRenderTarget = new MultiRenderTarget("transparency_mrt_" + idx, this._options.renderSize, 5, this._scene, {
                 defaultType: floatTextureType,
                 types: [Constants.TEXTURETYPE_UNSIGNED_BYTE, floatTextureType, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE],
                 samplingModes: [MultiRenderTarget.BILINEAR_SAMPLINGMODE],
@@ -301,14 +335,14 @@ export class AdobeTransparencyHelper {
                         if (this.renderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
                             mesh.material.useAdobeGBufferRendering = true;
                             mesh.material.transparency.frontDepthTexture = depthRenderer.getDepthMap();
-                            mesh.material.transparency.backDepthTexture = backDepthTexture.getDepthMap();
+                            mesh.material.transparency.backDepthTexture = this._opaqueDepthRenderer.getDepthMap();
                             // (mesh.material as PBRMaterial).sideOrientation = PBRMaterial.CounterClockWiseSideOrientation;
                             // mesh.material.backFaceCulling = false;
                             // mesh.material.twoSidedLighting = true;
                             mesh.material.transparencyMode = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
                             mesh.material.forceNormalForward = true;
                             // (mesh.material as PBRMaterial).disableDepthWrite = true;
-                            mesh.material.refractionTexture = null;
+                            mesh.material.refractionTexture = null;//mesh.material.environmentBRDFTexture;
                         }
                     });
                 }
@@ -337,25 +371,34 @@ export class AdobeTransparencyHelper {
             
             this._depthRenderers.push(depthRenderer);
             this._mrtRenderTargets.push(multiRenderTarget);
-            this._scene.customRenderTargets.push(depthRenderer.getDepthMap());
-            this._scene.customRenderTargets.push(multiRenderTarget);
-
-
+            new_targets.push(depthRenderer.getDepthMap());
+            new_targets.push(multiRenderTarget);
+            
             if (idx > 0) {
                 depthRenderer.useDepthPeeling = true;
                 depthRenderer.depthPeelingMap = this._depthRenderers[idx - 1].getDepthMap();
             }
         }
 
+        // Remove the depth RT as well as the associated MRT.
+        if (rt_idx >= 0) {
+            this._scene.customRenderTargets.splice(rt_idx + 1, 0, ...new_targets);
+        } else {
+            new_targets.forEach((target) => this._scene.customRenderTargets.push(target));
+        }
+
+        // If there are other layers, they should be included in the render of the opaque background.
         if (this._scene.layers) {
             this._scene.layers.forEach((layer) => {
                 layer.renderTargetTextures.push(this._opaqueRenderTarget);
             });
         }
         
-        // for (let idx = 0; idx < this._options.numPasses; idx++) {
-            this._compositor = new AdobeTransparencyCompositor({renderSize: this._options.renderSize, numPasses: this._options.numPasses}, this._scene);
-        this._compositor.setBackgroundDepthTexture(backDepthTexture.getDepthMap());
+        if (this._compositor) {
+            this._compositor.dispose();
+        }
+        this._compositor = new AdobeTransparencyCompositor({renderSize: this._options.renderSize, numPasses: this._options.numPasses}, this._scene);
+        this._compositor.setBackgroundDepthTexture(this._opaqueDepthRenderer.getDepthMap());
         this._compositor.setBackgroundTexture(this._opaqueRenderTarget);
         this._compositor.setTransparentTextures(this._mrtRenderTargets);
 

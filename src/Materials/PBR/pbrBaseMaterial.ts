@@ -234,6 +234,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
 
     public ADOBE_TRANSPARENCY_G_BUFFER = false;
+    public ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 5;
 
     public UNLIT = false;
 
@@ -1495,6 +1496,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             if (this.useAdobeGBufferRendering) {
                 defines.ADOBE_TRANSPARENCY_G_BUFFER = true;
+                defines.ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 5;
             } else {
                 defines.ADOBE_TRANSPARENCY_G_BUFFER = false;
             }

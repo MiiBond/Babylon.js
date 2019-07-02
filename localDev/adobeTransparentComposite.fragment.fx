@@ -51,6 +51,7 @@ void main(void) {
     float pixel_depth = reflection.a;
     float thickness = 0.0;
     float thickness_scale = -1.0;
+    float refract_amount = 0.0;
     if (emissive.a == 1.0) {
         thickness = max(pixel_depth - background_depth_no_refract, 0.0);
         thickness_scale = 200.0 * thickness;

@@ -24,7 +24,7 @@ precision highp float;
 #endif
 
 #ifdef ADOBE_TRANSPARENCY_G_BUFFER
-    #include<mrtFragmentDeclaration>[5]
+    #include<mrtFragmentDeclaration>[ADOBE_TRANSPARENCY_G_BUFFER_LENGTH]
 #else
     #include<mrtFragmentDeclaration>[1]
 #endif
@@ -379,28 +379,11 @@ float transmission = 0.0;
             refractionVector.y = refractionVector.y * vRefractionInfos.w;
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
-        #elif defined TRANSPARENCY
-            vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW, 1.0)));
-            vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
-            refractionCoords.y = 1.0 - refractionCoords.y;
-            float refraction_thickness = (1.0 - sampleRefractionLod(refractionSampler, refractionCoords, 0.0).a) - sceneDepth;
-            if (refraction_thickness > 0.5) {
-                refraction_thickness = 0.0;
-            }
-
-            #ifdef TRANSPARENCY_INTERIOR
-                // Do density calculation here.
-                float thickness_scale = 10.0*refraction_thickness;
-                vec3 clamped_color = clamp(vInteriorTransparency.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
-                float density = vInteriorTransparency.a;
-                float scene_scale = 60.0;
-                vec3 absorption_coeff = pow(clamped_color*density*scene_scale, vec3(1.0 + thickness_scale));
-                vec3 scattering_coeff = density*scene_scale*vec3(0.6931472);
-            #endif
+        // #elif defined TRANSPARENCY
+        //     vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW, 1.0)));
+        //     vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+        //     refractionCoords.y = 1.0 - refractionCoords.y;
             
-            vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * 12.0 * refraction_thickness, 1.0)));
-            refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
-            refractionCoords.y = 1.0 - refractionCoords.y;
         #else
             vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
@@ -434,8 +417,31 @@ float transmission = 0.0;
                 float requestedRefractionLOD = refractionLOD;
             #endif
 
-            environmentRefraction.rgb = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD).rgb;
+            #ifdef TRANSPARENCY
+                // vec4 refraction_clear = texture2D(refractionSampler, refractionCoords);
+                vec4 refraction_colour = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+                float refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;
+                if (refraction_thickness < 0.0) {
+                    vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW, 1.0)));
+                    refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+                    refractionCoords.y = 1.0 - refractionCoords.y;
+                    refraction_colour = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+                    refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;
+                }
 
+                #ifdef TRANSPARENCY_INTERIOR
+                    // Do density calculation here.
+                    float thickness_scale = 10.0*refraction_thickness;
+                    vec3 clamped_color = clamp(vInteriorTransparency.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
+                    float density = vInteriorTransparency.a;
+                    float scene_scale = 60.0;
+                    vec3 absorption_coeff = pow(clamped_color*density*scene_scale, vec3(1.0 + thickness_scale * (1.0 - NdotV)));
+                    vec3 scattering_coeff = density*scene_scale*vec3(0.6931472);
+                #endif
+                environmentRefraction.rgb = refraction_colour.rgb;
+            #else
+                environmentRefraction.rgb = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD).rgb;
+            #endif
             
         #else
             float lodRefractionNormalized = saturate(refractionLOD / log2(vRefractionMicrosurfaceInfos.x));
@@ -1341,6 +1347,9 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
 
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
     // gl_FragColor = finalColor;
+    // #ifdef SS_REFRACTION
+    // finalColor.rgb = vec3(NdotV);
+    // #endif
 
     gl_FragData[0] = finalColor;
     // gl_FragData[1] = vec4(0.0);

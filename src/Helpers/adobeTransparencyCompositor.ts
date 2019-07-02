@@ -53,18 +53,13 @@ export class AdobeTransparencyCompositor {
     public backgroundDepthTexture: Texture;
     public transparentTextures: MultiRenderTarget[];
     public compositedTexture: RenderTargetTexture;
-    
 
     /**
      * Stores the creation options.
      */
-    // private readonly _scene: Scene;
     private _options: IAdobeTransparencyCompositorOptions;
-    
     private _postProcesses: PostProcess[];
-    // private _compositeMaterial: ShaderMaterial;
     private _scene: Scene;
-    // private _camera: Camera;
     
     /**
      * This observable will be notified with any error during the creation of the environment,
@@ -84,7 +79,6 @@ export class AdobeTransparencyCompositor {
         };
         this._scene = scene;
         this.onErrorObservable = new Observable();
-        // this._setupCompositePass();
         this._setupScene();
     }
 
@@ -106,12 +100,6 @@ export class AdobeTransparencyCompositor {
     }
 
     public render(): void {
-        // this._compositeMaterial.setTexture("colourTexture", this.transparentTextures.textures[0]);
-        // this._compositeMaterial.setTexture("reflectionTexture", this.transparentTextures.textures[1]);
-        // this._compositeMaterial.setTexture("miscTexture", this.transparentTextures.textures[2]);
-        // this._compositeMaterial.setTexture("emissiveTexture", this.transparentTextures.textures[3]);
-        // this._compositeMaterial.setTexture("backgroundTexture", this.backgroundTexture);
-        // this.compositedTexture.render();
         this._scene.postProcessManager.directRender(this._postProcesses, this.compositedTexture.getInternalTexture());
     }
 
@@ -138,7 +126,7 @@ export class AdobeTransparencyCompositor {
             floatTextureType = Engine.TEXTURETYPE_FLOAT;
         // }
 
-        this.compositedTexture = new RenderTargetTexture("trans_composite_output", this._options.renderSize, null, true, undefined, floatTextureType, false, undefined, false, false, false);
+        this.compositedTexture = new RenderTargetTexture("trans_composite_output", this._options.renderSize, this._scene, true, undefined, floatTextureType, false, undefined, false, false, false);
         this.compositedTexture.clearColor = new Color4(1, 0, 1, 1);
         this.compositedTexture.lodGenerationScale = 0.5;
         // this.compositedTexture.lodGenerationOffset = -0.5;
@@ -196,6 +184,9 @@ export class AdobeTransparencyCompositor {
      * Dispose all the elements created by the Helper.
      */
     public dispose(): void {
-        
+        this.compositedTexture.dispose();
+        this._postProcesses.forEach((post) => {
+            post.dispose();
+        });
     }
 }

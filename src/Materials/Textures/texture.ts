@@ -438,6 +438,13 @@ export class Texture extends BaseTexture {
             this._t1 = Vector3.Zero();
             this._t2 = Vector3.Zero();
         }
+        
+        if (!this._rowGenerationMatrix) {
+            this._rowGenerationMatrix = new Matrix();
+            this._t0 = Vector3.Zero();
+            this._t1 = Vector3.Zero();
+            this._t2 = Vector3.Zero();
+        }
 
         Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix!);
 
