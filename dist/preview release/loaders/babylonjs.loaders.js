@@ -4028,8 +4028,15 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ADOBE_materials_thin_transparency", function() { return ADOBE_materials_thin_transparency; });
-/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
 
+// import { Mesh } from "babylonjs/Meshes/mesh";
+// import { TransformNode } from "babylonjs/Meshes/transformNode";
+
+
+// import { PBRBaseMaterial } from 'babylonjs/Materials/PBR/pbrBaseMaterial';
 var NAME = "ADOBE_materials_thin_transparency";
 var ADOBE_materials_thin_transparency = /** @class */ (function () {
     function ADOBE_materials_thin_transparency(loader) {
@@ -4044,7 +4051,7 @@ var ADOBE_materials_thin_transparency = /** @class */ (function () {
     ADOBE_materials_thin_transparency.prototype.onLoading = function () {
         var extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
-            // const extension = extensions[this.name] as ILights;
+            // const extension = extensions[this.name] as IAdobeMaterialsThinTransparency;
             // this._lights = extension.lights;
         }
     };
@@ -4053,122 +4060,126 @@ var ADOBE_materials_thin_transparency = /** @class */ (function () {
         delete this._loader;
         // delete this._lights;
     };
-    // Using the map from nodes to materials, setup the meshes that need a two-pass material by cloning them and
-    // setting the second-pass material to the new mesh.
-    // loadNodeAsync(context: string, nodeDef: INode, assign: any): any {
-    //   return this._loader.loadNodeAsync(context, nodeDef, assign).then((node: TransformNode) => {
-    //     // if (this.viewer.nodeMaterialMap[nodeDef.index]) {
-    //     //   // clone the mesh and assign the new material.
-    //     //   let childMeshes = [node];
-    //     //   if (this.viewer.nodeMaterialMap[nodeDef.index].length > 1) {
-    //     //     childMeshes = node.getChildMeshes(true) as Mesh[];
-    //     //     if (childMeshes.length !== this.viewer.nodeMaterialMap[nodeDef.index].length) {
-    //     //       return;
-    //     //     }
-    //     //   }
-    //     //   this.viewer.nodeMaterialMap[nodeDef.index].forEach((matIdx: number, primIdx: number) => {
-    //     //     if (this.renderer.multiPassMaterials[matIdx]) {
-    //     //       const mesh = childMeshes[primIdx] as Mesh;
-    //     //       // mesh.renderingGroupId = AdobeViewer.BACKSIDE_PASS_RENDER_GROUP_ID;
-    //     //       mesh.material = this.renderer.multiPassMaterials[matIdx].backside;
-    //     //       // mesh.visibility = 0;
-    //     //       const frontPassMesh = mesh.clone(mesh.name + "_front_pass", mesh.parent);
-    //     //       // frontPassMesh.renderingGroupId = AdobeViewer.FRONTSIDE_PASS_RENDER_GROUP_ID;
-    //     //       frontPassMesh.material = this.renderer.multiPassMaterials[matIdx].frontside;
-    //     //       frontPassMesh.visibility = 1;
-    //     //       // console.log(`Frontside mesh ${frontPassMesh.name}`, frontPassMesh);
-    //     //       // console.log(`Backside mesh ${mesh.name}`, mesh);
-    //     //     }
-    //     //   });
-    //     // }
-    //     return Promise.resolve(node);
-    //   });
-    // }
+    /** @hidden */
     ADOBE_materials_thin_transparency.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
+        var _this = this;
+        return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, material, this.name, function (extensionContext, extension) {
+            console.log(extensionContext);
+            var promises = new Array();
+            promises.push(_this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
+            promises.push(_this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
+            promises.push(_this._loadTransparentPropertiesAsync(context, material, babylonMaterial, extension));
+            return Promise.all(promises).then(function () { });
+        });
+    };
+    ADOBE_materials_thin_transparency.prototype._loadTransparentPropertiesAsync = function (context, material, babylonMaterial, extension) {
+        if (!(babylonMaterial instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["PBRMaterial"])) {
+            throw new Error(context + ": Material type not supported");
+        }
         // const promises = [];
-        if (material.extensions && material.extensions.ADOBE_materials_thin_transparency) {
-            console.log(material.extensions.ADOBE_materials_thin_transparency);
-            console.log(babylonMaterial);
-            var transparencyExtension = material.extensions.ADOBE_materials_thin_transparency;
-            var pbrMaterial_1 = babylonMaterial;
-            pbrMaterial_1.transparencyMode = 0;
-            pbrMaterial_1.transparency.factor = 1;
-            if (transparencyExtension.transmissionTexture) {
-                return this._loader.loadTextureInfoAsync(context, transparencyExtension.transmissionTexture)
-                    .then(function (texture) {
-                    pbrMaterial_1.transparency.texture = texture;
-                });
-            }
-            // Record the materials for use by node-loading.
-            // const pbrMaterial = babylonMaterial as PBRMaterial;
-            // const transparencyMaterial = new PBRMaterial(babylonMaterial.name, this._loader.babylonScene);
-            // this.viewer.sceneManager.scene.removeMaterial(babylonMaterial);
-            // const transparencyExtension = material.extensions.ADOBE_materials_thin_transparency;
-            // transparencyMaterial.linkRefractionWithTransparency = false;
-            // transparencyMaterial.alpha = 1;
-            // // transparencyMaterial.opticalTransmission = transparencyExtension.transmissionFactor !== undefined ? transparencyExtension.transmissionFactor : 1.0;
-            // transparencyMaterial.sideOrientation = Material.ClockWiseSideOrientation;
-            // transparencyMaterial.twoSidedLighting = false;
-            // transparencyMaterial.backFaceCulling = true;
-            // transparencyMaterial.indexOfRefraction = 1.0 / transparencyExtension.ior;
-            // transparencyMaterial.zOffset = 1;
-            // transparencyMaterial.useSpecularOverAlpha = false;
-            // transparencyMaterial.useRadianceOverAlpha = false;
-            // const interiorProps = (material.extras && material.extras.ADOBE_transparency) ? material.extras.ADOBE_transparency : {};
-            // const density = interiorProps.density || 0;
-            // interiorColor.scaleToRef(Math.min(density, 1), interiorColor);
-            // if (density) {
-            // transparencyMaterial.interiorColor.copyFromFloats(interiorProps.interiorColor[0], interiorProps.interiorColor[1], interiorProps.interiorColor[2]);
-            // transparencyMaterial.interiorDensity = density;
-            // }
-            // We need a tint pass if this material is anything other than white.
-            // const needsTint = !!(material.pbrMetallicRoughness.baseColorFactor || material.pbrMetallicRoughness.baseColorTexture);
-            // const needsSeparateGloss = (transparencyExtension.transmissionFactor !== undefined) || transparencyExtension.transmissionTexture;
-            return this._loader.loadMaterialPropertiesAsync(context, material, pbrMaterial_1);
-            // .then(() => {
-            //   const createBacksideMaterial = (transparencyMaterial: PBRMaterial) => {
-            //     const backsideMaterial = transparencyMaterial.clone(transparencyMaterial.name + "_back");
-            //     backsideMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
-            //     backsideMaterial.backFaceCulling = true;
-            //     backsideMaterial.twoSidedLighting = false;
-            //     backsideMaterial.zOffset = 1;
-            //     backsideMaterial.forceNormalForward = true;
-            //     // backsideMaterial.interiorDensity = 0.0;
-            //     // this.renderer.multiPassMaterials[material.index] = {backside: backsideMaterial, frontside: transparencyMaterial};
-            //   }
-            //   if (transparencyExtension.transmissionTexture) {
-            //     return this._loader.loadTextureInfoAsync(context, transparencyExtension.transmissionTexture).then((texture: BaseTexture) => {
-            //       texture.getAlphaFromRGB = true;
-            //       // transparencyMaterial.transmissionTexture = texture;
-            //       createBacksideMaterial(transparencyMaterial);
-            //     });
-            //   } else {
-            //     createBacksideMaterial(transparencyMaterial);
-            //     return Promise.resolve();
-            //   }
-            // });
+        // if (material.extensions && material.extensions.ADOBE_materials_thin_transparency) {
+        console.log(extension);
+        console.log(babylonMaterial);
+        // const transparencyExtension = material.extensions.ADOBE_materials_thin_transparency;
+        var pbrMaterial = babylonMaterial;
+        pbrMaterial.transparency.isEnabled = true;
+        // pbrMaterial.transparencyMode = PBRBaseMaterial.PBRMATERIAL_OPAQUE;
+        pbrMaterial.subSurface.tintColor = pbrMaterial.albedoColor;
+        pbrMaterial.backFaceCulling = false;
+        pbrMaterial.twoSidedLighting = true;
+        pbrMaterial.enableSpecularAntiAliasing = false;
+        // Don't let the material gather RT's because, if it does, the scene will try to render the RT for the refractionTexture.
+        pbrMaterial.getRenderTargetTextures = null;
+        if (extension.transmissionFactor !== undefined) {
+            pbrMaterial.transparency.factor = extension.transmissionFactor;
+        }
+        if (extension.ior !== undefined) {
+            pbrMaterial.indexOfRefraction = 1.0 / extension.ior;
+        }
+        if (extension.density !== undefined) {
+            pbrMaterial.transparency.interiorDensity = extension.density;
+        }
+        if (extension.interiorColor !== undefined) {
+            pbrMaterial.transparency.interiorColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(extension.interiorColor);
+        }
+        if (extension.transmissionTexture) {
+            return this._loader.loadTextureInfoAsync(context, extension.transmissionTexture)
+                .then(function (texture) {
+                pbrMaterial.transparency.texture = texture;
+                pbrMaterial.transparency.texture.getAlphaFromRGB = true;
+            });
         }
         else {
-            return this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
-            // .then(() => {
-            //   if (babylonMaterial.needAlphaBlending()) {
-            //     const pbrMaterial = babylonMaterial as PBRMaterial;
-            //     pbrMaterial.sideOrientation = Mesh.FRONTSIDE;
-            //     pbrMaterial.twoSidedLighting = false;
-            //     const backsideMaterial = pbrMaterial.clone(pbrMaterial.name + "_back");
-            //     backsideMaterial.sideOrientation = Mesh.BACKSIDE;
-            //     backsideMaterial.backFaceCulling = true;
-            //     backsideMaterial.twoSidedLighting = false;
-            //     // this.renderer.multiPassMaterials[material.index] = {backside: backsideMaterial, frontside: pbrMaterial};
-            //   }
-            //   return Promise.resolve();
-            // });
+            return Promise.resolve();
         }
+        // Record the materials for use by node-loading.
+        // const pbrMaterial = babylonMaterial as PBRMaterial;
+        // const transparencyMaterial = new PBRMaterial(babylonMaterial.name, this._loader.babylonScene);
+        // this.viewer.sceneManager.scene.removeMaterial(babylonMaterial);
+        // const transparencyExtension = material.extensions.ADOBE_materials_thin_transparency;
+        // transparencyMaterial.linkRefractionWithTransparency = false;
+        // transparencyMaterial.alpha = 1;
+        // // transparencyMaterial.opticalTransmission = transparencyExtension.transmissionFactor !== undefined ? transparencyExtension.transmissionFactor : 1.0;
+        // transparencyMaterial.sideOrientation = Material.ClockWiseSideOrientation;
+        // transparencyMaterial.twoSidedLighting = false;
+        // transparencyMaterial.backFaceCulling = true;
+        // transparencyMaterial.indexOfRefraction = 1.0 / transparencyExtension.ior;
+        // transparencyMaterial.zOffset = 1;
+        // transparencyMaterial.useSpecularOverAlpha = false;
+        // transparencyMaterial.useRadianceOverAlpha = false;
+        // const interiorProps = (material.extras && material.extras.ADOBE_transparency) ? material.extras.ADOBE_transparency : {};
+        // const density = interiorProps.density || 0;
+        // interiorColor.scaleToRef(Math.min(density, 1), interiorColor);
+        // if (density) {
+        // transparencyMaterial.interiorColor.copyFromFloats(interiorProps.interiorColor[0], interiorProps.interiorColor[1], interiorProps.interiorColor[2]);
+        // transparencyMaterial.interiorDensity = density;
+        // }
+        // We need a tint pass if this material is anything other than white.
+        // const needsTint = !!(material.pbrMetallicRoughness.baseColorFactor || material.pbrMetallicRoughness.baseColorTexture);
+        // const needsSeparateGloss = (transparencyExtension.transmissionFactor !== undefined) || transparencyExtension.transmissionTexture;
+        // return this._loader.loadMaterialPropertiesAsync(context, material, pbrMaterial);
+        // .then(() => {
+        //   const createBacksideMaterial = (transparencyMaterial: PBRMaterial) => {
+        //     const backsideMaterial = transparencyMaterial.clone(transparencyMaterial.name + "_back");
+        //     backsideMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
+        //     backsideMaterial.backFaceCulling = true;
+        //     backsideMaterial.twoSidedLighting = false;
+        //     backsideMaterial.zOffset = 1;
+        //     backsideMaterial.forceNormalForward = true;
+        //     // backsideMaterial.interiorDensity = 0.0;
+        //     // this.renderer.multiPassMaterials[material.index] = {backside: backsideMaterial, frontside: transparencyMaterial};
+        //   }
+        //   if (transparencyExtension.transmissionTexture) {
+        //     return this._loader.loadTextureInfoAsync(context, transparencyExtension.transmissionTexture).then((texture: BaseTexture) => {
+        //       texture.getAlphaFromRGB = true;
+        //       // transparencyMaterial.transmissionTexture = texture;
+        //       createBacksideMaterial(transparencyMaterial);
+        //     });
+        //   } else {
+        //     createBacksideMaterial(transparencyMaterial);
+        //     return Promise.resolve();
+        //   }
+        // });
+        // } else {
+        //   return this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
+        // .then(() => {
+        //   if (babylonMaterial.needAlphaBlending()) {
+        //     const pbrMaterial = babylonMaterial as PBRMaterial;
+        //     pbrMaterial.sideOrientation = Mesh.FRONTSIDE;
+        //     pbrMaterial.twoSidedLighting = false;
+        //     const backsideMaterial = pbrMaterial.clone(pbrMaterial.name + "_back");
+        //     backsideMaterial.sideOrientation = Mesh.BACKSIDE;
+        //     backsideMaterial.backFaceCulling = true;
+        //     backsideMaterial.twoSidedLighting = false;
+        //     // this.renderer.multiPassMaterials[material.index] = {backside: backsideMaterial, frontside: pbrMaterial};
+        //   }
+        //   return Promise.resolve();
+        // });
     };
     return ADOBE_materials_thin_transparency;
 }());
 
-_glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new ADOBE_materials_thin_transparency(loader); });
+_glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new ADOBE_materials_thin_transparency(loader); });
 
 
 /***/ }),
@@ -4291,6 +4302,72 @@ var EXT_lights_image_based = /** @class */ (function () {
 }());
 
 _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new EXT_lights_image_based(loader); });
+
+
+/***/ }),
+
+/***/ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts":
+/*!*************************************************!*\
+  !*** ./glTF/2.0/Extensions/ExtrasAsMetadata.ts ***!
+  \*************************************************/
+/*! exports provided: ExtrasAsMetadata */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return ExtrasAsMetadata; });
+/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+
+var NAME = "ExtrasAsMetadata";
+/**
+ * Store glTF extras (if present) in BJS objects' metadata
+ */
+var ExtrasAsMetadata = /** @class */ (function () {
+    /** @hidden */
+    function ExtrasAsMetadata(loader) {
+        /** The name of this extension. */
+        this.name = NAME;
+        /** Defines whether this extension is enabled. */
+        this.enabled = true;
+        this._loader = loader;
+    }
+    ExtrasAsMetadata.prototype._assignExtras = function (babylonObject, gltfProp) {
+        if (gltfProp.extras && Object.keys(gltfProp.extras).length > 0) {
+            var metadata = (babylonObject.metadata = babylonObject.metadata || {});
+            var gltf = (metadata.gltf = metadata.gltf || {});
+            gltf.extras = gltfProp.extras;
+        }
+    };
+    /** @hidden */
+    ExtrasAsMetadata.prototype.dispose = function () {
+        delete this._loader;
+    };
+    /** @hidden */
+    ExtrasAsMetadata.prototype.loadNodeAsync = function (context, node, assign) {
+        var _this = this;
+        return this._loader.loadNodeAsync(context, node, function (babylonTransformNode) {
+            _this._assignExtras(babylonTransformNode, node);
+            assign(babylonTransformNode);
+        });
+    };
+    /** @hidden */
+    ExtrasAsMetadata.prototype.loadCameraAsync = function (context, camera, assign) {
+        var _this = this;
+        return this._loader.loadCameraAsync(context, camera, function (babylonCamera) {
+            _this._assignExtras(babylonCamera, camera);
+            assign(babylonCamera);
+        });
+    };
+    /** @hidden */
+    ExtrasAsMetadata.prototype.createMaterial = function (context, material, babylonDrawMode) {
+        var babylonMaterial = this._loader.createMaterial(context, material, babylonDrawMode);
+        this._assignExtras(babylonMaterial, material);
+        return babylonMaterial;
+    };
+    return ExtrasAsMetadata;
+}());
+
+_glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new ExtrasAsMetadata(loader); });
 
 
 /***/ }),
@@ -4547,13 +4624,11 @@ var KHR_materials_pbrSpecularGlossiness = /** @class */ (function () {
         babylonMaterial.microSurface = properties.glossinessFactor == undefined ? 1 : properties.glossinessFactor;
         if (properties.diffuseTexture) {
             promises.push(this._loader.loadTextureInfoAsync(context + "/diffuseTexture", properties.diffuseTexture, function (texture) {
-                texture.name = babylonMaterial.name + " (Diffuse)";
                 babylonMaterial.albedoTexture = texture;
             }));
         }
         if (properties.specularGlossinessTexture) {
             promises.push(this._loader.loadTextureInfoAsync(context + "/specularGlossinessTexture", properties.specularGlossinessTexture, function (texture) {
-                texture.name = babylonMaterial.name + " (Specular Glossiness)";
                 babylonMaterial.reflectivityTexture = texture;
             }));
             babylonMaterial.reflectivityTexture.hasAlpha = true;
@@ -4626,7 +4701,6 @@ var KHR_materials_unlit = /** @class */ (function () {
             }
             if (properties.baseColorTexture) {
                 promises.push(this._loader.loadTextureInfoAsync(context + "/baseColorTexture", properties.baseColorTexture, function (texture) {
-                    texture.name = babylonMaterial.name + " (Base Color)";
                     babylonMaterial.albedoTexture = texture;
                 }));
             }
@@ -5321,7 +5395,7 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 /*!**************************************!*\
   !*** ./glTF/2.0/Extensions/index.ts ***!
   \**************************************/
-/*! exports provided: ADOBE_materials_thin_transparency, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors */
+/*! exports provided: ADOBE_materials_thin_transparency, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5358,6 +5432,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./MSFT_sRGBFactors */ "./glTF/2.0/Extensions/MSFT_sRGBFactors.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_10__["MSFT_sRGBFactors"]; });
+
+/* harmony import */ var _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./ExtrasAsMetadata */ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_11__["ExtrasAsMetadata"]; });
+
 
 
 
@@ -6112,10 +6190,10 @@ var GLTFLoader = /** @class */ (function () {
         else if (primitive.targets.length !== node._numMorphTargets) {
             throw new Error(context + ": Primitives do not have the same number of targets");
         }
-        babylonMesh.morphTargetManager = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTargetManager"]();
+        babylonMesh.morphTargetManager = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTargetManager"](babylonMesh.getScene());
         for (var index = 0; index < primitive.targets.length; index++) {
             var weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
-            babylonMesh.morphTargetManager.addTarget(new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTarget"]("morphTarget" + index, weight));
+            babylonMesh.morphTargetManager.addTarget(new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTarget"]("morphTarget" + index, weight, babylonMesh.getScene()));
             // TODO: tell the target whether it has positions, normals, tangents
         }
     };
@@ -6148,28 +6226,32 @@ var GLTFLoader = /** @class */ (function () {
             }));
         };
         loadAttribute("POSITION", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind, function (babylonVertexBuffer, data) {
+            var positions = new Float32Array(data.length);
             babylonVertexBuffer.forEach(data.length, function (value, index) {
-                data[index] += value;
+                positions[index] = data[index] + value;
             });
-            babylonMorphTarget.setPositions(data);
+            babylonMorphTarget.setPositions(positions);
         });
         loadAttribute("NORMAL", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind, function (babylonVertexBuffer, data) {
-            babylonVertexBuffer.forEach(data.length, function (value, index) {
-                data[index] += value;
+            var normals = new Float32Array(data.length);
+            babylonVertexBuffer.forEach(normals.length, function (value, index) {
+                normals[index] = data[index] + value;
             });
-            babylonMorphTarget.setNormals(data);
+            babylonMorphTarget.setNormals(normals);
         });
         loadAttribute("TANGENT", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].TangentKind, function (babylonVertexBuffer, data) {
+            var tangents = new Float32Array(data.length / 3 * 4);
             var dataIndex = 0;
             babylonVertexBuffer.forEach(data.length / 3 * 4, function (value, index) {
                 // Tangent data for morph targets is stored as xyz delta.
                 // The vertexData.tangent is stored as xyzw.
                 // So we need to skip every fourth vertexData.tangent.
                 if (((index + 1) % 4) !== 0) {
-                    data[dataIndex++] += value;
+                    tangents[dataIndex] = data[dataIndex] + value;
+                    dataIndex++;
                 }
             });
-            babylonMorphTarget.setTangents(data);
+            babylonMorphTarget.setTangents(tangents);
         });
         return Promise.all(promises).then(function () { });
     };
@@ -6610,23 +6692,29 @@ var GLTFLoader = /** @class */ (function () {
         return accessor._data;
     };
     GLTFLoader.prototype._loadFloatAccessorAsync = function (context, accessor) {
-        // TODO: support normalized and stride
         var _this = this;
-        if (accessor.componentType !== 5126 /* FLOAT */) {
-            throw new Error("Invalid component type " + accessor.componentType);
-        }
         if (accessor._data) {
             return accessor._data;
         }
         var numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
+        var byteStride = numComponents * babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].GetTypeByteLength(accessor.componentType);
         var length = numComponents * accessor.count;
         if (accessor.bufferView == undefined) {
             accessor._data = Promise.resolve(new Float32Array(length));
         }
         else {
-            var bufferView = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
-            accessor._data = this.loadBufferViewAsync("/bufferViews/" + bufferView.index, bufferView).then(function (data) {
-                return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
+            var bufferView_1 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
+            accessor._data = this.loadBufferViewAsync("/bufferViews/" + bufferView_1.index, bufferView_1).then(function (data) {
+                if (accessor.componentType === 5126 /* FLOAT */ && !accessor.normalized) {
+                    return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
+                }
+                else {
+                    var floatData_1 = new Float32Array(length);
+                    babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ForEach(data, accessor.byteOffset || 0, bufferView_1.byteStride || byteStride, numComponents, accessor.componentType, floatData_1.length, accessor.normalized || false, function (value, index) {
+                        floatData_1[index] = value;
+                    });
+                    return floatData_1;
+                }
             });
         }
         if (accessor.sparse) {
@@ -6641,7 +6729,18 @@ var GLTFLoader = /** @class */ (function () {
                 ]).then(function (_a) {
                     var indicesData = _a[0], valuesData = _a[1];
                     var indices = GLTFLoader._GetTypedArray(context + "/sparse/indices", sparse_1.indices.componentType, indicesData, sparse_1.indices.byteOffset, sparse_1.count);
-                    var values = GLTFLoader._GetTypedArray(context + "/sparse/values", accessor.componentType, valuesData, sparse_1.values.byteOffset, numComponents * sparse_1.count);
+                    var sparseLength = numComponents * sparse_1.count;
+                    var values;
+                    if (accessor.componentType === 5126 /* FLOAT */ && !accessor.normalized) {
+                        values = GLTFLoader._GetTypedArray(context + "/sparse/values", accessor.componentType, valuesData, sparse_1.values.byteOffset, sparseLength);
+                    }
+                    else {
+                        var sparseData = GLTFLoader._GetTypedArray(context + "/sparse/values", accessor.componentType, valuesData, sparse_1.values.byteOffset, sparseLength);
+                        values = new Float32Array(sparseLength);
+                        babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ForEach(sparseData, 0, byteStride, numComponents, accessor.componentType, values.length, accessor.normalized || false, function (value, index) {
+                            values[index] = value;
+                        });
+                    }
                     var valuesIndex = 0;
                     for (var indicesIndex = 0; indicesIndex < indices.length; indicesIndex++) {
                         var dataIndex = indices[indicesIndex] * numComponents;
@@ -6683,10 +6782,10 @@ var GLTFLoader = /** @class */ (function () {
             });
         }
         else {
-            var bufferView_1 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
-            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView_1, kind).then(function (babylonBuffer) {
+            var bufferView_2 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
+            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView_2, kind).then(function (babylonBuffer) {
                 var size = GLTFLoader._GetNumComponents(context, accessor.type);
-                return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView_1.byteStride, false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
+                return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView_2.byteStride, false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
             });
         }
         return accessor._babylonVertexBuffer;
@@ -6708,13 +6807,11 @@ var GLTFLoader = /** @class */ (function () {
             babylonMaterial.roughness = properties.roughnessFactor == undefined ? 1 : properties.roughnessFactor;
             if (properties.baseColorTexture) {
                 promises.push(this.loadTextureInfoAsync(context + "/baseColorTexture", properties.baseColorTexture, function (texture) {
-                    texture.name = babylonMaterial.name + " (Base Color)";
                     babylonMaterial.albedoTexture = texture;
                 }));
             }
             if (properties.metallicRoughnessTexture) {
                 promises.push(this.loadTextureInfoAsync(context + "/metallicRoughnessTexture", properties.metallicRoughnessTexture, function (texture) {
-                    texture.name = babylonMaterial.name + " (Metallic Roughness)";
                     babylonMaterial.metallicTexture = texture;
                 }));
                 babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
@@ -6825,7 +6922,6 @@ var GLTFLoader = /** @class */ (function () {
         }
         if (material.normalTexture) {
             promises.push(this.loadTextureInfoAsync(context + "/normalTexture", material.normalTexture, function (texture) {
-                texture.name = babylonMaterial.name + " (Normal)";
                 babylonMaterial.bumpTexture = texture;
             }));
             babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
@@ -6837,7 +6933,6 @@ var GLTFLoader = /** @class */ (function () {
         }
         if (material.occlusionTexture) {
             promises.push(this.loadTextureInfoAsync(context + "/occlusionTexture", material.occlusionTexture, function (texture) {
-                texture.name = babylonMaterial.name + " (Occlusion)";
                 babylonMaterial.ambientTexture = texture;
             }));
             babylonMaterial.useAmbientInGrayScale = true;
@@ -6847,7 +6942,6 @@ var GLTFLoader = /** @class */ (function () {
         }
         if (material.emissiveTexture) {
             promises.push(this.loadTextureInfoAsync(context + "/emissiveTexture", material.emissiveTexture, function (texture) {
-                texture.name = babylonMaterial.name + " (Emissive)";
                 babylonMaterial.emissiveTexture = texture;
             }));
         }
@@ -6909,6 +7003,9 @@ var GLTFLoader = /** @class */ (function () {
         var texture = ArrayItem.Get(context + "/index", this._gltf.textures, textureInfo.index);
         var promise = this._loadTextureAsync("/textures/" + textureInfo.index, texture, function (babylonTexture) {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
+            if (texture.name) {
+                babylonTexture.name = texture.name;
+            }
             GLTFLoader.AddPointerMetadata(babylonTexture, context);
             _this._parent.onTextureLoadedObservable.notifyObservers(babylonTexture);
             assign(babylonTexture);
@@ -7389,7 +7486,7 @@ _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFFileLoader"]._CreateGLTF2Loade
 /*!***************************!*\
   !*** ./glTF/2.0/index.ts ***!
   \***************************/
-/*! exports provided: ArrayItem, GLTFLoader, ADOBE_materials_thin_transparency, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors */
+/*! exports provided: ArrayItem, GLTFLoader, ADOBE_materials_thin_transparency, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -7421,6 +7518,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_minecraftMesh", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["MSFT_minecraftMesh"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["MSFT_sRGBFactors"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["ExtrasAsMetadata"]; });
 
 
 

@@ -223,7 +223,7 @@ export class PhysicsImpostor {
     private _deltaRotation: Quaternion;
     private _deltaRotationConjugated: Quaternion;
 
-    /** hidden */
+    /** @hidden */
     public _isFromLine: boolean;
 
     //If set, this is this impostor's parent
@@ -294,7 +294,7 @@ export class PhysicsImpostor {
             return 0;
         }
         const plugin = this._physicsEngine.getPhysicsPlugin();
-        if (!plugin .setBodyPressure) {
+        if (!plugin.setBodyPressure) {
             return 0;
         }
         return plugin.getBodyPressure!(this);
@@ -440,6 +440,9 @@ export class PhysicsImpostor {
         if (!this.object) {
             Logger.Error("No object was provided. A physics object is obligatory");
             return;
+        }
+        if (this.object.parent && _options.mass !== 0) {
+            Logger.Warn("A physics impostor has been created for an object which has a parent. Babylon physics currently works in local space so unexpected issues may occur.");
         }
 
         // Legacy support for old syntax.
@@ -1238,6 +1241,10 @@ export class PhysicsImpostor {
      * Mesh-imposter type
      */
     public static MeshImpostor = 4;
+    /**
+     * Capsule-Impostor type (Ammo.js plugin only)
+     */
+    public static CapsuleImpostor = 6;
     /**
      * Cylinder-Imposter type
      */

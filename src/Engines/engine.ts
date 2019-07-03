@@ -8,11 +8,9 @@ import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { Matrix, Color3, Color4, Viewport, Vector4 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
-import { IDisplayChangedEventArgs } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Effect, EffectCreationOptions, EffectFallbacks } from "../Materials/effect";
-import { Material } from "../Materials/material";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -32,7 +30,10 @@ import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
+import { IShaderProcessor } from './Processors/iShaderProcessor';
+import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 
+declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
@@ -230,6 +231,16 @@ export interface EngineOptions extends WebGLContextAttributes {
 }
 
 /**
+ * Defines the interface used by display changed events
+ */
+export interface IDisplayChangedEventArgs {
+    /** Gets the vrDisplay object (if any) */
+    vrDisplay: Nullable<any>;
+    /** Gets a boolean indicating if webVR is supported */
+    vrSupported: boolean;
+}
+
+/**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
  */
 export class Engine {
@@ -279,9 +290,7 @@ export class Engine {
         }
     }
 
-    /**
-     * Hidden
-     */
+    /** @hidden */
     public static _TextureLoaders: IInternalTextureLoader[] = [];
 
     // Const statics
@@ -491,14 +500,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.0";
+        return "babylonjs@4.1.0-alpha.7";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.0";
+        return "4.1.0-alpha.7";
     }
 
     /**
@@ -547,6 +556,9 @@ export class Engine {
     public static _RescalePostProcessFactory: Nullable<(engine: Engine) => PostProcess> = null;
 
     // Public members
+
+    /** @hidden */
+    public _shaderProcessor: IShaderProcessor;
 
     /**
      * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
@@ -1043,6 +1055,41 @@ export class Engine {
                 }
             }
 
+            // Context lost
+            if (!this._doNotHandleContextLost) {
+                this._onContextLost = (evt: Event) => {
+                    evt.preventDefault();
+                    this._contextWasLost = true;
+                    Logger.Warn("WebGL context lost.");
+
+                    this.onContextLostObservable.notifyObservers(this);
+                };
+
+                this._onContextRestored = () => {
+                    // Adding a timeout to avoid race condition at browser level
+                    setTimeout(() => {
+                        // Rebuild gl context
+                        this._initGLContext();
+                        // Rebuild effects
+                        this._rebuildEffects();
+                        // Rebuild textures
+                        this._rebuildInternalTextures();
+                        // Rebuild buffers
+                        this._rebuildBuffers();
+                        // Cache
+                        this.wipeCaches(true);
+                        Logger.Warn("WebGL context successfully restored.");
+                        this.onContextRestoredObservable.notifyObservers(this);
+                        this._contextWasLost = false;
+                    }, 0);
+                };
+
+                canvas.addEventListener("webglcontextlost", this._onContextLost, false);
+                canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
+
+                options.powerPreference = "high-performance";
+            }
+
             // GL
             if (!options.disableWebGL2Support) {
                 try {
@@ -1114,39 +1161,6 @@ export class Engine {
 
             canvas.addEventListener("pointerout", this._onCanvasPointerOut);
 
-            // Context lost
-            if (!this._doNotHandleContextLost) {
-                this._onContextLost = (evt: Event) => {
-                    evt.preventDefault();
-                    this._contextWasLost = true;
-                    Logger.Warn("WebGL context lost.");
-
-                    this.onContextLostObservable.notifyObservers(this);
-                };
-
-                this._onContextRestored = () => {
-                    // Adding a timeout to avoid race condition at browser level
-                    setTimeout(() => {
-                        // Rebuild gl context
-                        this._initGLContext();
-                        // Rebuild effects
-                        this._rebuildEffects();
-                        // Rebuild textures
-                        this._rebuildInternalTextures();
-                        // Rebuild buffers
-                        this._rebuildBuffers();
-                        // Cache
-                        this.wipeCaches(true);
-                        Logger.Warn("WebGL context successfully restored.");
-                        this.onContextRestoredObservable.notifyObservers(this);
-                        this._contextWasLost = false;
-                    }, 0);
-                };
-
-                canvas.addEventListener("webglcontextlost", this._onContextLost, false);
-                canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
-            }
-
             if (!options.doNotHandleTouchAction) {
                 this._disableTouchAction();
             }
@@ -1196,14 +1210,7 @@ export class Engine {
 
                 // Pointer lock
                 if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                    canvas.requestPointerLock = canvas.requestPointerLock ||
-                        canvas.msRequestPointerLock ||
-                        canvas.mozRequestPointerLock ||
-                        canvas.webkitRequestPointerLock;
-
-                    if (canvas.requestPointerLock) {
-                        canvas.requestPointerLock();
-                    }
+                    Tools.RequestPointerlock(canvas);
                 }
             };
 
@@ -1243,6 +1250,11 @@ export class Engine {
         this._prepareVRComponent();
         if (options.autoEnableWebVR) {
             this.initWebVR();
+        }
+
+        // Shader processor
+        if (this.webGLVersion > 1) {
+            this._shaderProcessor = new WebGL2ShaderProcessor();
         }
 
         // Detect if we are running on a faulty buggy OS.
@@ -1549,6 +1561,14 @@ export class Engine {
      */
     public get webGLVersion(): number {
         return this._webGLVersion;
+    }
+
+    /**
+     * Gets a string idenfifying the name of the class
+     * @returns "Engine" string
+     */
+    public getClassName(): string {
+        return "Engine";
     }
 
     /**
@@ -2052,6 +2072,22 @@ export class Engine {
         if (this.isFullscreen) {
             Tools.ExitFullscreen();
         }
+    }
+
+    /**
+     * Enters Pointerlock mode
+     */
+    public enterPointerlock(): void {
+        if (this._renderingCanvas) {
+            Tools.RequestPointerlock(this._renderingCanvas);
+        }
+    }
+
+    /**
+     * Exits Pointerlock mode
+     */
+    public exitPointerlock(): void {
+        Tools.ExitPointerlock();
     }
 
     /**
@@ -3023,7 +3059,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
-        this.drawElementsType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, indexStart, indexCount, instancesCount);
+        this.drawElementsType(useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, indexStart, indexCount, instancesCount);
     }
 
     /**
@@ -3033,7 +3069,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
-        this.drawArraysType(Material.PointFillMode, verticesStart, verticesCount, instancesCount);
+        this.drawArraysType(Constants.MATERIAL_PointFillMode, verticesStart, verticesCount, instancesCount);
     }
 
     /**
@@ -3044,7 +3080,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
-        this.drawArraysType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, verticesStart, verticesCount, instancesCount);
+        this.drawArraysType(useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, verticesStart, verticesCount, instancesCount);
     }
 
     /**
@@ -3094,24 +3130,24 @@ export class Engine {
     private _drawMode(fillMode: number): number {
         switch (fillMode) {
             // Triangle views
-            case Material.TriangleFillMode:
+            case Constants.MATERIAL_TriangleFillMode:
                 return this._gl.TRIANGLES;
-            case Material.PointFillMode:
+            case Constants.MATERIAL_PointFillMode:
                 return this._gl.POINTS;
-            case Material.WireFrameFillMode:
+            case Constants.MATERIAL_WireFrameFillMode:
                 return this._gl.LINES;
             // Draw modes
-            case Material.PointListDrawMode:
+            case Constants.MATERIAL_PointListDrawMode:
                 return this._gl.POINTS;
-            case Material.LineListDrawMode:
+            case Constants.MATERIAL_LineListDrawMode:
                 return this._gl.LINES;
-            case Material.LineLoopDrawMode:
+            case Constants.MATERIAL_LineLoopDrawMode:
                 return this._gl.LINE_LOOP;
-            case Material.LineStripDrawMode:
+            case Constants.MATERIAL_LineStripDrawMode:
                 return this._gl.LINE_STRIP;
-            case Material.TriangleStripDrawMode:
+            case Constants.MATERIAL_TriangleStripDrawMode:
                 return this._gl.TRIANGLE_STRIP;
-            case Material.TriangleFanDrawMode:
+            case Constants.MATERIAL_TriangleFanDrawMode:
                 return this._gl.TRIANGLE_FAN;
             default:
                 return this._gl.TRIANGLES;
@@ -4212,7 +4248,8 @@ export class Engine {
                     customFallback = true;
                     excludeLoaders.push(loader);
                     Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
-                    this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, null, buffer, texture, undefined, undefined, excludeLoaders);
+                    this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
+                    return;
                 }
             }
 
@@ -4221,7 +4258,8 @@ export class Engine {
                     texture.onLoadedObservable.remove(onLoadObserver);
                 }
                 if (Tools.UseFallbackTexture) {
-                    this.createTexture(Tools.fallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, null, buffer, texture);
+                    this.createTexture(Tools.fallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
+                    return;
                 }
             }
 
@@ -4294,11 +4332,6 @@ export class Engine {
                         this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
                         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
 
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
                         this._rescaleTexture(source, texture, scene, internalFormat, () => {
                             this._releaseTexture(source);
                             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
@@ -4329,7 +4362,21 @@ export class Engine {
         return texture;
     }
 
-    private _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<Scene>, internalFormat: number, onComplete: () => void): void {
+    /**
+     * @hidden
+     * Rescales a texture
+     * @param source input texutre
+     * @param destination destination texture
+     * @param scene scene to use to render the resize
+     * @param internalFormat format to use when resizing
+     * @param onComplete callback to be called when resize has completed
+     */
+    public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<Scene>, internalFormat: number, onComplete: () => void): void {
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
+
         let rtt = this.createRenderTargetTexture({
             width: destination.width,
             height: destination.height,
@@ -4957,12 +5004,12 @@ export class Engine {
     }
 
     /** @hidden */
-    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0, babylonInternalFormat?: number, useTextureWidthAndHeight = false): void {
         var gl = this._gl;
 
         var textureType = this._getWebGLTextureType(texture.type);
         var format = this._getInternalFormat(texture.format);
-        var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
+        var internalFormat = babylonInternalFormat === undefined ? this._getRGBABufferInternalSizedFormat(texture.type, format) : this._getInternalFormat(babylonInternalFormat);
 
         this._unpackFlipY(texture.invertY);
 
@@ -4973,8 +5020,8 @@ export class Engine {
 
         const lodMaxWidth = Math.round(Scalar.Log2(texture.width));
         const lodMaxHeight = Math.round(Scalar.Log2(texture.height));
-        const width = Math.pow(2, Math.max(lodMaxWidth - lod, 0));
-        const height = Math.pow(2, Math.max(lodMaxHeight - lod, 0));
+        const width = useTextureWidthAndHeight ? texture.width : Math.pow(2, Math.max(lodMaxWidth - lod, 0));
+        const height = useTextureWidthAndHeight ? texture.height : Math.pow(2, Math.max(lodMaxHeight - lod, 0));
 
         gl.texImage2D(target, lod, internalFormat, width, height, 0, format, textureType, imageData);
     }
@@ -5207,6 +5254,11 @@ export class Engine {
         }
         if (texture._lodTextureLow) {
             texture._lodTextureLow.dispose();
+        }
+
+        // Integrated irradiance map.
+        if (texture._irradianceTexture) {
+            texture._irradianceTexture.dispose();
         }
 
         // Set output texture of post process to null if the texture has been released/disposed
@@ -5539,10 +5591,10 @@ export class Engine {
             let texture = textures[i].getInternalTexture();
 
             if (texture) {
-                this._textureUnits[channel + i] = channel + i;
+                this._textureUnits[i] = channel + i;
                 texture._associatedChannel = channel + i;
             } else {
-                this._textureUnits[channel + i] = -1;
+                this._textureUnits[i] = -1;
             }
         }
         this._gl.uniform1iv(uniform, this._textureUnits);
@@ -6065,6 +6117,12 @@ export class Engine {
                     return this._gl.HALF_FLOAT_OES;
                 case Engine.TEXTURETYPE_UNSIGNED_BYTE:
                     return this._gl.UNSIGNED_BYTE;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                    return this._gl.UNSIGNED_SHORT_4_4_4_4;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                    return this._gl.UNSIGNED_SHORT_5_5_5_1;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                    return this._gl.UNSIGNED_SHORT_5_6_5;
             }
             return this._gl.UNSIGNED_BYTE;
         }

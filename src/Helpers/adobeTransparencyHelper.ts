@@ -20,7 +20,7 @@ import { MultiRenderTarget } from '../Materials/Textures/multiRenderTarget';
 import { Color4 } from '../Maths/math';
 import { Material } from '../Materials/material';
 import { PBRMaterial } from '../Materials/PBR/pbrMaterial';
-import { PBRBaseMaterial } from '../Materials/PBR/pbrBaseMaterial';
+// import { PBRBaseMaterial } from '../Materials/PBR/pbrBaseMaterial';
 // import { ShaderMaterial } from '../Materials/shaderMaterial';
 import { AdobeTransparencyCompositor } from './adobeTransparencyCompositor';
 import { RenderTargetTexture } from '../Materials/Textures/renderTargetTexture';
@@ -28,7 +28,7 @@ import { DepthRenderer } from '../Rendering/depthRenderer';
 import { Engine } from '../Engines/engine';
 
 /**
- * 
+ *
  */
 export interface IAdobeTransparencyHelperOptions {
     /**
@@ -40,7 +40,7 @@ export interface IAdobeTransparencyHelperOptions {
      * The size of the render buffers
      */
     renderSize: number;
-    
+
     /**
      * The texture used on the ground for the main color.
      * Comes from the BabylonJS CDN by default.
@@ -48,11 +48,10 @@ export interface IAdobeTransparencyHelperOptions {
      * Remarks: Can be either a texture or a url.
      */
     // groundTexture: string | BaseTexture;
-    
 }
 
 /**
- * 
+ *
  */
 export class AdobeTransparencyHelper {
 
@@ -89,7 +88,7 @@ export class AdobeTransparencyHelper {
     private _transparentMeshesCache: Mesh[] = [];
     private _compositor: AdobeTransparencyCompositor;
     // private _transparentMeshesCache: Mesh[];
-    
+
     /**
      * This observable will be notified with any error during the creation of the environment,
      * mainly texture creation errors.
@@ -210,7 +209,7 @@ export class AdobeTransparencyHelper {
         if (mesh instanceof Mesh) {
             let transparent_idx = this._transparentMeshesCache.indexOf(mesh);
             let opaque_idx = this._opaqueMeshesCache.indexOf(mesh);
-            
+
             // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
             if (this.renderAsTransparency(mesh.material)) {
                 if (opaque_idx !== -1) {
@@ -219,7 +218,7 @@ export class AdobeTransparencyHelper {
                 } else if (transparent_idx === -1) {
                     this._transparentMeshesCache.push(mesh);
                 }
-            // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
+                // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
             } else {
                 if (transparent_idx !== -1) {
                     this._transparentMeshesCache.splice(transparent_idx, 1);
@@ -268,7 +267,7 @@ export class AdobeTransparencyHelper {
             rt_idx = this._scene.customRenderTargets.indexOf(this._opaqueDepthRenderer.getDepthMap());
             this._opaqueDepthRenderer.dispose();
         }
-        this._opaqueDepthRenderer = new DepthRenderer(this._scene, Engine.TEXTURETYPE_FLOAT, null, this._options.renderSize);
+        this._opaqueDepthRenderer = new DepthRenderer(this._scene, Engine.TEXTURETYPE_FLOAT, null, false, this._options.renderSize);
         this._opaqueDepthRenderer.getDepthMap().renderList = this._opaqueMeshesCache;
         this._opaqueDepthRenderer.getDepthMap().updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
 
@@ -277,7 +276,7 @@ export class AdobeTransparencyHelper {
         } else {
             this._scene.customRenderTargets.push(this._opaqueDepthRenderer.getDepthMap());
         }
-        
+
         // Before creating MRT's and depth passes, remove the existing ones.
         let new_targets = [];
         this._depthRenderers.forEach((renderer) => {
@@ -299,7 +298,7 @@ export class AdobeTransparencyHelper {
         this._mrtRenderTargets = [];
         this._depthRenderers = [];
         for (let idx = 0; idx < this._options.numPasses; idx++) {
-            const depthRenderer = new DepthRenderer(this._scene, Engine.TEXTURETYPE_FLOAT, null, this._options.renderSize);
+            const depthRenderer = new DepthRenderer(this._scene, Engine.TEXTURETYPE_FLOAT, null, false, this._options.renderSize);
             depthRenderer.getDepthMap().renderList = this._transparentMeshesCache;
             depthRenderer.getDepthMap().updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
 
@@ -338,42 +337,44 @@ export class AdobeTransparencyHelper {
                             mesh.material.transparency.backDepthTexture = this._opaqueDepthRenderer.getDepthMap();
                             // (mesh.material as PBRMaterial).sideOrientation = PBRMaterial.CounterClockWiseSideOrientation;
                             // mesh.material.backFaceCulling = false;
-                            // mesh.material.twoSidedLighting = true;
-                            mesh.material.transparencyMode = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
+                            mesh.material.twoSidedLighting = true;
+                            // mesh.material.transparencyMode = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
                             mesh.material.forceNormalForward = true;
                             // (mesh.material as PBRMaterial).disableDepthWrite = true;
-                            mesh.material.refractionTexture = null;//mesh.material.environmentBRDFTexture;
+                            mesh.material.refractionTexture = null; //mesh.material.environmentBRDFTexture;
                         }
                     });
                 }
             });
-            multiRenderTarget.onAfterRenderObservable.add((eventData: number) => {
-                // Disable transparent materials to output to MRT
-                if (multiRenderTarget.renderList) {
-                    
-                    multiRenderTarget.renderList.forEach((mesh: AbstractMesh) => {
-                        if (this.renderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
-                            mesh.material.useAdobeGBufferRendering = false;
-                            // (mesh.material as PBRMaterial).sideOrientation = PBRMaterial.ClockWiseSideOrientation;
-                            // mesh.material.backFaceCulling = true;
-                            // mesh.material.twoSidedLighting = false;
-                            if (mesh.material.albedoTexture && mesh.material.albedoTexture.hasAlpha && mesh.material.useAlphaFromAlbedoTexture) {
-                                mesh.material.transparencyMode = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
+            if (idx == this._options.numPasses - 1) {
+                multiRenderTarget.onAfterRenderObservable.add((eventData: number) => {
+                    // Disable transparent materials to output to MRT
+                    if (multiRenderTarget.renderList) {
+
+                        multiRenderTarget.renderList.forEach((mesh: AbstractMesh) => {
+                            if (this.renderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
+                                mesh.material.useAdobeGBufferRendering = false;
+                                // (mesh.material as PBRMaterial).sideOrientation = PBRMaterial.ClockWiseSideOrientation;
+                                // mesh.material.backFaceCulling = true;
+                                // mesh.material.twoSidedLighting = false;
+                                if (mesh.material.albedoTexture && mesh.material.albedoTexture.hasAlpha && mesh.material.useAlphaFromAlbedoTexture) {
+                                    // mesh.material.transparencyMode = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
+                                }
+                                // mesh.material.forceNormalForward = false;
+                                // (mesh.material as PBRMaterial).disableDepthWrite = false;
+                                mesh.material.refractionTexture = this.getFinalComposite();
+                                // (mesh.material as PBRMaterial).subSurface.isTranslucencyEnabled = true;
                             }
-                            // mesh.material.forceNormalForward = false;
-                            // (mesh.material as PBRMaterial).disableDepthWrite = false;
-                            mesh.material.refractionTexture = this.getFinalComposite();
-                            // (mesh.material as PBRMaterial).subSurface.isTranslucencyEnabled = true;
-                        }
-                    });
-                }
-            });
-            
+                        });
+                    }
+                });
+            }
+
             this._depthRenderers.push(depthRenderer);
             this._mrtRenderTargets.push(multiRenderTarget);
             new_targets.push(depthRenderer.getDepthMap());
             new_targets.push(multiRenderTarget);
-            
+
             if (idx > 0) {
                 depthRenderer.useDepthPeeling = true;
                 depthRenderer.depthPeelingMap = this._depthRenderers[idx - 1].getDepthMap();
@@ -393,11 +394,11 @@ export class AdobeTransparencyHelper {
                 layer.renderTargetTextures.push(this._opaqueRenderTarget);
             });
         }
-        
+
         if (this._compositor) {
             this._compositor.dispose();
         }
-        this._compositor = new AdobeTransparencyCompositor({renderSize: this._options.renderSize, numPasses: this._options.numPasses}, this._scene);
+        this._compositor = new AdobeTransparencyCompositor({ renderSize: this._options.renderSize, numPasses: this._options.numPasses }, this._scene);
         this._compositor.setBackgroundDepthTexture(this._opaqueDepthRenderer.getDepthMap());
         this._compositor.setBackgroundTexture(this._opaqueRenderTarget);
         this._compositor.setTransparentTextures(this._mrtRenderTargets);
@@ -415,6 +416,6 @@ export class AdobeTransparencyHelper {
      * Dispose all the elements created by the Helper.
      */
     public dispose(): void {
-        
+
     }
 }

@@ -21,21 +21,20 @@ import { Constants } from "../Engines/constants";
 // import { FxaaPostProcess } from '../PostProcesses/fxaaPostProcess';
 
 /**
- * 
+ *
  */
 export interface IAdobeTransparencyCompositorOptions {
-    
 
     /**
      * The size of the render buffers
      */
     renderSize: number;
     numPasses: number;
-    
+
 }
 
 /**
- * 
+ *
  */
 export class AdobeTransparencyCompositor {
 
@@ -60,7 +59,7 @@ export class AdobeTransparencyCompositor {
     private _options: IAdobeTransparencyCompositorOptions;
     private _postProcesses: PostProcess[];
     private _scene: Scene;
-    
+
     /**
      * This observable will be notified with any error during the creation of the environment,
      * mainly texture creation errors.
@@ -96,7 +95,7 @@ export class AdobeTransparencyCompositor {
         // this._setupCompositePass();
         this._setupScene();
         // this._setupRenderTargets();
-        
+
     }
 
     public render(): void {
@@ -105,16 +104,16 @@ export class AdobeTransparencyCompositor {
 
     public setTransparentTextures(mrt: MultiRenderTarget[]) {
         this.transparentTextures = mrt;
-        
+
     }
 
     public setBackgroundTexture(background: Texture) {
         this.backgroundTexture = background;
-        
+
     }
     public setBackgroundDepthTexture(background: Texture) {
         this.backgroundDepthTexture = background;
-        
+
     }
 
     private _setupScene(): void {
@@ -123,7 +122,7 @@ export class AdobeTransparencyCompositor {
         //     floatTextureType = Engine.TEXTURETYPE_HALF_FLOAT;
         // }
         // else if (this._scene.getEngine().getCaps().textureFloatRender) {
-            floatTextureType = Engine.TEXTURETYPE_FLOAT;
+        floatTextureType = Engine.TEXTURETYPE_FLOAT;
         // }
 
         this.compositedTexture = new RenderTargetTexture("trans_composite_output", this._options.renderSize, this._scene, true, undefined, floatTextureType, false, undefined, false, false, false);
@@ -137,7 +136,7 @@ export class AdobeTransparencyCompositor {
         (this.compositedTexture as any).depth = 0.01;
 
         this._postProcesses = [];
-        
+
         for (let i = this._options.numPasses - 1; i >= 0; i--) {
             const postOptions: PostProcessOptions = {
                 width: this._options.renderSize,
@@ -148,9 +147,9 @@ export class AdobeTransparencyCompositor {
             if (i == this._options.numPasses - 1) {
                 defines += "#define BACKGROUND_DEPTH";
             }
-            let postEffect = new PostProcess("transparentComposite", "./adobeTransparentComposite", ["renderSize"], 
-            ["colourTexture", "reflectionTexture", "miscTexture", "emissiveTexture", "interiorTexture", "backgroundDepth"], 
-            postOptions, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), undefined, defines, floatTextureType);
+            let postEffect = new PostProcess("transparentComposite", "./adobeTransparentComposite", ["renderSize"],
+                ["colourTexture", "reflectionTexture", "miscTexture", "interiorColorTexture", "interiorInfoTexture", "backgroundDepth"],
+                postOptions, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), undefined, defines, floatTextureType);
 
             postEffect.onApplyObservable.add((effect) => {
                 if (this.transparentTextures[i]) {
@@ -158,19 +157,19 @@ export class AdobeTransparencyCompositor {
                     effect.setTexture("colourTexture", this.transparentTextures[i].textures[0]);
                     effect.setTexture("reflectionTexture", this.transparentTextures[i].textures[1]);
                     effect.setTexture("miscTexture", this.transparentTextures[i].textures[2]);
-                    effect.setTexture("emissiveTexture", this.transparentTextures[i].textures[3]);
-                    effect.setTexture("interiorTexture", this.transparentTextures[i].textures[4]);
-                    
+                    effect.setTexture("interiorColorTexture", this.transparentTextures[i].textures[3]);
+                    effect.setTexture("interiorInfoTexture", this.transparentTextures[i].textures[4]);
+
                     if (i == this._options.numPasses - 1) {
                         effect.setTexture("backgroundDepth", this.backgroundDepthTexture);
                         effect.setTexture("textureSampler", this.backgroundTexture);
                     }
                 }
             });
-            
+
             this._postProcesses.push(postEffect);
         }
-       
+
         // const fxaaEffect = new FxaaPostProcess("fxaaInTransparencyComposite", postOptions, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, floatTextureType);
         // this._postProcesses.push(fxaaEffect);
 

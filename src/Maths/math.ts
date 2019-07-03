@@ -65,9 +65,9 @@ export class Color3 {
      * @returns an unique number that can be used to hash Color3 objects
      */
     public getHashCode(): number {
-        let hash = this.r || 0;
-        hash = (hash * 397) ^ (this.g || 0);
-        hash = (hash * 397) ^ (this.b || 0);
+        let hash = (this.r * 255) | 0;
+        hash = (hash * 397) ^ ((this.g * 255) | 0);
+        hash = (hash * 397) ^ ((this.b * 255) | 0);
         return hash;
     }
 
@@ -316,6 +316,58 @@ export class Color3 {
     }
 
     /**
+     * Converts current color in rgb space to HSV values
+     * @returns a new color3 representing the HSV values
+     */
+    public toHSV(): Color3 {
+        let result = new Color3();
+
+        this.toHSVToRef(result);
+
+        return result;
+    }
+
+    /**
+     * Converts current color in rgb space to HSV values
+     * @param result defines the Color3 where to store the HSV values
+     */
+    public toHSVToRef(result: Color3) {
+        var r = this.r;
+        var g = this.g;
+        var b = this.b;
+
+        var max = Math.max(r, g, b);
+        var min = Math.min(r, g, b);
+        var h = 0;
+        var s = 0;
+        var v = max;
+
+        var dm = max - min;
+
+        if (max !== 0) {
+            s = dm / max;
+        }
+
+        if (max != min) {
+            if (max == r) {
+                h = (g - b) / dm;
+                if (g < b) {
+                    h += 6;
+                }
+            } else if (max == g) {
+                h = (b - r) / dm + 2;
+            } else if (max == b) {
+                h = (r - g) / dm + 4;
+            }
+            h *= 60;
+        }
+
+        result.r = h;
+        result.g = s;
+        result.b = v;
+    }
+
+    /**
      * Converts the Color3 values to linear space and stores the result in "convertedColor"
      * @param convertedColor defines the Color3 object where to store the linear space version
      * @returns the unmodified Color3
@@ -352,6 +404,45 @@ export class Color3 {
     // Statics
 
     private static _BlackReadOnly = Color3.Black() as DeepImmutable<Color3>;
+
+    /**
+     * Convert Hue, saturation and value to a Color3 (RGB)
+     * @param hue defines the hue
+     * @param saturation defines the saturation
+     * @param value defines the value
+     * @param result defines the Color3 where to store the RGB values
+     */
+    public static HSVtoRGBToRef(hue: number, saturation: number, value: number, result: Color3) {
+        var chroma = value * saturation;
+        var h = hue / 60;
+        var x = chroma * (1 - Math.abs((h % 2) - 1));
+        var r = 0;
+        var g = 0;
+        var b = 0;
+
+        if (h >= 0 && h <= 1) {
+            r = chroma;
+            g = x;
+        } else if (h >= 1 && h <= 2) {
+            r = x;
+            g = chroma;
+        } else if (h >= 2 && h <= 3) {
+            g = chroma;
+            b = x;
+        } else if (h >= 3 && h <= 4) {
+            g = x;
+            b = chroma;
+        } else if (h >= 4 && h <= 5) {
+            r = x;
+            b = chroma;
+        } else if (h >= 5 && h <= 6) {
+            r = chroma;
+            b = x;
+        }
+
+        var m = value - chroma;
+        result.set((r + m), (g + m), (b + m));
+    }
 
     /**
      * Creates a new Color3 from the string containing valid hexadecimal values
@@ -688,10 +779,10 @@ export class Color4 {
      * @returns an unique number that can be used to hash Color4 objects
      */
     public getHashCode(): number {
-        let hash = this.r || 0;
-        hash = (hash * 397) ^ (this.g || 0);
-        hash = (hash * 397) ^ (this.b || 0);
-        hash = (hash * 397) ^ (this.a || 0);
+        let hash = (this.r * 255) | 0;
+        hash = (hash * 397) ^ ((this.g * 255) | 0);
+        hash = (hash * 397) ^ ((this.b * 255) | 0);
+        hash = (hash * 397) ^ ((this.a * 255) | 0);
         return hash;
     }
 
@@ -944,8 +1035,8 @@ export class Vector2 {
      * @returns the Vector2 hash code as a number
      */
     public getHashCode(): number {
-        let hash = this.x || 0;
-        hash = (hash * 397) ^ (this.y || 0);
+        let hash = this.x | 0;
+        hash = (hash * 397) ^ (this.y | 0);
         return hash;
     }
 
@@ -1554,6 +1645,7 @@ export class Vector2 {
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+    private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
     /**
      * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
@@ -1598,9 +1690,9 @@ export class Vector3 {
      * @returns a number which tends to be unique between Vector3 instances
      */
     public getHashCode(): number {
-        let hash = this.x || 0;
-        hash = (hash * 397) ^ (this.y || 0);
-        hash = (hash * 397) ^ (this.z || 0);
+        let hash = this.x | 0;
+        hash = (hash * 397) ^ (this.y | 0);
+        hash = (hash * 397) ^ (this.z | 0);
         return hash;
     }
 
@@ -1994,7 +2086,7 @@ export class Vector3 {
     // Properties
     /**
      * Gets the length of the Vector3
-     * @returns the length of the Vecto3
+     * @returns the length of the Vector3
      */
     public length(): number {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
@@ -2270,6 +2362,13 @@ export class Vector3 {
      */
     public static get UpReadOnly(): DeepImmutable<Vector3> {
         return Vector3._UpReadOnly;
+    }
+
+    /**
+     * Gets a zero Vector3 that must not be updated
+     */
+    public static get ZeroReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._ZeroReadOnly;
     }
 
     /**
@@ -2814,10 +2913,10 @@ export class Vector4 {
      * @returns a unique hash code
      */
     public getHashCode(): number {
-        let hash = this.x || 0;
-        hash = (hash * 397) ^ (this.y || 0);
-        hash = (hash * 397) ^ (this.z || 0);
-        hash = (hash * 397) ^ (this.w || 0);
+        let hash = this.x | 0;
+        hash = (hash * 397) ^ (this.y | 0);
+        hash = (hash * 397) ^ (this.z | 0);
+        hash = (hash * 397) ^ (this.w | 0);
         return hash;
     }
 
@@ -3515,8 +3614,8 @@ export class Size implements ISize {
      * @returns a hash code for a unique width and height
      */
     public getHashCode(): number {
-        let hash = this.width || 0;
-        hash = (hash * 397) ^ (this.height || 0);
+        let hash = this.width | 0;
+        hash = (hash * 397) ^ (this.height | 0);
         return hash;
     }
     /**
@@ -3667,10 +3766,10 @@ export class Quaternion {
      * @returns the quaternion hash code
      */
     public getHashCode(): number {
-        let hash = this.x || 0;
-        hash = (hash * 397) ^ (this.y || 0);
-        hash = (hash * 397) ^ (this.z || 0);
-        hash = (hash * 397) ^ (this.w || 0);
+        let hash = this.x | 0;
+        hash = (hash * 397) ^ (this.y | 0);
+        hash = (hash * 397) ^ (this.z | 0);
+        hash = (hash * 397) ^ (this.w | 0);
         return hash;
     }
 
@@ -4911,9 +5010,9 @@ export class Matrix {
      * @returns the hash code
      */
     public getHashCode(): number {
-        let hash = this._m[0] || 0;
+        let hash = this._m[0] | 0;
         for (let i = 1; i < 16; i++) {
-            hash = (hash * 397) ^ (this._m[i] || 0);
+            hash = (hash * 397) ^ (this._m[i] | 0);
         }
         return hash;
     }
@@ -6331,7 +6430,7 @@ export class Plane {
      */
     public getHashCode(): number {
         let hash = this.normal.getHashCode();
-        hash = (hash * 397) ^ (this.d || 0);
+        hash = (hash * 397) ^ (this.d | 0);
         return hash;
     }
     /**

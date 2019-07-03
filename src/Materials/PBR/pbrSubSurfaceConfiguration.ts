@@ -31,6 +31,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_LODINREFRACTIONALPHA: boolean;
     SS_GAMMAREFRACTION: boolean;
     SS_RGBDREFRACTION: boolean;
+    SS_LINEARSPECULARREFRACTION: boolean;
     SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
@@ -43,27 +44,27 @@ export interface IMaterialSubSurfaceDefines {
  * Define the code related to the sub surface parameters of the pbr material.
  */
 export class PBRSubSurfaceConfiguration {
-    @serialize()
     private _isRefractionEnabled = false;
     /**
      * Defines if the refraction is enabled in the material.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isRefractionEnabled = false;
 
-    @serialize()
     private _isTranslucencyEnabled = false;
     /**
      * Defines if the translucency is enabled in the material.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isTranslucencyEnabled = false;
 
-    @serialize()
     private _isScatteringEnabled = false;
     // /**
     //  * Defines if the sub surface scattering is enabled in the material.
     //  */
+    // @serialize()
     // @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     // public isScatteringEnabled = false;
 
@@ -91,7 +92,6 @@ export class PBRSubSurfaceConfiguration {
     @serialize()
     public scatteringIntensity: number = 1;
 
-    @serializeAsTexture()
     private _thicknessTexture: Nullable<BaseTexture> = null;
     /**
      * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
@@ -100,10 +100,12 @@ export class PBRSubSurfaceConfiguration {
      * 1 would mean maximumThickness
      * The other channels might be use as a mask to vary the different effects intensity.
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public thicknessTexture: Nullable<BaseTexture> = null;
 
     private _refractionTexture: Nullable<BaseTexture> = null;
+
     /**
      * Defines the texture to use for refraction.
      */
@@ -113,7 +115,7 @@ export class PBRSubSurfaceConfiguration {
 
     private _indexOfRefraction = 1;
     /**
-     * Defines the indice of refraction used in the material.
+     * Defines the index of refraction used in the material.
      * https://en.wikipedia.org/wiki/List_of_refractive_indices
      */
     @serialize()
@@ -171,7 +173,6 @@ export class PBRSubSurfaceConfiguration {
     @serializeAsColor3()
     public diffusionDistance = Color3.White();
 
-    @serialize()
     private _useMaskFromThicknessTexture = false;
     /**
      * Stores the intensity of the different subsurface effects in the thickness texture.
@@ -179,6 +180,7 @@ export class PBRSubSurfaceConfiguration {
      * * the blue channel is the scattering intensity.
      * * the alpha channel is the refraction intensity.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useMaskFromThicknessTexture: boolean = false;
 
@@ -242,6 +244,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_REFRACTIONMAP_3D = false;
             defines.SS_GAMMAREFRACTION = false;
             defines.SS_RGBDREFRACTION = false;
+            defines.SS_LINEARSPECULARREFRACTION = false;
             defines.SS_REFRACTIONMAP_OPPOSITEZ = false;
             defines.SS_LODINREFRACTIONALPHA = false;
             defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
@@ -268,6 +271,7 @@ export class PBRSubSurfaceConfiguration {
                         defines.SS_REFRACTIONMAP_3D = refractionTexture.isCube;
                         defines.SS_GAMMAREFRACTION = refractionTexture.gammaSpace;
                         defines.SS_RGBDREFRACTION = refractionTexture.isRGBD;
+                        defines.SS_LINEARSPECULARREFRACTION = refractionTexture.linearSpecularLOD;
                         defines.SS_REFRACTIONMAP_OPPOSITEZ = refractionTexture.invertZ;
                         defines.SS_LODINREFRACTIONALPHA = refractionTexture.lodLevelInAlpha;
                         defines.SS_LINKREFRACTIONTOTRANSPARENCY = this._linkRefractionWithTransparency;
@@ -287,7 +291,7 @@ export class PBRSubSurfaceConfiguration {
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean): void {
         var refractionTexture = this._getRefractionTexture(scene);
-
+        
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
                 uniformBuffer.updateFloat2("vThicknessInfos", this._thicknessTexture.coordinatesIndex, this._thicknessTexture.level);
@@ -542,10 +546,12 @@ export class PBRSubSurfaceConfiguration {
     }
 
     /**
-     * Parses a Sub Surface Configuration from a serialized object.
+     * Parses a anisotropy Configuration from a serialized object.
      * @param source - Serialized object.
+     * @param scene Defines the scene we are parsing for
+     * @param rootUrl Defines the rootUrl to load from
      */
-    public parse(source: any): void {
-        SerializationHelper.Parse(() => this, source, null);
+    public parse(source: any, scene: Scene, rootUrl: string): void {
+        SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

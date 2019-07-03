@@ -177,7 +177,7 @@ export class Camera extends Node {
     public inertia = 0.9;
 
     /**
-     * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.PERSPECTIVE_ORTHOGRAPHIC)
+     * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
      */
     @serialize()
     public mode = Camera.PERSPECTIVE_CAMERA;
@@ -277,7 +277,7 @@ export class Camera extends Node {
 
     protected _globalPosition = Vector3.Zero();
 
-    /** hidden */
+    /** @hidden */
     public _computedViewMatrix = Matrix.Identity();
     private _doNotComputeProjectionMatrix = false;
     private _transformMatrix = Matrix.Zero();
@@ -803,7 +803,7 @@ export class Camera extends Node {
                 result = result || target.isInFrustum(cam._frustumPlanes);
             });
             return result;
-        }else {
+        } else {
             return target.isInFrustum(this._frustumPlanes);
         }
     }

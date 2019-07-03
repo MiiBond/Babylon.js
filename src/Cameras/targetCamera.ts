@@ -219,7 +219,6 @@ export class TargetCamera extends Camera {
 
     /**
      * Defines the target the camera should look at.
-     * This will automatically adapt alpha beta and radius to fit within the new target.
      * @param target Defines the new target as a Vector or a mesh
      */
     public setTarget(target: Vector3): void {
@@ -311,7 +310,7 @@ export class TargetCamera extends Camera {
             }
 
             if (!this.noRotationConstraint) {
-                var limit = (Math.PI / 2) * 0.95;
+                var limit = 1.570796;
 
                 if (this.rotation.x > limit) {
                     this.rotation.x = limit;

@@ -21,8 +21,8 @@ uniform float renderSize;
 uniform sampler2D colourTexture;
 uniform sampler2D reflectionTexture;
 uniform sampler2D miscTexture;
-uniform sampler2D emissiveTexture;
-uniform sampler2D interiorTexture;
+uniform sampler2D interiorColorTexture;
+uniform sampler2D interiorInfoTexture;
 #ifdef BACKGROUND_DEPTH
 uniform sampler2D backgroundDepth;
 #endif
@@ -44,29 +44,34 @@ void main(void) {
     #endif
     float refractionLOD = getLodFromAlphaG(renderSize, misc.g * misc.g * misc.g);
     vec4 reflection = texture2D(reflectionTexture, vUV);
-    vec4 emissive = texture2D(emissiveTexture, vUV);
-    vec4 interior = texture2D(interiorTexture, vUV);
+    vec4 interiorColor = texture2D(interiorColorTexture, vUV);
+    vec4 interiorInfo = texture2D(interiorInfoTexture, vUV);
 
     // If we're front-facing, get the depth.
     float pixel_depth = reflection.a;
     float thickness = 0.0;
     float thickness_scale = -1.0;
     float refract_amount = 0.0;
-    if (emissive.a == 1.0) {
+    vec2 refractionCoords = vUV;
+    if (interiorInfo.b == 1.0) {
+        float ior_inverse = max(1.0 - interiorInfo.g, 0.0);
         thickness = max(pixel_depth - background_depth_no_refract, 0.0);
-        thickness_scale = 200.0 * thickness;
+        thickness_scale = 20.0 * thickness;
+        // Use thickness, normal and ior to come up with new refraction coords.
+        vec2 norm = misc.ba * 2.0 - 1.0;
+        refractionCoords -= norm * 0.1 * ior_inverse * ior_inverse;
     }
     
     vec3 depth_debug = vec3(1.0, 0.0, 0.0);
-    // Use thickness, normal and ior to come up with new refraction coords.
-    vec2 norm = misc.ba * 2.0 - 1.0;
-    vec2 refractionCoords = vUV - norm * thickness * 5.0;
+    
+    
     #ifdef BACKGROUND_DEPTH
         float refracted_background_depth = 1.0 - texture2D(backgroundDepth, refractionCoords).r;
     #else
         float refracted_background_depth = texture2D(textureSampler, refractionCoords).a;
     #endif
     
+    // Do refraction of light
     if (refracted_background_depth > pixel_depth) {
         refractionCoords = vUV;
     }
@@ -75,8 +80,8 @@ void main(void) {
     pixel_depth = max(pixel_depth, background_depth_no_refract);
     
     // Interior calculation
-    vec3 clamped_color = clamp(interior.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
-    float density = interior.a;
+    vec3 clamped_color = clamp(interiorColor.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
+    float density = interiorInfo.r;
     float scene_scale = 40.0;
     vec3 absorption_coeff = min(clamped_color*density*scene_scale, vec3(1.0)); 
     vec3 adsorption = pow(absorption_coeff, vec3(1.0 + thickness_scale));

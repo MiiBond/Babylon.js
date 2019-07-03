@@ -258,7 +258,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     }
 
     /**
-     * Adds all the element from the container to the scene
+     * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
     public addFromContainer(container: AbstractScene): void {
@@ -398,7 +398,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
 
         if (listeningCamera && audioEngine.audioContext) {
-            audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+            audioEngine.audioContext.listener.setPosition(listeningCamera.globalPosition.x, listeningCamera.globalPosition.y, listeningCamera.globalPosition.z);
             // for VR cameras
             if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
                 listeningCamera = listeningCamera.rigCameras[0];

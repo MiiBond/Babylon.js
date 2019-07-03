@@ -168,6 +168,10 @@
             uniform samplerCube reflectionSamplerLow;
             uniform samplerCube reflectionSamplerHigh;
         #endif
+
+        #ifdef USEIRRADIANCEMAP
+            uniform samplerCube irradianceSampler;
+        #endif
     #else
         #define sampleReflection(s, c) texture2D(s, c)
 
@@ -176,8 +180,12 @@
         #ifdef LODBASEDMICROSFURACE
             #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
         #else
-            uniform samplerCube reflectionSamplerLow;
-            uniform samplerCube reflectionSamplerHigh;
+            uniform sampler2D reflectionSamplerLow;
+            uniform sampler2D reflectionSamplerHigh;
+        #endif
+
+        #ifdef USEIRRADIANCEMAP
+            uniform sampler2D irradianceSampler;
         #endif
     #endif
 

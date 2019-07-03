@@ -1,0 +1,237 @@
+{
+    "asset": {
+        "copyright": "2019 (c) Adobe Inc.",
+        "generator": "Adobe Dimension - 5382d06ef3602aa2463810b9e9409e51e1d3a5e7",
+        "version": "2.0"
+    },
+    "accessors": [
+        {
+            "componentType": 5126,
+            "count": 53087,
+            "type": "VEC3",
+            "max": [
+                0.009999999776482582,
+                0.0044717444106936459,
+                0.007052765227854252
+            ],
+            "min": [
+                -0.009999999776482582,
+                -0.004472009837627411,
+                -0.00705289002507925
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 53087,
+            "type": "VEC3"
+        },
+        {
+            "componentType": 5126,
+            "count": 53087,
+            "type": "VEC2"
+        },
+        {
+            "componentType": 5125,
+            "count": 300000,
+            "type": "SCALAR",
+            "max": [
+                53086.0
+            ],
+            "min": [
+                0.0
+            ]
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteOffset": 0,
+            "byteLength": 369500
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 369500,
+            "uri": "transparency_dragon_binary.bin"
+        }
+    ],
+    "cameras": [
+        {
+            "perspective": {
+                "znear": 0.000010000000656873454,
+                "yfov": 0.6024156808853149,
+                "zfar": 2.0,
+                "aspectRatio": 1.3333333730697632
+            },
+            "type": "perspective",
+            "extras": {
+                "ADOBE_camera_extras": {
+                    "isDefaultCamera": false,
+                    "isWorkingCamera": true
+                }
+            },
+            "name": "render_camera"
+        }
+    ],
+    "images": [
+        {
+            "name": "image2_0",
+            "uri": "transparency_dragon_images/image2_0.jpg",
+            "mimeType": "image/jpeg"
+        },
+        {
+            "name": "gelatin_normal",
+            "uri": "transparency_dragon_images/gelatin_normal.png",
+            "mimeType": "image/png"
+        }
+    ],
+    "materials": [
+        {
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "metallicFactor": 0.0,
+                "metallicRoughnessTexture": {
+                    "index": 0
+                }
+            },
+            "normalTexture": {
+                "index": 1
+            },
+            "alphaMode": "BLEND",
+            "name": "Gelatin 2",
+            "extensions": {
+                "ADOBE_materials_thin_transparency": {
+                    "ior": 1.5,
+                    "transmissionFactor": 1
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "name": "model_N3D",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TEXCOORD_0": 2,
+                        "NORMAL": 1,
+                        "POSITION": 0
+                    },
+                    "indices": 3,
+                    "material": 0,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 0,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                -0.1396508812904358,
+                0.16105735301971436,
+                0.2823340594768524
+            ],
+            "rotation": [
+                -0.1456730216741562,
+                -0.38736042380332949,
+                -0.062130045145750049,
+                0.9082241654396057
+            ],
+            "camera": 0,
+            "name": "render_camera_n3d"
+        },
+        {
+            "name": "ground_plane_n3d",
+            "extras": {
+                "ADOBE_ground_plane": {
+                    "reflectionFresnel": 0,
+                    "reflectionOpacity": 0,
+                    "reflectionRoughness": 0,
+                    "shadowOpacity": 1
+                }
+            }
+        },
+        {
+            "translation": [
+                0.06758298724889755,
+                0.07052888721227646,
+                0.08495409041643143
+            ],
+            "rotation": [
+                -0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071068286895752
+            ],
+            "scale": [
+                10.0,
+                9.999999046325684,
+                9.999999046325684
+            ],
+            "mesh": 0,
+            "name": "model"
+        }
+    ],
+    "samplers": [
+        {},
+        {}
+    ],
+    "scenes": [
+        {
+            "nodes": [
+                0,
+                1,
+                2
+            ],
+            "name": "scene",
+            "extras": {
+                "ADOBE_background": {
+                    "color": [
+                        1,
+                        1,
+                        1
+                    ],
+                    "opacity": 1
+                },
+                "ADOBE_canvas": {
+                    "height": 768,
+                    "width": 1024
+                }
+            }
+        }
+    ],
+    "textures": [
+        {
+            "name": "image2_0_texture",
+            "sampler": 0,
+            "source": 0
+        },
+        {
+            "name": "gelatin::normal::sampler",
+            "sampler": 1,
+            "source": 1
+        }
+    ],
+    "scene": 0,
+    "extensionsUsed": [
+        "ADOBE_materials_thin_transparency",
+        "KHR_draco_mesh_compression"
+    ],
+    "extensionsRequired": [
+        "KHR_draco_mesh_compression"
+    ]
+}

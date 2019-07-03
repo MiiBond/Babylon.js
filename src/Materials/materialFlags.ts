@@ -150,6 +150,22 @@ export class MaterialFlags {
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    private static _RefractionDepthTextureEnabled = true;
+    /**
+     * Are refraction textures enabled in the application.
+     */
+    public static get RefractionDepthTextureEnabled(): boolean {
+        return this._RefractionDepthTextureEnabled;
+    }
+    public static set RefractionDepthTextureEnabled(value: boolean) {
+        if (this._RefractionDepthTextureEnabled === value) {
+            return;
+        }
+
+        this._RefractionDepthTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
     private static _ColorGradingTextureEnabled = true;
     /**
      * Are color grading textures enabled in the application.

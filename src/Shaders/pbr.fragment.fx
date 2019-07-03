@@ -26,7 +26,7 @@ precision highp float;
 #ifdef ADOBE_TRANSPARENCY_G_BUFFER
     #include<mrtFragmentDeclaration>[ADOBE_TRANSPARENCY_G_BUFFER_LENGTH]
 #else
-    #include<mrtFragmentDeclaration>[1]
+    // #include<mrtFragmentDeclaration>[1]
 #endif
 
 // Declaration
@@ -379,11 +379,6 @@ float transmission = 0.0;
             refractionVector.y = refractionVector.y * vRefractionInfos.w;
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
-        // #elif defined TRANSPARENCY
-        //     vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW, 1.0)));
-        //     vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
-        //     refractionCoords.y = 1.0 - refractionCoords.y;
-            
         #else
             vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
@@ -392,6 +387,8 @@ float transmission = 0.0;
 
         #ifdef SS_LODINREFRACTIONALPHA
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
+        #elif defined(SS_LINEARSPECULARREFRACTION)
+            float refractionLOD = getLinearLodFromRoughness(vRefractionMicrosurfaceInfos.x, roughness);
         #else
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG);
         #endif
@@ -428,15 +425,18 @@ float transmission = 0.0;
                     refraction_colour = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
                     refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;
                 }
+                refraction_thickness = max(refraction_thickness, 0.0);
 
                 #ifdef TRANSPARENCY_INTERIOR
                     // Do density calculation here.
-                    float thickness_scale = 10.0*refraction_thickness;
+                    float thickness_scale = 4000.0*refraction_thickness;
                     vec3 clamped_color = clamp(vInteriorTransparency.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
                     float density = vInteriorTransparency.a;
+                    float ior = vRefractionInfos.y;
                     float scene_scale = 60.0;
-                    vec3 absorption_coeff = pow(clamped_color*density*scene_scale, vec3(1.0 + thickness_scale * (1.0 - NdotV)));
-                    vec3 scattering_coeff = density*scene_scale*vec3(0.6931472);
+                    // vec3 absorption_coeff = pow(clamped_color*density, vec3(thickness_scale));
+                    vec3 absorption_coeff = max(exp(-vec3(thickness_scale * density / ior) * (vec3(1.0) - clamped_color)), 0.0);
+                    float scattering_coeff = max(exp2(-thickness_scale * density), 0.0);
                 #endif
                 environmentRefraction.rgb = refraction_colour.rgb;
             #else
@@ -475,7 +475,10 @@ float transmission = 0.0;
         environmentRefraction.rgb *= vRefractionInfos.x;
 
         #ifdef TRANSPARENCY_INTERIOR
-            environmentRefraction.rgb *= absorption_coeff;
+            if (gl_FrontFacing) {
+                environmentRefraction.rgb *= absorption_coeff;
+                environmentRefraction.rgb = mix(clamped_color * ior, environmentRefraction.rgb, scattering_coeff);
+            }
         #endif
     #endif
 
@@ -507,6 +510,8 @@ float transmission = 0.0;
 
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
             float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
+        #elif defined(LINEARSPECULARREFLECTION)
+            float refractionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, roughness);
         #else
             float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG);
         #endif
@@ -578,6 +583,15 @@ float transmission = 0.0;
 
                 environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
             #endif
+        #elif defined(USEIRRADIANCEMAP)
+            environmentIrradiance = sampleReflection(irradianceSampler, reflectionCoords).rgb;
+            #ifdef RGBDREFLECTION
+                environmentIrradiance.rgb = fromRGBD(environmentIrradiance);
+            #endif
+
+            #ifdef GAMMAREFLECTION
+                environmentIrradiance.rgb = toLinearSpace(environmentIrradiance.rgb);
+            #endif
         #endif
 
         // _____________________________ Levels _____________________________________
@@ -635,6 +649,8 @@ float transmission = 0.0;
             // _____________________________ 2D vs 3D Maps ________________________________
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
                 float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG, NdotVUnclamped);
+            #elif defined(LINEARSPECULARREFLECTION)
+                float sheenReflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, sheenRoughness);
             #else
                 float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG);
             #endif
@@ -776,6 +792,8 @@ float transmission = 0.0;
 
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
                 float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG, clearCoatNdotVUnclamped);
+            #elif defined(LINEARSPECULARREFLECTION)
+                float sheenReflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, clearCoatRoughness);
             #else
                 float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG);
             #endif
@@ -982,7 +1000,7 @@ float transmission = 0.0;
 
         clearCoatEnvironmentReflectance *= clearCoatIntensity;
 
-        #ifdef CLEARCOAT_TINT
+        #if defined(REFLECTION) && defined(CLEARCOAT_TINT)
             // NdotL = NdotV in IBL
             absorption = computeClearCoatAbsorption(clearCoatNdotVRefract, clearCoatNdotVRefract, clearCoatColor, clearCoatThickness, clearCoatIntensity);
 
@@ -1044,8 +1062,10 @@ float transmission = 0.0;
         // Decrease Albedo Contribution
         surfaceAlbedo *= (1. - refractionIntensity);
 
-        // Decrease irradiance Contribution
-        environmentIrradiance *= (1. - refractionIntensity);
+        #ifdef REFLECTION
+            // Decrease irradiance Contribution
+            environmentIrradiance *= (1. - refractionIntensity);
+        #endif
 
         // Add Multiple internal bounces.
         vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
@@ -1056,7 +1076,7 @@ float transmission = 0.0;
     #endif
 
     // _______________________________  IBL Translucency ________________________________
-    #if defined(REFLECTION) && defined(USESPHERICALFROMREFLECTIONMAP) && defined(SS_TRANSLUCENCY)
+    #if defined(REFLECTION) && defined(SS_TRANSLUCENCY)
         #if defined(USESPHERICALINVERTEX)
             vec3 irradianceVector = vec3(reflectionMatrix * vec4(normalW, 0)).xyz;
             #ifdef REFLECTIONMAP_OPPOSITEZ
@@ -1064,7 +1084,21 @@ float transmission = 0.0;
             #endif
         #endif
 
-        vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
+        #if defined(USESPHERICALFROMREFLECTIONMAP)
+            vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
+        #elif defined(USEIRRADIANCEMAP)
+            vec3 refractionIrradiance = sampleReflection(irradianceSampler, -irradianceVector).rgb;
+            #ifdef RGBDREFLECTION
+                refractionIrradiance.rgb = fromRGBD(refractionIrradiance);
+            #endif
+
+            #ifdef GAMMAREFLECTION
+                refractionIrradiance.rgb = toLinearSpace(refractionIrradiance.rgb);
+            #endif
+        #else
+            vec3 refractionIrradiance = vec3(0.);
+        #endif
+
         refractionIrradiance *= transmittance;
     #endif
 
@@ -1078,7 +1112,7 @@ float transmission = 0.0;
     // _____________________________ Irradiance ______________________________________
     #ifdef REFLECTION
         vec3 finalIrradiance = environmentIrradiance;
-        #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(SS_TRANSLUCENCY)
+        #if defined(SS_TRANSLUCENCY)
             finalIrradiance += refractionIrradiance;
         #endif
         finalIrradiance *= surfaceAlbedo.rgb;
@@ -1300,11 +1334,12 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
         gl_FragData[2] = vec4(1.0);
         // gl_FragData[3] = vec4(1.0);
     #endif
-    gl_FragData[3] = vec4(vInteriorTransparency.xyz, gl_FrontFacing);
     
     #ifdef TRANSPARENCY_INTERIOR
-        gl_FragData[4] = vec4(vInteriorTransparency);
+        gl_FragData[3] = vec4(vInteriorTransparency.xyz, 1.0);
+        gl_FragData[4] = vec4(vInteriorTransparency.a, vRefractionInfos.y, gl_FrontFacing, 1.0);
     #else
+        gl_FragData[3] = vec4(1.0);
         gl_FragData[4] = vec4(1.0);
     #endif
 #else
@@ -1346,12 +1381,12 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
     #endif
 
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
-    // gl_FragColor = finalColor;
+    gl_FragColor = finalColor;
     // #ifdef SS_REFRACTION
     // finalColor.rgb = vec3(NdotV);
     // #endif
 
-    gl_FragData[0] = finalColor;
+    // gl_FragData[0] = finalColor;
     // gl_FragData[1] = vec4(0.0);
     // gl_FragData[2] = vec4(0.0);
     // gl_FragData[3] = vec4(0.0);

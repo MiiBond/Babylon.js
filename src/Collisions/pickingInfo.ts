@@ -30,9 +30,9 @@ export class PickingInfo {
      * The mesh corresponding the the pick collision
      */
     public pickedMesh: Nullable<AbstractMesh> = null;
-    /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
+    /** (See getTextureCoordinates) The barycentric U coordinate that is used when calculating the texture coordinates of the collision.*/
     public bu = 0;
-    /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
+    /** (See getTextureCoordinates) The barycentric V coordinate that is used when calculating the texture coordinates of the collision.*/
     public bv = 0;
     /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
     public faceId = -1;
@@ -137,9 +137,9 @@ export class PickingInfo {
         var uv1 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 1] * 2);
         var uv2 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 2] * 2);
 
-        uv0 = uv0.scale(1.0 - this.bu - this.bv);
-        uv1 = uv1.scale(this.bu);
-        uv2 = uv2.scale(this.bv);
+        uv0 = uv0.scale(this.bu);
+        uv1 = uv1.scale(this.bv);
+        uv2 = uv2.scale(1.0 - this.bu - this.bv);
 
         return new Vector2(uv0.x + uv1.x + uv2.x, uv0.y + uv1.y + uv2.y);
     }

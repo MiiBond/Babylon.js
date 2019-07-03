@@ -11,6 +11,10 @@ uniform vec2 depthPeelInfos;
 
 varying float vDepthMetric;
 
+#ifdef PACKED
+	#include<packingFunctions>
+#endif
+
 void main(void)
 {
 #ifdef ALPHATEST
@@ -20,11 +24,28 @@ void main(void)
 #ifdef DEPTHPEEL
 	vec2 screenCoords = vec2(gl_FragCoord.x / depthPeelInfos.x, gl_FragCoord.y / depthPeelInfos.y);
 	float depth = texture2D(depthSampler, screenCoords).r;
-	// depth = (depthValues.x + (depthValues.y - depthValues.x) * depth);
-	if (vDepthMetric <= depth) {
-		discard;
-	}
+	#ifdef NONLINEARDEPTH
+		if (gl_FragCoord.z <= depth) {
+			discard;
+		}
+	#else
+		if (vDepthMetric <= depth) {
+			discard;
+		}
+	#endif
 #endif
 
-	gl_FragColor = vec4(vDepthMetric, vDepthMetric * vDepthMetric, 0.0, 1.0);
+#ifdef NONLINEARDEPTH
+	#ifdef PACKED
+		gl_FragColor = pack(gl_FragCoord.z);
+	#else
+		gl_FragColor = vec4(gl_FragCoord.z, 0.0, 0.0, 0.0);
+	#endif
+#else
+	#ifdef PACKED
+		gl_FragColor = pack(vDepthMetric);
+	#else
+		gl_FragColor = vec4(vDepthMetric, 0.0, 0.0, 1.0);
+	#endif
+#endif
 }

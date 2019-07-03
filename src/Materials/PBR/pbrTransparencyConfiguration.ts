@@ -168,8 +168,8 @@ export class PBRTransparencyConfiguration {
             let depthTextureWidth = 1;
             let depthTextureHeight = 1;
             if (this._frontDepthTexture && MaterialFlags.TransparencyFrontDepthEnabled) {
-                depthTextureHeight = scene.getEngine().getRenderHeight();;
-                depthTextureWidth = scene.getEngine().getRenderWidth();;
+                depthTextureHeight = scene.getEngine().getRenderHeight();
+                depthTextureWidth = scene.getEngine().getRenderWidth();
                 MaterialHelper.BindTextureMatrix(this._frontDepthTexture, uniformBuffer, "frontDepthTexture");
                 if (this._backDepthTexture && MaterialFlags.TransparencyBackDepthEnabled) {
                     MaterialHelper.BindTextureMatrix(this._backDepthTexture, uniformBuffer, "backDepthTexture");
