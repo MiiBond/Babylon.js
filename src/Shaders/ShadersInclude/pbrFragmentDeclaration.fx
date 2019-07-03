@@ -119,9 +119,7 @@ uniform mat4 view;
         uniform mat4 transparencyMatrix;
     #endif
     uniform vec4 transparencyDepthValues;
-    // #ifdef TRANSPARENCY_FRONT_DEPTH
-        
-    // #endif
+
 #endif
 
 // SubSurface

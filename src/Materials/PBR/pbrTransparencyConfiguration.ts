@@ -18,6 +18,7 @@ export interface IMaterialTransparencyDefines {
     TRANSPARENCY_TEXTUREDIRECTUV: number;
     TRANSPARENCYRGB: boolean;
     TRANSPARENCY_FRONT_DEPTH: boolean;
+    TRANSPARENCY_FRONT_DEPTH_INVERSE: boolean;
     TRANSPARENCY_BACK_DEPTH: boolean;
     TRANSPARENCY_INTERIOR: boolean;
     /** @hidden */
@@ -69,6 +70,9 @@ export class PBRTransparencyConfiguration {
 
     @serialize()
     public interiorDensity = 0;
+
+    @serialize()
+    public frontDepthTextureIsInverse = false;
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
@@ -133,12 +137,13 @@ export class PBRTransparencyConfiguration {
                         defines.TRANSPARENCY_TEXTURE = false;
                     }
                     if (this._frontDepthTexture && MaterialFlags.TransparencyFrontDepthEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._frontDepthTexture, defines, "TRANSPARENCY_FRONT_DEPTH");
+                        defines.TRANSPARENCY_FRONT_DEPTH = true;
+                        defines.TRANSPARENCY_FRONT_DEPTH_INVERSE = this.frontDepthTextureIsInverse;
                     } else {
                         defines.TRANSPARENCY_FRONT_DEPTH = false;
                     }
                     if (this._backDepthTexture && MaterialFlags.TransparencyBackDepthEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._backDepthTexture, defines, "TRANSPARENCY_BACK_DEPTH");
+                        defines.TRANSPARENCY_BACK_DEPTH = true;
                     } else {
                         defines.TRANSPARENCY_BACK_DEPTH = false;
                     }
@@ -152,6 +157,7 @@ export class PBRTransparencyConfiguration {
             defines.TRANSPARENCY = false;
             defines.TRANSPARENCY_TEXTURE = false;
             defines.TRANSPARENCY_FRONT_DEPTH = false;
+            defines.TRANSPARENCY_FRONT_DEPTH_INVERSE = false;
             defines.TRANSPARENCY_BACK_DEPTH = false;
             defines.TRANSPARENCY_INTERIOR = false;
         }

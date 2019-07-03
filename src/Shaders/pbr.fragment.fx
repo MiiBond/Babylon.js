@@ -84,7 +84,11 @@ void main(void) {
     #ifdef TRANSPARENCY_FRONT_DEPTH
         // Handle depth-peeling against current depth textures.
         vec2 screenCoords = vec2(gl_FragCoord.x / transparencyDepthValues.z, gl_FragCoord.y / transparencyDepthValues.w);
-        float frontDepth = texture2D(frontDepthTexture, screenCoords).r;
+        #ifdef TRANSPARENCY_FRONT_DEPTH_INVERSE
+            float frontDepth = 1.0 - texture2D(frontDepthTexture, screenCoords).a + 0.00001;
+        #else
+            float frontDepth = texture2D(frontDepthTexture, screenCoords).r;
+        #endif
         #ifdef TRANSPARENCY_BACK_DEPTH
             float backDepth = texture2D(backDepthTexture, screenCoords).r;
         #endif
