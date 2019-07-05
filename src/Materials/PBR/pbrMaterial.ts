@@ -370,6 +370,10 @@ export class PBRMaterial extends PBRBaseMaterial {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useAdobeGBufferRendering = false;
 
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public adobeGBufferVolumeInfoEnabled = false;
+    
     /**
      * BJS is using an harcoded light falloff based on a manually sets up range.
      * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.

@@ -30,7 +30,7 @@ export interface IAdobeTransparencyCompositorOptions {
      */
     renderSize: number;
     numPasses: number;
-
+    volumeRendering: boolean;
 }
 
 /**
@@ -45,6 +45,7 @@ export class AdobeTransparencyCompositor {
         return {
             renderSize: 256,
             numPasses: 4,
+            volumeRendering: false
         };
     }
 
@@ -145,7 +146,10 @@ export class AdobeTransparencyCompositor {
 
             let defines = "";
             if (i == this._options.numPasses - 1) {
-                defines += "#define BACKGROUND_DEPTH";
+                defines += "#define BACKGROUND_DEPTH\n";
+            }
+            if (this._options.volumeRendering) {
+                defines += "#define VOLUME_RENDERING\n";
             }
             let postEffect = new PostProcess("transparentComposite", "./adobeTransparentComposite", ["renderSize"],
                 ["colourTexture", "reflectionTexture", "miscTexture", "interiorColorTexture", "interiorInfoTexture", "backgroundDepth"],
@@ -157,8 +161,11 @@ export class AdobeTransparencyCompositor {
                     effect.setTexture("colourTexture", this.transparentTextures[i].textures[0]);
                     effect.setTexture("reflectionTexture", this.transparentTextures[i].textures[1]);
                     effect.setTexture("miscTexture", this.transparentTextures[i].textures[2]);
-                    effect.setTexture("interiorColorTexture", this.transparentTextures[i].textures[3]);
-                    effect.setTexture("interiorInfoTexture", this.transparentTextures[i].textures[4]);
+
+                    if (this._options.volumeRendering) {
+                        effect.setTexture("interiorColorTexture", this.transparentTextures[i].textures[3]);
+                        effect.setTexture("interiorInfoTexture", this.transparentTextures[i].textures[4]);
+                    }
 
                     if (i == this._options.numPasses - 1) {
                         effect.setTexture("backgroundDepth", this.backgroundDepthTexture);

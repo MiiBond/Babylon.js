@@ -25,8 +25,6 @@ precision highp float;
 
 #ifdef ADOBE_TRANSPARENCY_G_BUFFER
     #include<mrtFragmentDeclaration>[ADOBE_TRANSPARENCY_G_BUFFER_LENGTH]
-#else
-    // #include<mrtFragmentDeclaration>[1]
 #endif
 
 // Declaration
@@ -420,6 +418,11 @@ float transmission = 0.0;
 
             #ifdef TRANSPARENCY
                 // vec4 refraction_clear = texture2D(refractionSampler, refractionCoords);
+                #if defined(ALPHABLEND)
+                    if (alpha <= 0.4) {
+                        requestedRefractionLOD = 0.0;
+                    }
+                #endif
                 vec4 refraction_colour = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
                 float refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;
                 if (refraction_thickness < 0.0) {
@@ -467,6 +470,10 @@ float transmission = 0.0;
             }
         #endif
 
+        #if defined(ALPHABLEND) && defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+            vec3 sceneColor = refraction_colour.rgb;
+        #endif
+
         #ifdef SS_RGBDREFRACTION
             environmentRefraction.rgb = fromRGBD(environmentRefraction);
         #endif
@@ -484,6 +491,8 @@ float transmission = 0.0;
                 environmentRefraction.rgb = mix(clamped_color * ior, environmentRefraction.rgb, scattering_coeff);
             }
         #endif
+
+        
     #endif
 
     // _____________________________ Reflection Info _______________________________________
@@ -1339,12 +1348,14 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
         // gl_FragData[3] = vec4(1.0);
     #endif
     
-    #ifdef TRANSPARENCY_INTERIOR
-        gl_FragData[3] = vec4(vInteriorTransparency.xyz, 1.0);
-        gl_FragData[4] = vec4(vInteriorTransparency.a, vRefractionInfos.y, gl_FrontFacing, 1.0);
-    #else
-        gl_FragData[3] = vec4(1.0);
-        gl_FragData[4] = vec4(1.0);
+    #ifdef ADOBE_TRANSPARENCY_G_BUFFER_VOLUME_INFO
+        #ifdef TRANSPARENCY_INTERIOR
+            gl_FragData[3] = vec4(vInteriorTransparency.xyz, 1.0);
+            gl_FragData[4] = vec4(vInteriorTransparency.a, vRefractionInfos.y, gl_FrontFacing, 1.0);
+        #else
+            gl_FragData[3] = vec4(1.0);
+            gl_FragData[4] = vec4(1.0);
+        #endif
     #endif
 #else
     // Reflection already includes the environment intensity.
@@ -1375,6 +1386,12 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
     #else
         // Alway run to ensure we are going back to gamma space.
         finalColor = applyImageProcessing(finalColor);
+    #endif
+
+    #if defined(ALPHABLEND) && defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+        // Use refraction texture rather than actual alpha blending.
+        finalColor.rgb = mix(sceneColor.rgb, finalColor.rgb, alpha);
+        finalColor.a = 1.0;
     #endif
 
         finalColor.a *= visibility;

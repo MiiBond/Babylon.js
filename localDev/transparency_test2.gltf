@@ -448,7 +448,8 @@
                 "roughnessFactor": 0.20000000298023225
             },
             "alphaMode": "BLEND",
-            "name": "Glitter"
+            "name": "Glitter",
+            "doubleSided": true
         }
     ],
     "meshes": [

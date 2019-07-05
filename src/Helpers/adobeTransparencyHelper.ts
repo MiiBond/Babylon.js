@@ -78,6 +78,7 @@ export class AdobeTransparencyHelper {
     private _transparentMeshesCache: Mesh[] = [];
     private _compositor: AdobeTransparencyCompositor;
     private _mrtDisabled: Boolean = false;
+    private _volumeRenderingEnabled: boolean = false;
 
     /**
      * This observable will be notified with any error during the creation of the environment,
@@ -99,9 +100,12 @@ export class AdobeTransparencyHelper {
         this.onErrorObservable = new Observable();
         this._parseScene();
 
-        if (scene.getEngine().webGLVersion < 2) {
+        const engine = scene.getEngine();
+        
+        if (!engine.getCaps().drawBuffersExtension) {
             this._mrtDisabled = true;
         }
+        this._volumeRenderingEnabled = (engine._gl as any).COLOR_ATTACHMENT4 !== undefined;
         this._setupRenderTargets();
     }
 
@@ -152,7 +156,19 @@ export class AdobeTransparencyHelper {
     }
 
     private renderAsTransparency(material: Nullable<Material>): boolean {
-        return material instanceof PBRMaterial && (material.transparency.isEnabled);
+        if (!material) {
+            return false;
+        }
+        if (material instanceof PBRMaterial && (material.transparency.isEnabled || material.needAlphaBlending())) {
+            // This is a bit of a hack to force alpha-blended geometry to render with our scene refraction.
+            if (material.needAlphaBlending()) {
+                material.transparency.isEnabled = true;
+                material.getRenderTargetTextures = null;
+            }
+            material.refractionTexture = this.getFinalComposite();
+            return true;
+        }
+        return false;
     }
 
     private _parseScene(): void {
@@ -246,6 +262,13 @@ export class AdobeTransparencyHelper {
             this._scene.customRenderTargets.push(this._opaqueRenderTarget);
         }
 
+        // If there are other layers, they should be included in the render of the opaque background.
+        if (this._scene.layers) {
+            this._scene.layers.forEach((layer) => {
+                layer.renderTargetTextures.push(this._opaqueRenderTarget);
+            });
+        }
+
         if (this._mrtDisabled) {
             return;
         }
@@ -262,6 +285,12 @@ export class AdobeTransparencyHelper {
             this._scene.customRenderTargets.splice(rt_idx, 0, this._opaqueDepthRenderer.getDepthMap());
         } else {
             this._scene.customRenderTargets.push(this._opaqueDepthRenderer.getDepthMap());
+        }
+
+        // Render the depth of the front-layer of transparent meshes.
+        if (this._frontDepthRenderer) {
+            rt_idx = this._scene.customRenderTargets.indexOf(this._frontDepthRenderer.getDepthMap());
+            this._frontDepthRenderer.dispose();
         }
 
         this._frontDepthRenderer = new DepthRenderer(this._scene, Engine.TEXTURETYPE_FLOAT, null, false, this._options.renderSize);
@@ -292,9 +321,10 @@ export class AdobeTransparencyHelper {
         
         for (let idx = 0; idx < this._options.numPasses; idx++) {
             
-            const multiRenderTarget = new MultiRenderTarget("transparency_mrt_" + idx, this._options.renderSize, 5, this._scene, {
+            const renderBufferCount = this._volumeRenderingEnabled ? 5 : 3;
+            const multiRenderTarget = new MultiRenderTarget("transparency_mrt_" + idx, this._options.renderSize, renderBufferCount, this._scene, {
                 defaultType: floatTextureType,
-                types: [Constants.TEXTURETYPE_UNSIGNED_BYTE, floatTextureType, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                types: [Constants.TEXTURETYPE_UNSIGNED_BYTE, floatTextureType, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE],
                 samplingModes: [MultiRenderTarget.BILINEAR_SAMPLINGMODE],
                 doNotChangeAspectRatio: true,
                 generateMipMaps: true
@@ -311,9 +341,7 @@ export class AdobeTransparencyHelper {
             // multiRenderTarget.samplingMode = Texture.BILINEAR_SAMPLINGMODE;
             // multiRenderTarget.lodGenerationOffset = -0.5;
             multiRenderTarget.textures.forEach((tex) => tex.hasAlpha = true);
-            // multiRenderTarget.onClearObservable.add((engine) => {
-            //     engine.clear(multiRenderTarget.clearColor, true, false, false);
-            // });
+
             multiRenderTarget.renderList = this._transparentMeshesCache;
             // multiRenderTarget.renderList = this._opaqueMeshesCache;
             multiRenderTarget.onBeforeRenderObservable.add((eventData: number, eventState: any) => {
@@ -323,6 +351,8 @@ export class AdobeTransparencyHelper {
                     multiRenderTarget.renderList.forEach((mesh: AbstractMesh) => {
                         if (this.renderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
                             mesh.material.useAdobeGBufferRendering = true;
+                            // mesh.material.backFaceCulling = false;
+                            mesh.material.adobeGBufferVolumeInfoEnabled = this._volumeRenderingEnabled;
                             if (idx > 0) {
                                 mesh.material.transparency.frontDepthTexture = this._mrtRenderTargets[idx - 1].textures[1];
                                 mesh.material.transparency.frontDepthTextureIsInverse = true;
@@ -332,8 +362,8 @@ export class AdobeTransparencyHelper {
                             }
                             mesh.material.transparency.backDepthTexture = this._opaqueDepthRenderer.getDepthMap();
                             // (mesh.material as PBRMaterial).sideOrientation = PBRMaterial.CounterClockWiseSideOrientation;
-                            // mesh.material.backFaceCulling = false;
-                            mesh.material.twoSidedLighting = true;
+                            mesh.material.backFaceCulling = false;
+                            // mesh.material.twoSidedLighting = true;
                             // mesh.material.transparencyMode = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
                             mesh.material.forceNormalForward = true;
                             // (mesh.material as PBRMaterial).disableDepthWrite = true;
@@ -350,8 +380,9 @@ export class AdobeTransparencyHelper {
                         multiRenderTarget.renderList.forEach((mesh: AbstractMesh) => {
                             if (this.renderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
                                 mesh.material.useAdobeGBufferRendering = false;
+                                mesh.material.adobeGBufferVolumeInfoEnabled = false;
                                 // (mesh.material as PBRMaterial).sideOrientation = PBRMaterial.ClockWiseSideOrientation;
-                                // mesh.material.backFaceCulling = true;
+                                mesh.material.backFaceCulling = true;
                                 // mesh.material.twoSidedLighting = false;
                                 if (mesh.material.albedoTexture && mesh.material.albedoTexture.hasAlpha && mesh.material.useAlphaFromAlbedoTexture) {
                                     // mesh.material.transparencyMode = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
@@ -376,17 +407,13 @@ export class AdobeTransparencyHelper {
             this._mrtRenderTargets.forEach((target) => this._scene.customRenderTargets.push(target));
         }
 
-        // If there are other layers, they should be included in the render of the opaque background.
-        if (this._scene.layers) {
-            this._scene.layers.forEach((layer) => {
-                layer.renderTargetTextures.push(this._opaqueRenderTarget);
-            });
-        }
-
         if (this._compositor) {
             this._compositor.dispose();
         }
-        this._compositor = new AdobeTransparencyCompositor({ renderSize: this._options.renderSize, numPasses: this._options.numPasses }, this._scene);
+        this._compositor = new AdobeTransparencyCompositor({
+            renderSize: this._options.renderSize,
+            numPasses: this._options.numPasses,
+            volumeRendering: this._volumeRenderingEnabled }, this._scene);
         this._compositor.setBackgroundDepthTexture(this._opaqueDepthRenderer.getDepthMap());
         this._compositor.setBackgroundTexture(this._opaqueRenderTarget);
         this._compositor.setTransparentTextures(this._mrtRenderTargets);

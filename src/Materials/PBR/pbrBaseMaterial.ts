@@ -239,7 +239,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
 
     public ADOBE_TRANSPARENCY_G_BUFFER = false;
-    public ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 5;
+    public ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 3;
+    public ADOBE_TRANSPARENCY_G_BUFFER_VOLUME_INFO = false;
 
     public UNLIT = false;
 
@@ -519,6 +520,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     protected _useAutoMicroSurfaceFromReflectivityMap = false;
 
     protected useAdobeGBufferRendering = false;
+
+    protected adobeGBufferVolumeInfoEnabled = false;
 
     /**
      * Defines the  falloff type used in this material.
@@ -859,6 +862,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (this._disableAlphaBlending) {
             return false;
         }
+        if (this.transparency.isEnabled) {
+            return false;
+        }
 
         return ((this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture());
     }
@@ -871,7 +877,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (this._disableAlphaBlending && mesh.visibility >= 1.0) {
             return false;
         }
-
+        
         return super.needAlphaBlendingForMesh(mesh);
     }
 
@@ -1508,13 +1514,19 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (defines._areTexturesDirty || defines._areMiscDirty) {
             defines.ALPHATESTVALUE = `${this._alphaCutOff}${this._alphaCutOff % 1 === 0 ? "." : ""}`;
             defines.PREMULTIPLYALPHA = (this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF);
-            defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
+            defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh) || this.transparency.isEnabled;
             defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
             defines.LINEARALPHAFRESNEL = this._useLinearAlphaFresnel;
 
             if (this.useAdobeGBufferRendering) {
                 defines.ADOBE_TRANSPARENCY_G_BUFFER = true;
-                defines.ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 5;
+                if (this.adobeGBufferVolumeInfoEnabled) {
+                    defines.ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 5;
+                    defines.ADOBE_TRANSPARENCY_G_BUFFER_VOLUME_INFO = true;
+                } else {
+                    defines.ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 3;
+                    defines.ADOBE_TRANSPARENCY_G_BUFFER_VOLUME_INFO = false;
+                }
             } else {
                 defines.ADOBE_TRANSPARENCY_G_BUFFER = false;
             }

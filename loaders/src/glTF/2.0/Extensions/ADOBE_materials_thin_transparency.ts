@@ -82,6 +82,8 @@ export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
     pbrMaterial.backFaceCulling = false;
     pbrMaterial.twoSidedLighting = true;
     pbrMaterial.enableSpecularAntiAliasing = false;
+    pbrMaterial.forceDepthWrite = true;
+    pbrMaterial.enableSpecularAntiAliasing = true;
 
     // Don't let the material gather RT's because, if it does, the scene will try to render the RT for the refractionTexture.
     pbrMaterial.getRenderTargetTextures = null;
