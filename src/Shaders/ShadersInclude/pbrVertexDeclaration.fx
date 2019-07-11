@@ -85,6 +85,19 @@ uniform float pointSize;
     #endif
 #endif
 
+// Transparency
+#ifdef TRANSPARENCY
+    #ifdef TRANSPARENCY_INTERIOR
+        uniform vec4 vInteriorTransparency;
+    #endif
+
+    #ifdef TRANSPARENCY_TEXTURE
+        uniform vec2 vTransparencyInfos;
+        uniform mat4 transparencyMatrix;
+    #endif
+    
+#endif
+
 // Sub Surface
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION

@@ -45215,8 +45215,11 @@ declare module BABYLON {
         TRANSPARENCY_TEXTUREDIRECTUV: number;
         TRANSPARENCYRGB: boolean;
         TRANSPARENCY_FRONT_DEPTH: boolean;
+        TRANSPARENCY_FRONT_DEPTH_INVERSE: boolean;
         TRANSPARENCY_BACK_DEPTH: boolean;
         TRANSPARENCY_INTERIOR: boolean;
+        TRANSPARENCY_REFRACTION_SCALE: string;
+        TRANSPARENCY_SCENE_SCALE: string;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -45247,6 +45250,9 @@ declare module BABYLON {
         frontDepthTexture: Nullable<BaseTexture>;
         interiorColor: Color3;
         interiorDensity: number;
+        refractionScale: number;
+        sceneScale: number;
+        frontDepthTextureIsInverse: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         /** @hidden */
@@ -45844,8 +45850,11 @@ declare module BABYLON {
         TRANSPARENCYRGB: boolean;
         TRANSPARENCY_TEXTUREDIRECTUV: number;
         TRANSPARENCY_FRONT_DEPTH: boolean;
+        TRANSPARENCY_FRONT_DEPTH_INVERSE: boolean;
         TRANSPARENCY_BACK_DEPTH: boolean;
         TRANSPARENCY_INTERIOR: boolean;
+        TRANSPARENCY_REFRACTION_SCALE: string;
+        TRANSPARENCY_SCENE_SCALE: string;
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
         SS_TRANSLUCENCY: boolean;
@@ -45862,6 +45871,7 @@ declare module BABYLON {
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         ADOBE_TRANSPARENCY_G_BUFFER: boolean;
         ADOBE_TRANSPARENCY_G_BUFFER_LENGTH: number;
+        ADOBE_TRANSPARENCY_G_BUFFER_VOLUME_INFO: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
@@ -46083,6 +46093,7 @@ declare module BABYLON {
          */
         protected _useAutoMicroSurfaceFromReflectivityMap: boolean;
         protected useAdobeGBufferRendering: boolean;
+        protected adobeGBufferVolumeInfoEnabled: boolean;
         /**
          * Defines the  falloff type used in this material.
          * It by default is Physical.
@@ -46587,6 +46598,7 @@ declare module BABYLON {
          */
         useAutoMicroSurfaceFromReflectivityMap: boolean;
         useAdobeGBufferRendering: boolean;
+        adobeGBufferVolumeInfoEnabled: boolean;
         /**
          * BJS is using an harcoded light falloff based on a manually sets up range.
          * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
@@ -46795,6 +46807,13 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var adobeTransparentCompositePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
     /**
      *
      */
@@ -46804,6 +46823,9 @@ declare module BABYLON {
          */
         renderSize: number;
         numPasses: number;
+        volumeRendering: boolean;
+        refractionScale: number;
+        sceneScale: number;
     }
     /**
      *
@@ -46924,13 +46946,22 @@ declare module BABYLON {
      */
     export interface IAdobeTransparencyHelperOptions {
         /**
-         * 4 by default.
+         * Number of layers of transparency that can be rendered. The higher the number, the slower the performance.
          */
         numPasses: number;
         /**
          * The size of the render buffers
          */
         renderSize: number;
+        /**
+         * The amount of distortion caused when refracting light through a material.
+         */
+        refractionScale: number;
+        /**
+         * The number of scene units in 1 meter. This is used so that an entire scene can be scaled
+         * without the interior of transparent objects being affected.
+         */
+        sceneScale: number;
     }
     /**
      *
@@ -46941,20 +46972,19 @@ declare module BABYLON {
          */
         private static _getDefaultOptions;
         /**
-         * Gets the skybox material created by the helper.
-         */
-        /**
          * Stores the creation options.
          */
         private readonly _scene;
         private _options;
         private _opaqueRenderTarget;
         private _opaqueDepthRenderer;
+        private _frontDepthRenderer;
         private _mrtRenderTargets;
-        private _depthRenderers;
         private _opaqueMeshesCache;
         private _transparentMeshesCache;
         private _compositor;
+        private _mrtDisabled;
+        private _volumeRenderingEnabled;
         /**
          * This observable will be notified with any error during the creation of the environment,
          * mainly texture creation errors.
@@ -46977,10 +47007,11 @@ declare module BABYLON {
         getRenderTarget(pass?: number): Nullable<Texture>;
         getRenderTargetTexture(pass?: number, mrtIndex?: number): Nullable<Texture>;
         getFinalComposite(): Nullable<Texture>;
-        getDepthTexture(pass?: number): Nullable<Texture>;
         getOpaqueTarget(): Nullable<Texture>;
         getNumPasses(): number;
-        private renderAsTransparency;
+        private shouldRenderAsTransparency;
+        private _addMesh;
+        private _removeMesh;
         private _parseScene;
         private onMeshMaterialChanged;
         /**

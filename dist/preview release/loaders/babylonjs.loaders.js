@@ -4088,10 +4088,15 @@ var ADOBE_materials_thin_transparency = /** @class */ (function () {
         pbrMaterial.backFaceCulling = false;
         pbrMaterial.twoSidedLighting = true;
         pbrMaterial.enableSpecularAntiAliasing = false;
+        pbrMaterial.forceDepthWrite = true;
+        pbrMaterial.enableSpecularAntiAliasing = true;
         // Don't let the material gather RT's because, if it does, the scene will try to render the RT for the refractionTexture.
         pbrMaterial.getRenderTargetTextures = null;
         if (extension.transmissionFactor !== undefined) {
             pbrMaterial.transparency.factor = extension.transmissionFactor;
+        }
+        else {
+            pbrMaterial.transparency.factor = 1.0;
         }
         if (extension.ior !== undefined) {
             pbrMaterial.indexOfRefraction = 1.0 / extension.ior;

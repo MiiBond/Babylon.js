@@ -21,6 +21,8 @@ export interface IMaterialTransparencyDefines {
     TRANSPARENCY_FRONT_DEPTH_INVERSE: boolean;
     TRANSPARENCY_BACK_DEPTH: boolean;
     TRANSPARENCY_INTERIOR: boolean;
+    TRANSPARENCY_REFRACTION_SCALE: string;
+    TRANSPARENCY_SCENE_SCALE: string;
     /** @hidden */
     _areTexturesDirty: boolean;
 }
@@ -42,7 +44,7 @@ export class PBRTransparencyConfiguration {
      * Defines the transparency factor.
      */
     @serialize()
-    public factor = 1;
+    public factor = 0;
 
     @serializeAsTexture()
     private _texture: Nullable<BaseTexture> = null;
@@ -70,6 +72,12 @@ export class PBRTransparencyConfiguration {
 
     @serialize()
     public interiorDensity = 0;
+
+    @serialize()
+    public refractionScale = 1.0;
+
+    @serialize()
+    public sceneScale = 1.0;
 
     @serialize()
     public frontDepthTextureIsInverse = false;
@@ -152,6 +160,9 @@ export class PBRTransparencyConfiguration {
             if (this.interiorDensity > 0) {
                 defines.TRANSPARENCY_INTERIOR = true;
             }
+            
+            defines.TRANSPARENCY_REFRACTION_SCALE = this.refractionScale.toFixed(20).toString();
+            defines.TRANSPARENCY_SCENE_SCALE = this.sceneScale.toFixed(20).toString();
         }
         else {
             defines.TRANSPARENCY = false;
@@ -160,6 +171,8 @@ export class PBRTransparencyConfiguration {
             defines.TRANSPARENCY_FRONT_DEPTH_INVERSE = false;
             defines.TRANSPARENCY_BACK_DEPTH = false;
             defines.TRANSPARENCY_INTERIOR = false;
+            defines.TRANSPARENCY_REFRACTION_SCALE = "1.0";
+            defines.TRANSPARENCY_SCENE_SCALE = "1.0";
         }
     }
 

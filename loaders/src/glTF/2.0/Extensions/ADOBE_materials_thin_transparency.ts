@@ -90,6 +90,8 @@ export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
 
     if (extension.transmissionFactor !== undefined) {
       pbrMaterial.transparency.factor = extension.transmissionFactor;
+    } else {
+      pbrMaterial.transparency.factor = 1.0;
     }
 
     if (extension.ior !== undefined) {

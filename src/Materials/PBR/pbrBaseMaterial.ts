@@ -218,6 +218,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public TRANSPARENCY_FRONT_DEPTH_INVERSE = false;
     public TRANSPARENCY_BACK_DEPTH = false;
     public TRANSPARENCY_INTERIOR = false;
+    public TRANSPARENCY_REFRACTION_SCALE = "1.0";
+    public TRANSPARENCY_SCENE_SCALE = "1.0";
 
     public SUBSURFACE = false;
 

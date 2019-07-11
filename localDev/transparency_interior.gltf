@@ -1,0 +1,1006 @@
+{
+    "asset": {
+        "copyright": "2019 (c) Adobe Inc.",
+        "generator": "Adobe Dimension - 5382d06ef3602aa2463810b9e9409e51e1d3a5e7",
+        "version": "2.0"
+    },
+    "accessors": [
+        {
+            "componentType": 5126,
+            "count": 3719,
+            "type": "VEC3",
+            "max": [
+                0.10000002384185791,
+                0.20000006258487702,
+                0.10000000894069672
+            ],
+            "min": [
+                -0.1000000387430191,
+                0.0,
+                -0.1000000536441803
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 3719,
+            "type": "VEC3"
+        },
+        {
+            "componentType": 5126,
+            "count": 3719,
+            "type": "VEC2"
+        },
+        {
+            "componentType": 5125,
+            "count": 21240,
+            "type": "SCALAR",
+            "max": [
+                3718.0
+            ],
+            "min": [
+                0.0
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 22202,
+            "type": "VEC3",
+            "max": [
+                0.9809289574623108,
+                1.0221017599105836,
+                1.4283748865127564
+            ],
+            "min": [
+                -0.8216659426689148,
+                0.0015843699220567942,
+                -0.46063709259033205
+            ]
+        },
+        {
+            "componentType": 5126,
+            "count": 22202,
+            "type": "VEC3"
+        },
+        {
+            "componentType": 5126,
+            "count": 22202,
+            "type": "VEC2"
+        },
+        {
+            "componentType": 5125,
+            "count": 131337,
+            "type": "SCALAR",
+            "max": [
+                22201.0
+            ],
+            "min": [
+                0.0
+            ]
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteOffset": 0,
+            "byteLength": 17372
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 17372,
+            "byteLength": 103085
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 120457,
+            "byteLength": 48218
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 168675,
+            "byteLength": 12459
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 181134,
+            "byteLength": 4248
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 185382,
+            "byteLength": 2104
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 187486,
+            "byteLength": 1895
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 189381,
+            "byteLength": 58793
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 248174,
+            "byteLength": 17092
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 265266,
+            "byteLength": 6048
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 271314,
+            "byteLength": 3055
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 274369,
+            "byteLength": 1936
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 276305,
+            "byteLength": 51764
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 328069,
+            "byteLength": 15012
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 343081,
+            "byteLength": 7163
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 350244,
+            "byteLength": 2885
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 353129,
+            "byteLength": 1809
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 354938,
+            "byteLength": 34999
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 389937,
+            "byteLength": 7874
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 397811,
+            "byteLength": 3031
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 400842,
+            "byteLength": 2066
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 402908,
+            "byteLength": 1745
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 404653,
+            "byteLength": 58034
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 462687,
+            "byteLength": 16043
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 478730,
+            "byteLength": 5958
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 484688,
+            "byteLength": 2625
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 487313,
+            "byteLength": 1804
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 489117,
+            "byteLength": 54116
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 543233,
+            "byteLength": 16370
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 559603,
+            "byteLength": 6205
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 565808,
+            "byteLength": 2802
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 568610,
+            "byteLength": 1892
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 570502,
+            "uri": "transparency_interior_binary.bin"
+        }
+    ],
+    "cameras": [
+        {
+            "perspective": {
+                "znear": 0.000056080370995914566,
+                "yfov": 0.6024156808853149,
+                "zfar": 3.0844204425811769,
+                "aspectRatio": 1.3333333730697632
+            },
+            "type": "perspective",
+            "extras": {
+                "ADOBE_camera_extras": {
+                    "isDefaultCamera": false,
+                    "isWorkingCamera": true
+                }
+            },
+            "name": "render_camera"
+        }
+    ],
+    "images": [
+        {
+            "name": "stripes_01",
+            "uri": "transparency_interior_images/stripes_01.jpg",
+            "mimeType": "image/jpeg"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_x_0",
+            "bufferView": 2,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_x_1",
+            "bufferView": 3,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_x_2",
+            "bufferView": 4,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_x_3",
+            "bufferView": 5,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_x_4",
+            "bufferView": 6,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_x_0",
+            "bufferView": 7,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_x_1",
+            "bufferView": 8,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_x_2",
+            "bufferView": 9,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_x_3",
+            "bufferView": 10,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_x_4",
+            "bufferView": 11,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_y_0",
+            "bufferView": 12,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_y_1",
+            "bufferView": 13,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_y_2",
+            "bufferView": 14,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_y_3",
+            "bufferView": 15,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_y_4",
+            "bufferView": 16,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_y_0",
+            "bufferView": 17,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_y_1",
+            "bufferView": 18,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_y_2",
+            "bufferView": 19,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_y_3",
+            "bufferView": 20,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_y_4",
+            "bufferView": 21,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_z_0",
+            "bufferView": 22,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_z_1",
+            "bufferView": 23,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_z_2",
+            "bufferView": 24,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_z_3",
+            "bufferView": 25,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_pos_z_4",
+            "bufferView": 26,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_z_0",
+            "bufferView": 27,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_z_1",
+            "bufferView": 28,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_z_2",
+            "bufferView": 29,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_z_3",
+            "bufferView": 30,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "3_Point_Soft_Overhead_neg_z_4",
+            "bufferView": 31,
+            "mimeType": "image/png"
+        },
+        {
+            "name": "Gradient1",
+            "uri": "transparency_interior_images/Gradient1.jpg",
+            "mimeType": "image/jpeg"
+        }
+    ],
+    "materials": [
+        {
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    1.0,
+                    0.854263961315155,
+                    0.3094690442085266,
+                    1.0
+                ],
+                "metallicFactor": 0.0,
+                "roughnessFactor": 0.07999999821186066
+            },
+            "alphaMode": "BLEND",
+            "name": "Beer 3",
+            "extensions": {
+                "ADOBE_materials_thin_transparency": {
+                    "ior": 1.600000023841858,
+                    "transmissionFactor": 1,
+                    "density": 0.009999999776482582,
+                    "interiorColor": [
+                        0.45490145683288576,
+                        0.14442667365074159,
+                        0
+                    ]
+                }
+            },
+            "extras": {
+                "ADOBE_transparency": {
+                    
+                }
+            }
+        },
+        {
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 0
+                },
+                "metallicFactor": 0.0,
+                "roughnessFactor": 0.4934999942779541
+            },
+            "name": "Cloth Backdrop",
+            "doubleSided": true
+        },
+        {
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.9899994134902954,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "metallicFactor": 0.0,
+                "roughnessFactor": 0.0
+            },
+            "alphaMode": "BLEND",
+            "name": "Glass",
+            "extensions": {
+                "ADOBE_materials_thin_transparency": {
+                    "ior": 1.7999999523162842,
+                    "transmissionFactor": 1
+                }
+            }
+        },
+        {
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.9899994134902954,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "metallicFactor": 0.0,
+                "roughnessFactor": 0.0
+            },
+            "alphaMode": "BLEND",
+            "name": "Glass",
+            "extensions": {
+                "ADOBE_materials_thin_transparency": {
+                    "transmissionFactor": 1
+                }
+            }
+        },
+        {
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    1.0,
+                    0.8542635440826416,
+                    0.3094691038131714,
+                    1.0
+                ],
+                "metallicFactor": 0.0,
+                "roughnessFactor": 0.07999999821186066
+            },
+            "alphaMode": "BLEND",
+            "name": "Beer",
+            "extensions": {
+                "ADOBE_materials_thin_transparency": {
+                    "ior": 1.600000023841858,
+                    "transmissionFactor": 1,
+                    "density": 0.009999999776482582,
+                    "interiorColor": [
+                        0.4549010097980499,
+                        0.14442700147628785,
+                        0
+                    ]
+                }
+            },
+            "extras": {
+                "ADOBE_transparency": {
+                    
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "name": "sphere_N3D10",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 0,
+                        "NORMAL": 1,
+                        "TEXCOORD_0": 2
+                    },
+                    "indices": 3,
+                    "material": 0,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 0,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "cloth_backdrop_01_N3D",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TEXCOORD_0": 6,
+                        "NORMAL": 5,
+                        "POSITION": 4
+                    },
+                    "indices": 7,
+                    "material": 1,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 1,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "sphere_N3D5",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 0,
+                        "NORMAL": 1,
+                        "TEXCOORD_0": 2
+                    },
+                    "indices": 3,
+                    "material": 2,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 0,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "sphere_N3D7",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 0,
+                        "NORMAL": 1,
+                        "TEXCOORD_0": 2
+                    },
+                    "indices": 3,
+                    "material": 3,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 0,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "sphere_N3D6",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TEXCOORD_0": 2,
+                        "NORMAL": 1,
+                        "POSITION": 0
+                    },
+                    "indices": 3,
+                    "material": 0,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 0,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "sphere_N3D8",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TEXCOORD_0": 2,
+                        "NORMAL": 1,
+                        "POSITION": 0
+                    },
+                    "indices": 3,
+                    "material": 4,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 0,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "sphere_N3D9",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TEXCOORD_0": 2,
+                        "NORMAL": 1,
+                        "POSITION": 0
+                    },
+                    "indices": 3,
+                    "material": 4,
+                    "extensions": {
+                        "KHR_draco_mesh_compression": {
+                            "bufferView": 0,
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                0.1946340650320053,
+                0.31128406524658205,
+                1.1812108755111695
+            ],
+            "rotation": [
+                -0.07619591802358628,
+                0.014578385278582573,
+                0.0011141611030325294,
+                0.996985673904419
+            ],
+            "camera": 0,
+            "name": "render_camera_n3d"
+        },
+        {
+            "name": "ground_plane_n3d",
+            "extras": {
+                "ADOBE_ground_plane": {
+                    "reflectionFresnel": 0,
+                    "reflectionOpacity": 0,
+                    "reflectionRoughness": 0,
+                    "shadowOpacity": 1
+                }
+            }
+        },
+        {
+            "translation": [
+                0.00007023811485851184,
+                0.20841717720031739,
+                0.007405085023492575
+            ],
+            "scale": [
+                0.9549957513809204,
+                0.9549957513809204,
+                0.9549957513809204
+            ],
+            "mesh": 0,
+            "name": "Sphere"
+        },
+        {
+            "mesh": 1,
+            "name": "Cloth Backdrop 01"
+        },
+        {
+            "translation": [
+                -0.20985668897628785,
+                0.03208952769637108,
+                0.04130881652235985
+            ],
+            "mesh": 2,
+            "name": "Glass Sphere"
+        },
+        {
+            "children": [
+                6
+            ],
+            "translation": [
+                0.0063305688090622429,
+                0.01839572936296463,
+                0.007405089680105448
+            ],
+            "scale": [
+                1.1870670318603516,
+                1.1870670318603516,
+                1.1870670318603516
+            ],
+            "mesh": 3,
+            "name": "Double Sphere"
+        },
+        {
+            "translation": [
+                -3.5762788286319848e-9,
+                0.019173970445990564,
+                -4.7683719195390498e-9
+            ],
+            "scale": [
+                0.8045002818107605,
+                0.8045002818107605,
+                0.8045002818107605
+            ],
+            "mesh": 4,
+            "name": "Sphere"
+        },
+        {
+            "translation": [
+                0.18716059625148774,
+                0.010968090035021305,
+                0.008905463851988316
+            ],
+            "scale": [
+                0.25,
+                0.25,
+                0.25
+            ],
+            "mesh": 5,
+            "name": "Small Beer"
+        },
+        {
+            "translation": [
+                0.4591754674911499,
+                0.0,
+                -0.0031805101316422226
+            ],
+            "scale": [
+                2.5,
+                2.5,
+                2.5
+            ],
+            "mesh": 6,
+            "name": "Large Beer"
+        }
+    ],
+    "samplers": [
+        {},
+        {}
+    ],
+    "scenes": [
+        {
+            "nodes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                8
+            ],
+            "name": "scene",
+            "extensions": {
+                "EXT_lights_image_based": {
+                    "light": 0
+                }
+            },
+            "extras": {
+                "ADOBE_background": {
+                    "color": [
+                        1,
+                        1,
+                        1
+                    ],
+                    "opacity": 1,
+                    "texture": 1,
+                    "textureAspect": 1.7777777910232545,
+                    "transform": [
+                        0.75,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        1
+                    ]
+                },
+                "ADOBE_canvas": {
+                    "height": 768,
+                    "width": 1024
+                }
+            }
+        }
+    ],
+    "textures": [
+        {
+            "name": "MATERIAL_CLOTH_BACKDROP_01_MAT::baseColor::sampler",
+            "sampler": 0,
+            "source": 0
+        },
+        {
+            "name": "background_sampler",
+            "sampler": 1,
+            "source": 31
+        }
+    ],
+    "scene": 0,
+    "extensions": {
+        "EXT_lights_image_based": {
+            "lights": [
+                {
+                    "intensity": 1,
+                    "irradianceCoefficients": [
+                        [
+                            5.421737577307788,
+                            5.421737577307788,
+                            5.421737577307788
+                        ],
+                        [
+                            -2.242934298644148,
+                            -2.242934298644148,
+                            -2.242934298644148
+                        ],
+                        [
+                            -1.2830178609690204,
+                            -1.2830178609690204,
+                            -1.2830178609690204
+                        ],
+                        [
+                            0.5861883238299082,
+                            0.5861883238299082,
+                            0.5861883238299082
+                        ],
+                        [
+                            -0.11694068813795829,
+                            -0.11694068813795829,
+                            -0.11694068813795829
+                        ],
+                        [
+                            0.3692121068560106,
+                            0.3692121068560106,
+                            0.3692121068560106
+                        ],
+                        [
+                            -0.07870297547533227,
+                            -0.07870297547533227,
+                            -0.07870297547533227
+                        ],
+                        [
+                            -0.6056527202426935,
+                            -0.6056527202426935,
+                            -0.6056527202426935
+                        ],
+                        [
+                            -0.7974336664582628,
+                            -0.7974336664582628,
+                            -0.7974336664582628
+                        ]
+                    ],
+                    "name": "imageBasedLight",
+                    "rotation": [
+                        0,
+                        -0.7071067690849304,
+                        0,
+                        0.7071067690849304
+                    ],
+                    "specularImageSize": 256,
+                    "specularImages": [
+                        [
+                            1,
+                            6,
+                            11,
+                            16,
+                            21,
+                            26
+                        ],
+                        [
+                            2,
+                            7,
+                            12,
+                            17,
+                            22,
+                            27
+                        ],
+                        [
+                            3,
+                            8,
+                            13,
+                            18,
+                            23,
+                            28
+                        ],
+                        [
+                            4,
+                            9,
+                            14,
+                            19,
+                            24,
+                            29
+                        ],
+                        [
+                            5,
+                            10,
+                            15,
+                            20,
+                            25,
+                            30
+                        ]
+                    ]
+                }
+            ]
+        }
+    },
+    "extensionsUsed": [
+        "ADOBE_materials_thin_transparency",
+        "KHR_draco_mesh_compression",
+        "EXT_lights_image_based"
+    ],
+    "extensionsRequired": [
+        "KHR_draco_mesh_compression",
+        "EXT_lights_image_based"
+    ]
+}

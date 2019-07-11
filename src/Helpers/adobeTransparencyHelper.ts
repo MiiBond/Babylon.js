@@ -1,15 +1,9 @@
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
-// import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
 import { Scene } from "../scene";
-// import { Vector3, Color3, Color4, Plane } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-// import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-// import { MirrorTexture } from "../Materials/Textures/mirrorTexture";
-// import { Effect } from "../Materials/effect";
-// import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Constants } from "../Engines/constants";
@@ -32,7 +26,7 @@ import { Engine } from '../Engines/engine';
  */
 export interface IAdobeTransparencyHelperOptions {
     /**
-     * 4 by default.
+     * Number of layers of transparency that can be rendered. The higher the number, the slower the performance.
      */
     numPasses: number;
 
@@ -42,12 +36,15 @@ export interface IAdobeTransparencyHelperOptions {
     renderSize: number;
 
     /**
-     * The texture used on the ground for the main color.
-     * Comes from the BabylonJS CDN by default.
-     *
-     * Remarks: Can be either a texture or a url.
+     * The amount of distortion caused when refracting light through a material.
      */
-    // groundTexture: string | BaseTexture;
+    refractionScale: number;
+
+    /**
+     * The number of scene units in 1 meter. This is used so that an entire scene can be scaled
+     * without the interior of transparent objects being affected.
+     */
+    sceneScale: number;
 }
 
 /**
@@ -61,7 +58,9 @@ export class AdobeTransparencyHelper {
     private static _getDefaultOptions(): IAdobeTransparencyHelperOptions {
         return {
             numPasses: 4,
-            renderSize: 256
+            renderSize: 256,
+            refractionScale: 1.0,
+            sceneScale: 1.0
         };
     }
 
@@ -155,7 +154,7 @@ export class AdobeTransparencyHelper {
         return this._options.numPasses;
     }
 
-    private renderAsTransparency(material: Nullable<Material>): boolean {
+    private shouldRenderAsTransparency(material: Nullable<Material>): boolean {
         if (!material) {
             return false;
         }
@@ -166,41 +165,43 @@ export class AdobeTransparencyHelper {
                 material.getRenderTargetTextures = null;
             }
             material.refractionTexture = this.getFinalComposite();
+            material.transparency.refractionScale = this._options.refractionScale;
+            material.transparency.sceneScale = this._options.sceneScale;
             return true;
         }
         return false;
     }
 
-    private _parseScene(): void {
-        // Listen for when a mesh is added to the scene and add it to our cache lists.
-        this._scene.onNewMeshAddedObservable.add((mesh) => {
-            if (mesh instanceof Mesh) {
-                mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
-                if (this.renderAsTransparency(mesh.material)) {
-                    this._transparentMeshesCache.push(mesh);
-                } else {
-                    this._opaqueMeshesCache.push(mesh);
-                }
+    private _addMesh(mesh: AbstractMesh): void {
+        if (mesh instanceof Mesh) {
+            mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
+            if (this.shouldRenderAsTransparency(mesh.material)) {
+                this._transparentMeshesCache.push(mesh);
             } else {
-                console.log("Non mesh");
+                this._opaqueMeshesCache.push(mesh);
             }
-        });
-        // Listen for when a mesh is removed from to the scene and remove it from our cache lists.
-        this._scene.onMeshRemovedObservable.add((mesh) => {
-            if (mesh instanceof Mesh) {
-                let idx = this._transparentMeshesCache.indexOf(mesh);
-                if (idx !== -1) {
-                    this._transparentMeshesCache.splice(idx, 1);
-                }
-                idx = this._opaqueMeshesCache.indexOf(mesh);
-                if (idx !== -1) {
-                    this._opaqueMeshesCache.splice(idx, 1);
-                }
-            } else {
-                console.log("Non mesh");
-            }
-        });
+        }
+    }
 
+    private _removeMesh(mesh: AbstractMesh): void {
+        if (mesh instanceof Mesh) {
+            let idx = this._transparentMeshesCache.indexOf(mesh);
+            if (idx !== -1) {
+                this._transparentMeshesCache.splice(idx, 1);
+            }
+            idx = this._opaqueMeshesCache.indexOf(mesh);
+            if (idx !== -1) {
+                this._opaqueMeshesCache.splice(idx, 1);
+            }
+        }
+    }
+
+    private _parseScene(): void {
+        this._scene.meshes.forEach(this._addMesh.bind(this));
+        // Listen for when a mesh is added to the scene and add it to our cache lists.
+        this._scene.onNewMeshAddedObservable.add(this._addMesh.bind(this));
+        // Listen for when a mesh is removed from to the scene and remove it from our cache lists.
+        this._scene.onMeshRemovedObservable.add(this._removeMesh.bind(this));
     }
 
     // When one of the meshes in the scene has its material changed, make sure that it's in the correct cache list.
@@ -210,7 +211,7 @@ export class AdobeTransparencyHelper {
             let opaque_idx = this._opaqueMeshesCache.indexOf(mesh);
 
             // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
-            if (this.renderAsTransparency(mesh.material)) {
+            if (this.shouldRenderAsTransparency(mesh.material)) {
                 if (opaque_idx !== -1) {
                     this._opaqueMeshesCache.splice(opaque_idx, 1);
                     this._transparentMeshesCache.push(mesh);
@@ -256,6 +257,9 @@ export class AdobeTransparencyHelper {
         this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true);
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
+        this._opaqueRenderTarget.lodGenerationScale = 1;
+        this._opaqueRenderTarget.lodGenerationOffset = -4;
+        (this._opaqueRenderTarget as any).depth = 0.1 * this._options.refractionScale;
         if (rt_idx >= 0) {
             this._scene.customRenderTargets.splice(rt_idx, 0, this._opaqueRenderTarget);
         } else {
@@ -311,7 +315,7 @@ export class AdobeTransparencyHelper {
         });
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
-            if (this.renderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
+            if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
                 mesh.material.refractionTexture = null;
             }
         });
@@ -335,7 +339,7 @@ export class AdobeTransparencyHelper {
             multiRenderTarget.renderParticles = false;
             multiRenderTarget.renderList = null;
             multiRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
-            multiRenderTarget.lodGenerationScale = 1;
+            // multiRenderTarget.lodGenerationScale = 1;
             multiRenderTarget.anisotropicFilteringLevel = 4;
             // multiRenderTarget.noMipmap = true;
             // multiRenderTarget.samplingMode = Texture.BILINEAR_SAMPLINGMODE;
@@ -349,7 +353,7 @@ export class AdobeTransparencyHelper {
                 // Enable transparent materials to output to MRT
                 if (multiRenderTarget.renderList) {
                     multiRenderTarget.renderList.forEach((mesh: AbstractMesh) => {
-                        if (this.renderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
+                        if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
                             mesh.material.useAdobeGBufferRendering = true;
                             // mesh.material.backFaceCulling = false;
                             mesh.material.adobeGBufferVolumeInfoEnabled = this._volumeRenderingEnabled;
@@ -364,10 +368,9 @@ export class AdobeTransparencyHelper {
                             // (mesh.material as PBRMaterial).sideOrientation = PBRMaterial.CounterClockWiseSideOrientation;
                             mesh.material.backFaceCulling = false;
                             // mesh.material.twoSidedLighting = true;
-                            // mesh.material.transparencyMode = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
                             mesh.material.forceNormalForward = true;
                             // (mesh.material as PBRMaterial).disableDepthWrite = true;
-                            mesh.material.refractionTexture = null; //mesh.material.environmentBRDFTexture;
+                            mesh.material.refractionTexture = mesh.getScene().environmentTexture;
                         }
                     });
                 }
@@ -378,15 +381,12 @@ export class AdobeTransparencyHelper {
                     if (multiRenderTarget.renderList) {
 
                         multiRenderTarget.renderList.forEach((mesh: AbstractMesh) => {
-                            if (this.renderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
+                            if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
                                 mesh.material.useAdobeGBufferRendering = false;
                                 mesh.material.adobeGBufferVolumeInfoEnabled = false;
                                 // (mesh.material as PBRMaterial).sideOrientation = PBRMaterial.ClockWiseSideOrientation;
                                 mesh.material.backFaceCulling = true;
                                 // mesh.material.twoSidedLighting = false;
-                                if (mesh.material.albedoTexture && mesh.material.albedoTexture.hasAlpha && mesh.material.useAlphaFromAlbedoTexture) {
-                                    // mesh.material.transparencyMode = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
-                                }
                                 // mesh.material.forceNormalForward = false;
                                 // (mesh.material as PBRMaterial).disableDepthWrite = false;
                                 mesh.material.refractionTexture = this.getFinalComposite();
@@ -413,7 +413,9 @@ export class AdobeTransparencyHelper {
         this._compositor = new AdobeTransparencyCompositor({
             renderSize: this._options.renderSize,
             numPasses: this._options.numPasses,
-            volumeRendering: this._volumeRenderingEnabled }, this._scene);
+            volumeRendering: this._volumeRenderingEnabled,
+            refractionScale: this._options.refractionScale,
+            sceneScale: this._options.sceneScale }, this._scene);
         this._compositor.setBackgroundDepthTexture(this._opaqueDepthRenderer.getDepthMap());
         this._compositor.setBackgroundTexture(this._opaqueRenderTarget);
         this._compositor.setTransparentTextures(this._mrtRenderTargets);

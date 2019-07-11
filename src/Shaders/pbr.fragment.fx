@@ -381,6 +381,16 @@ float transmission = 0.0;
             refractionVector.y = refractionVector.y * vRefractionInfos.w;
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
+        #elif defined(TRANSPARENCY)
+            mat4 refractViewMatrix = refractionMatrix * view;
+            vec3 vRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW, 1.0));
+            vec2 refractionCoordsNoRefract = vRefractionUVW.xy / vRefractionUVW.z;
+            refractionCoordsNoRefract.y = 1.0 - refractionCoordsNoRefract.y;
+            vec4 refraction_clear = texture2D(refractionSampler, refractionCoordsNoRefract);
+            float refraction_thickness = 20.0 * TRANSPARENCY_REFRACTION_SCALE * ((1.0 - refraction_clear.a) - sceneDepth);
+            vRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW + refractionVector * refraction_thickness, 1.0));
+            vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+            refractionCoords.y = 1.0 - refractionCoords.y;
         #else
             vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
@@ -416,7 +426,11 @@ float transmission = 0.0;
                 float requestedRefractionLOD = refractionLOD;
             #endif
 
-            #ifdef TRANSPARENCY
+            #if defined(ADOBE_TRANSPARENCY_G_BUFFER) && defined(TRANSPARENCY_INTERIOR)
+                float density = vInteriorTransparency.a;
+                requestedRefractionLOD += density * 100.0;
+            #endif
+            #if defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
                 // vec4 refraction_clear = texture2D(refractionSampler, refractionCoords);
                 #if defined(ALPHABLEND)
                     if (alpha <= 0.4) {
@@ -424,15 +438,16 @@ float transmission = 0.0;
                     }
                 #endif
                 vec4 refraction_colour = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
-                float refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;
-                if (refraction_thickness < 0.0) {
-                    vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW, 1.0)));
-                    refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
-                    refractionCoords.y = 1.0 - refractionCoords.y;
-                    refraction_colour = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
-                    refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;
+                refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;
+                if (refraction_thickness < -0.002) {
+                    refraction_colour = refraction_clear;
                 }
+                refraction_thickness = (1.0 - refraction_clear.a) - sceneDepth;
                 refraction_thickness = max(refraction_thickness, 0.0);
+                #if defined(ALPHABLEND)
+                    // Blend between clear, unrefracted background and the refracted one.
+                    refraction_colour.rgb = mix(refraction_clear.rgb, refraction_colour.rgb, alpha);
+                #endif
 
                 #ifdef TRANSPARENCY_INTERIOR
                     // Do density calculation here.
@@ -440,10 +455,12 @@ float transmission = 0.0;
                     vec3 clamped_color = clamp(vInteriorTransparency.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
                     float density = vInteriorTransparency.a;
                     float ior = vRefractionInfos.y;
-                    float scene_scale = 60.0;
-                    // vec3 absorption_coeff = pow(clamped_color*density, vec3(thickness_scale));
-                    vec3 absorption_coeff = max(exp(-vec3(thickness_scale * density / ior) * (vec3(1.0) - clamped_color)), 0.0);
-                    float scattering_coeff = max(exp2(-thickness_scale * density), 0.0);
+                    #ifndef TRANSPARENCY_SCENE_SCALE
+                        #define TRANSPARENCY_SCENE_SCALE 1.0
+                    #endif
+                    vec3 absorption_coeff = -log((clamped_color));
+                    vec3 scattering_coeff = vec3(0.6931472);
+                    
                 #endif
                 environmentRefraction.rgb = refraction_colour.rgb;
             #else
@@ -479,19 +496,23 @@ float transmission = 0.0;
         #endif
 
         #ifdef SS_GAMMAREFRACTION
-            environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
+            environmentRefraction.rgb = clamp(toLinearSpace(environmentRefraction.rgb), 0.0, 1.0);
         #endif
 
         // _____________________________ Levels _____________________________________
         environmentRefraction.rgb *= vRefractionInfos.x;
 
-        #ifdef TRANSPARENCY_INTERIOR
-            if (gl_FrontFacing) {
-                environmentRefraction.rgb *= absorption_coeff;
-                environmentRefraction.rgb = mix(clamped_color * ior, environmentRefraction.rgb, scattering_coeff);
-            }
+        #if defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+            #ifdef TRANSPARENCY_INTERIOR
+                vec3 volumetric_scattering_fog = vec3(0.0);
+                if (gl_FrontFacing) {
+                    // Based on Volumetric Light Scattering Eq 1
+                    // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
+                    environmentRefraction.rgb *= 1.0 / exp((absorption_coeff) * density * thickness_scale * TRANSPARENCY_SCENE_SCALE);
+                    volumetric_scattering_fog = clamped_color * clamped_color * scattering_coeff * (1.0 - 1.0 / exp((scattering_coeff) * density * 0.1 * thickness_scale * TRANSPARENCY_SCENE_SCALE));
+                }
+            #endif
         #endif
-
         
     #endif
 
@@ -611,6 +632,19 @@ float transmission = 0.0;
         environmentRadiance.rgb *= vReflectionInfos.x;
         environmentRadiance.rgb *= vReflectionColor.rgb;
         environmentIrradiance *= vReflectionColor.rgb;
+
+        #ifdef SS_REFRACTION
+            #if defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+                #ifdef TRANSPARENCY_INTERIOR
+                    if (gl_FrontFacing) {
+                        
+                        volumetric_scattering_fog *= environmentIrradiance * 0.5;
+                        environmentRefraction.rgb += volumetric_scattering_fog;
+                        environmentRefraction.rgb = clamp(environmentRefraction.rgb, 0.0, 1.0);
+                    }
+                #endif
+            #endif
+        #endif
     #endif
 
     // ___________________ Compute Reflectance aka R0 F0 info _________________________
@@ -1073,7 +1107,9 @@ float transmission = 0.0;
         #endif
 
         // Decrease Albedo Contribution
+        #ifndef ADOBE_TRANSPARENCY_G_BUFFER
         surfaceAlbedo *= (1. - refractionIntensity);
+        #endif
 
         #ifdef REFLECTION
             // Decrease irradiance Contribution
@@ -1309,39 +1345,28 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
 
 #ifdef ADOBE_TRANSPARENCY_G_BUFFER
     finalDiffuseLight = mix(finalDiffuseLight, surfaceAlbedo, transmission);
-    // vec4 finalColor2 = vec4(finalDiffuseLight + finalReflectedLight + finalRefractedLight + finalEmissiveLight, alpha);
+    #ifdef SS_REFRACTION
+        // finalDiffuseLight += finalRefractedLight;
+    #endif
     gl_FragData[0] = applyImageProcessing(vec4(finalDiffuseLight, alpha));
     // gl_FragData[0] = vec4(vec3(1.0, 0.0, 0.0), 1.0);
     #ifndef UNLIT
+        vec3 refref = vec3(0.0);
         #ifdef REFLECTION
-            gl_FragData[1] = vec4(finalReflectedLight + finalEmissiveLight, 1.0 - sceneDepth);
-            // gl_FragData[1] = vec4(vec3(z), 1.0);
-            vec2 norm = (view * vec4(normalW, 1.0)).xy;
-            norm = norm * 0.5 + 0.5;
-            // #ifdef TRANSPARENCY_FRONT_DEPTH
-            // // vec3 depthDude = vec3(frontDepth * 3.0, frontDepth * 3.0 - 1.0, frontDepth * 3.0 - 2.0);
-            //     gl_FragData[1] = vec4(vec3(frontDepth, 0.0, 0.0), 1.0);
-            //     gl_FragData[2] = vec4(vec3(z, 0.0, 0.0), 1.0);
-            //     gl_FragData[3] = vec4(vec3(abs(frontDepth - z) * 10.0, 0.0, 0.0), 1.0);
-            // #else
-            // CURRENT ISSUES:
-            // Roughness texture doesn't appear to be used to sample LOD of refraction texture
-            // Compositor needs:
-            //  1. roughness scattering
-            //  2. refraction
-            //  3. depth processing, interior junk
-            //  4. can emissive and reflection just be added together???
-                gl_FragData[2] = vec4(transmission, roughness, norm.x, norm.y);
-            // #endif
-            // gl_FragData[2] = vec4(vec3(0.0, 0.0, 1.0), 1.0);
-            // gl_FragData[2] = vec4(norm.x, norm.y, 1.0, 1.0);
-            // Add thick/thin volume here?
-            
-        #else
-            gl_FragData[1] = vec4(1.0);
-            gl_FragData[2] = vec4(1.0);
-            // gl_FragData[3] = vec4(1.0);
+            if (gl_FrontFacing) {
+                refref = finalReflectedLight;
+            }
         #endif
+        #ifdef SS_REFRACTION
+            if (!gl_FrontFacing) {
+                refref = finalRefractedLight;
+            }
+        #endif
+        gl_FragData[1] = vec4(refref + finalEmissiveLight, 1.0 - sceneDepth);
+        vec2 norm = (view * vec4(normalW, 1.0)).xy;
+        norm = norm * 0.5 + 0.5;
+        gl_FragData[2] = vec4(transmission, roughness, norm.x, norm.y);
+       
     #else
         gl_FragData[1] = vec4(1.0);
         gl_FragData[2] = vec4(1.0);
@@ -1354,7 +1379,7 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
             gl_FragData[4] = vec4(vInteriorTransparency.a, vRefractionInfos.y, gl_FrontFacing, 1.0);
         #else
             gl_FragData[3] = vec4(1.0);
-            gl_FragData[4] = vec4(1.0);
+            gl_FragData[4] = vec4(0.0, vRefractionInfos.y, gl_FrontFacing, 1.0);
         #endif
     #endif
 #else
@@ -1388,7 +1413,7 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
         finalColor = applyImageProcessing(finalColor);
     #endif
 
-    #if defined(ALPHABLEND) && defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+    #if defined(SS_REFRACTION) && defined(ALPHABLEND) && defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
         // Use refraction texture rather than actual alpha blending.
         finalColor.rgb = mix(sceneColor.rgb, finalColor.rgb, alpha);
         finalColor.a = 1.0;
@@ -1403,14 +1428,7 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
 
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
     gl_FragColor = finalColor;
-    // #ifdef SS_REFRACTION
-    // finalColor.rgb = vec3(NdotV);
-    // #endif
 
-    // gl_FragData[0] = finalColor;
-    // gl_FragData[1] = vec4(0.0);
-    // gl_FragData[2] = vec4(0.0);
-    // gl_FragData[3] = vec4(0.0);
 #endif // ADOBE_TRANSPARENCY_G_BUFFER
 #include<pbrDebug>
 }

@@ -19,7 +19,7 @@ import { PostProcess, PostProcessOptions } from '../PostProcesses/postProcess';
 import { Engine } from '../Engines/engine';
 import { Constants } from "../Engines/constants";
 // import { FxaaPostProcess } from '../PostProcesses/fxaaPostProcess';
-
+import "../Shaders/adobeTransparentComposite.fragment";
 /**
  *
  */
@@ -31,6 +31,8 @@ export interface IAdobeTransparencyCompositorOptions {
     renderSize: number;
     numPasses: number;
     volumeRendering: boolean;
+    refractionScale: number;
+    sceneScale: number;
 }
 
 /**
@@ -45,7 +47,9 @@ export class AdobeTransparencyCompositor {
         return {
             renderSize: 256,
             numPasses: 4,
-            volumeRendering: false
+            volumeRendering: false,
+            refractionScale: 1.0,
+            sceneScale: 1.0
         };
     }
 
@@ -128,13 +132,13 @@ export class AdobeTransparencyCompositor {
 
         this.compositedTexture = new RenderTargetTexture("trans_composite_output", this._options.renderSize, this._scene, true, undefined, floatTextureType, false, undefined, false, false, false);
         this.compositedTexture.clearColor = new Color4(1, 0, 1, 1);
-        this.compositedTexture.lodGenerationScale = 0.5;
-        // this.compositedTexture.lodGenerationOffset = -0.5;
+        this.compositedTexture.lodGenerationScale = 1;
+        this.compositedTexture.lodGenerationOffset = -4;
         // this.compositedTexture.samples = 4;
         // this.compositedTexture.gammaSpace = false;
         // this.compositedTexture.hasAlpha = true;
         // this.compositedTexture.anisotropicFilteringLevel = 8;
-        (this.compositedTexture as any).depth = 0.01;
+        (this.compositedTexture as any).depth = 0.1 * this._options.refractionScale;
 
         this._postProcesses = [];
 
@@ -151,10 +155,18 @@ export class AdobeTransparencyCompositor {
             if (this._options.volumeRendering) {
                 defines += "#define VOLUME_RENDERING\n";
             }
-            let postEffect = new PostProcess("transparentComposite", "./adobeTransparentComposite", ["renderSize"],
+            if (this._scene.getEngine().getCaps().textureLOD) {
+                defines += "#define LODBASEDMICROSFURACE\n";
+            }
+            defines += "#define REFRACTION_SCALE " + this._options.refractionScale.toFixed(20) + "\n";
+            defines += "#define TRANSPARENCY_SCENE_SCALE " + this._options.sceneScale.toFixed(20) + "\n";
+            let postEffect = new PostProcess("transparentComposite", "adobeTransparentComposite", ["renderSize"],
                 ["colourTexture", "reflectionTexture", "miscTexture", "interiorColorTexture", "interiorInfoTexture", "backgroundDepth"],
                 postOptions, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), undefined, defines, floatTextureType);
-
+            postEffect._textures.forEach((tex) => {
+                tex._lodGenerationOffset = -4;
+                tex._lodGenerationScale = 0.25;
+            });
             postEffect.onApplyObservable.add((effect) => {
                 if (this.transparentTextures[i]) {
                     effect.setFloat("renderSize", this.transparentTextures[i].textures[0].getSize().width);
