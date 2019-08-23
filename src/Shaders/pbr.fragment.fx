@@ -376,19 +376,25 @@ float transmission = 0.0;
             refractionVector.z *= -1.0;
         #endif
 
+        // If we're using Adobe transparency and either alpha blending or we have access to refraction depth,
+        // we'll also need to sample the unrefracted scene render.
+        #if defined(TRANSPARENCY) && !defined(SS_REFRACTIONMAP_3D)
+            #if defined(TRANSPARENCY_DEPTH_IN_REFRACTION_ALPHA) || defined(ALPHABLEND)
+                mat4 refractViewMatrix = refractionMatrix * view;
+                vec3 vNoRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW, 1.0));
+                vec2 refractionCoordsNoRefract = vNoRefractionUVW.xy / vNoRefractionUVW.z;
+                refractionCoordsNoRefract.y = 1.0 - refractionCoordsNoRefract.y;
+                vec4 refraction_clear = sampleRefraction(refractionSampler, refractionCoordsNoRefract).rgba;
+            #endif
+        #endif
         // _____________________________ 2D vs 3D Maps ________________________________
         #ifdef SS_REFRACTIONMAP_3D
             refractionVector.y = refractionVector.y * vRefractionInfos.w;
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
-        #elif defined(TRANSPARENCY)
-            mat4 refractViewMatrix = refractionMatrix * view;
-            vec3 vRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW, 1.0));
-            vec2 refractionCoordsNoRefract = vRefractionUVW.xy / vRefractionUVW.z;
-            refractionCoordsNoRefract.y = 1.0 - refractionCoordsNoRefract.y;
-            vec4 refraction_clear = texture2D(refractionSampler, refractionCoordsNoRefract);
+        #elif defined(TRANSPARENCY) && defined(TRANSPARENCY_DEPTH_IN_REFRACTION_ALPHA)
             float refraction_thickness = 20.0 * TRANSPARENCY_REFRACTION_SCALE * ((1.0 - refraction_clear.a) - sceneDepth);
-            vRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW + refractionVector * refraction_thickness, 1.0));
+            vec3 vRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW + refractionVector * refraction_thickness, 1.0));
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
             refractionCoords.y = 1.0 - refractionCoords.y;
         #else
@@ -430,7 +436,7 @@ float transmission = 0.0;
                 float density = vInteriorTransparency.a;
                 requestedRefractionLOD += density * 100.0;
             #endif
-            #if defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+            #if defined(TRANSPARENCY) && !defined(SS_REFRACTIONMAP_3D) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
                 // vec4 refraction_clear = texture2D(refractionSampler, refractionCoords);
                 #if defined(ALPHABLEND)
                     if (alpha <= 0.4) {
@@ -438,12 +444,14 @@ float transmission = 0.0;
                     }
                 #endif
                 vec4 refraction_colour = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
-                refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;
-                if (refraction_thickness < -0.002) {
-                    refraction_colour = refraction_clear;
-                }
-                refraction_thickness = (1.0 - refraction_clear.a) - sceneDepth;
-                refraction_thickness = max(refraction_thickness, 0.0);
+                #ifdef TRANSPARENCY_DEPTH_IN_REFRACTION_ALPHA
+                    refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;
+                    if (refraction_thickness < -0.002) {
+                        refraction_colour = refraction_clear;
+                    }
+                    refraction_thickness = (1.0 - refraction_clear.a) - sceneDepth;
+                    refraction_thickness = max(refraction_thickness, 0.0);
+                #endif
                 #if defined(ALPHABLEND)
                     // Blend between clear, unrefracted background and the refracted one.
                     refraction_colour.rgb = mix(refraction_clear.rgb, refraction_colour.rgb, alpha);
@@ -451,7 +459,6 @@ float transmission = 0.0;
 
                 #ifdef TRANSPARENCY_INTERIOR
                     // Do density calculation here.
-                    float thickness_scale = 4000.0*refraction_thickness;
                     vec3 clamped_color = clamp(vInteriorTransparency.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
                     float density = vInteriorTransparency.a;
                     float ior = vRefractionInfos.y;
@@ -487,7 +494,7 @@ float transmission = 0.0;
             }
         #endif
 
-        #if defined(ALPHABLEND) && defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+        #if defined(LODBASEDMICROSFURACE) && defined(ALPHABLEND) && defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
             vec3 sceneColor = refraction_colour.rgb;
         #endif
 
@@ -504,6 +511,11 @@ float transmission = 0.0;
 
         #if defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
             #ifdef TRANSPARENCY_INTERIOR
+                #ifdef TRANSPARENCY_DEPTH_IN_REFRACTION_ALPHA
+                    float thickness_scale = 4000.0*refraction_thickness;
+                #else
+                    float thickness_scale = vRefractionInfos.z;
+                #endif
                 vec3 volumetric_scattering_fog = vec3(0.0);
                 if (gl_FrontFacing) {
                     // Based on Volumetric Light Scattering Eq 1

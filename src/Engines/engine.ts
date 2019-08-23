@@ -1476,7 +1476,7 @@ export class Engine {
         }
 
         // Shader compiler threads
-        this._caps.parallelShaderCompile = this._gl.getExtension('KHR_parallel_shader_compile');
+        this._caps.parallelShaderCompile = 0 as any; //this._gl.getExtension('KHR_parallel_shader_compile');
 
         // Depth Texture
         if (this._webGLVersion > 1) {

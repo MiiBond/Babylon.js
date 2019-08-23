@@ -212,6 +212,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public TRANSPARENCY = false;
     public TRANSPARENCY_TEXTURE = false;
+    public TRANSPARENCY_DEPTH_IN_REFRACTION_ALPHA = false;
     public TRANSPARENCYRGB = false;
     public TRANSPARENCY_TEXTUREDIRECTUV = 0;
     public TRANSPARENCY_FRONT_DEPTH = false;

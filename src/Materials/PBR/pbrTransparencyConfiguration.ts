@@ -17,6 +17,7 @@ export interface IMaterialTransparencyDefines {
     TRANSPARENCY_TEXTURE: boolean;
     TRANSPARENCY_TEXTUREDIRECTUV: number;
     TRANSPARENCYRGB: boolean;
+    TRANSPARENCY_DEPTH_IN_REFRACTION_ALPHA: boolean;
     TRANSPARENCY_FRONT_DEPTH: boolean;
     TRANSPARENCY_FRONT_DEPTH_INVERSE: boolean;
     TRANSPARENCY_BACK_DEPTH: boolean;
@@ -78,6 +79,9 @@ export class PBRTransparencyConfiguration {
 
     @serialize()
     public sceneScale = 1.0;
+
+    @serialize()
+    public depthInRefractionAlpha: boolean = false;
 
     @serialize()
     public frontDepthTextureIsInverse = false;
@@ -161,12 +165,14 @@ export class PBRTransparencyConfiguration {
                 defines.TRANSPARENCY_INTERIOR = true;
             }
             
+            defines.TRANSPARENCY_DEPTH_IN_REFRACTION_ALPHA = this.depthInRefractionAlpha;
             defines.TRANSPARENCY_REFRACTION_SCALE = this.refractionScale.toFixed(20).toString();
             defines.TRANSPARENCY_SCENE_SCALE = this.sceneScale.toFixed(20).toString();
         }
         else {
             defines.TRANSPARENCY = false;
             defines.TRANSPARENCY_TEXTURE = false;
+            defines.TRANSPARENCY_DEPTH_IN_REFRACTION_ALPHA = false;
             defines.TRANSPARENCY_FRONT_DEPTH = false;
             defines.TRANSPARENCY_FRONT_DEPTH_INVERSE = false;
             defines.TRANSPARENCY_BACK_DEPTH = false;

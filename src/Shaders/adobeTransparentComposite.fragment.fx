@@ -86,11 +86,9 @@ void main(void) {
         vec4 background_clear = sampleRefractionLod(textureSampler, vUV, refractionLOD);
         if (front_facing == 0.0) {
             float norm_length = length(norm);
-            float refracted_light_amount = min(norm_length * norm_length + misc.g, 1.0);
+            float refracted_light_amount = min((norm_length * norm_length + 0.25) * misc.g, 1.0);
             background_refracted.rgb += reflection.rgb * refracted_light_amount;
         }
-
-        
 
         vec3 refraction_color = mix(background_clear.rgb, background_refracted.rgb * colour.rgb, colour.a);
         
@@ -100,9 +98,12 @@ void main(void) {
             float density = interiorInfo.r;
             vec3 absorption_coeff = -log((clamped_color));
             vec3 scattering_coeff = vec3(0.6931472);
-            float thickness_scale_for_absorption = 4000.0 * thickness;
-            refraction_color *= 1.0 / exp((absorption_coeff + scattering_coeff) * TRANSPARENCY_SCENE_SCALE * density * thickness_scale_for_absorption);
-            refraction_color = clamp(refraction_color.rgb, 0.0, 1.0);
+            float thickness_scale = 4000.0 * thickness;
+            
+            // Based on Volumetric Light Scattering Eq 1
+            // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
+            refraction_color *= 1.0 / exp((absorption_coeff) * density * thickness_scale * TRANSPARENCY_SCENE_SCALE);
+            refraction_color += colour.rgb * clamped_color * clamped_color * scattering_coeff * (1.0 - 1.0 / exp((scattering_coeff) * density * 0.1 * thickness_scale * TRANSPARENCY_SCENE_SCALE));
         }
         vec3 finalColour = mix(colour.xyz, refraction_color, misc.r);
         

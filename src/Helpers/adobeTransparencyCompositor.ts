@@ -134,6 +134,7 @@ export class AdobeTransparencyCompositor {
         this.compositedTexture.clearColor = new Color4(1, 0, 1, 1);
         this.compositedTexture.lodGenerationScale = 1;
         this.compositedTexture.lodGenerationOffset = -4;
+        this.compositedTexture.wrapU = Engine.TEXTURE_CLAMP_ADDRESSMODE;
         // this.compositedTexture.samples = 4;
         // this.compositedTexture.gammaSpace = false;
         // this.compositedTexture.hasAlpha = true;
