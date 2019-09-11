@@ -67197,7 +67197,7 @@ __webpack_require__.r(__webpack_exports__);
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
-    BlockTools.GetBlockFromString = function (data) {
+    BlockTools.GetBlockFromString = function (data, scene) {
         switch (data) {
             case "BonesBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["BonesBlock"]("Bones");
@@ -67264,7 +67264,9 @@ var BlockTools = /** @class */ (function () {
             case "ViewDirectionBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ViewDirectionBlock"]("View direction");
             case "LightInformationBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LightInformationBlock"]("Light information");
+                var lightInformationBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LightInformationBlock"]("Light information");
+                lightInformationBlock.light = scene.lights.length ? scene.lights[0] : null;
+                return lightInformationBlock;
             case "MaxBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MaxBlock"]("Max");
             case "MinBlock":
@@ -70646,7 +70648,6 @@ var PreviewManager = /** @class */ (function () {
         this._engine = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
         this._scene = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
         this._camera = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ArcRotateCamera"]("Camera", 0, 0.8, 4, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._scene);
-        this._light = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
         this._camera.wheelPrecision = 20;
@@ -70682,6 +70683,10 @@ var PreviewManager = /** @class */ (function () {
             var mesh = _a[_i];
             mesh.material = this._material;
         }
+        // Light
+        if (!this._scene.lights.length) {
+            this._light = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
+        }
         // Framing
         this._camera.useFramingBehavior = true;
         var framingBehavior = this._camera.getBehaviorByName("Framing");
@@ -70711,6 +70716,11 @@ var PreviewManager = /** @class */ (function () {
                 }
             }
             this._meshes = [];
+            var lights = this._scene.lights.slice(0);
+            for (var _b = 0, lights_1 = lights; _b < lights_1.length; _b++) {
+                var light = lights_1[_b];
+                light.dispose();
+            }
             switch (this._globalState.previewMeshType) {
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
                     this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateBox("dummy-box", 2, this._scene));
@@ -70787,7 +70797,10 @@ var PreviewManager = /** @class */ (function () {
             var mesh = _a[_i];
             mesh.dispose();
         }
-        this._light.dispose();
+        if (this._light) {
+            this._light.dispose();
+        }
+        this._scene.dispose();
         this._engine.dispose();
     };
     return PreviewManager;
@@ -72262,7 +72275,7 @@ var GraphEditor = /** @class */ (function (_super) {
             nodeModel = this.addValueNode(data);
         }
         else {
-            var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data);
+            var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene());
             if (block) {
                 this._toAdd = [];
                 block.autoConfigure(this.props.globalState.nodeMaterial);
@@ -73297,6 +73310,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+<<<<<<< HEAD
 
 
 var CheckBoxLineComponent = /** @class */ (function (_super) {
@@ -73361,6 +73375,72 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
     return CheckBoxLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
+=======
+
+
+var CheckBoxLineComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CheckBoxLineComponent, _super);
+    function CheckBoxLineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        _this._uniqueId = CheckBoxLineComponent._UniqueIdSeed++;
+        if (_this.props.isSelected) {
+            _this.state = { isSelected: _this.props.isSelected() };
+        }
+        else {
+            _this.state = { isSelected: _this.props.target[_this.props.propertyName] === true };
+        }
+        return _this;
+    }
+    CheckBoxLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        var currentState;
+        if (nextProps.isSelected) {
+            currentState = nextProps.isSelected();
+        }
+        else {
+            currentState = nextProps.target[nextProps.propertyName] === true;
+        }
+        if (currentState !== nextState.isSelected || this._localChange) {
+            nextState.isSelected = currentState;
+            this._localChange = false;
+            return true;
+        }
+        return false;
+    };
+    CheckBoxLineComponent.prototype.onChange = function () {
+        this._localChange = true;
+        if (this.props.onSelect) {
+            this.props.onSelect(!this.state.isSelected);
+        }
+        else {
+            if (this.props.onPropertyChangedObservable) {
+                this.props.onPropertyChangedObservable.notifyObservers({
+                    object: this.props.target,
+                    property: this.props.propertyName,
+                    value: !this.state.isSelected,
+                    initialValue: this.state.isSelected
+                });
+            }
+            this.props.target[this.props.propertyName] = !this.state.isSelected;
+        }
+        if (this.props.onValueChanged) {
+            this.props.onValueChanged();
+        }
+        this.setState({ isSelected: !this.state.isSelected });
+    };
+    CheckBoxLineComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" }))));
+    };
+    CheckBoxLineComponent._UniqueIdSeed = 0;
+    return CheckBoxLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+>>>>>>> 7d06e0c99e959263403d735690f3e1242966191f
 
 
 /***/ }),
