@@ -150,6 +150,38 @@ export class MaterialFlags {
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    private static _DepthPeelingFrontTextureEnabled = true;
+    /**
+     * Are transparency textures enabled in the application.
+     */
+    public static get DepthPeelingFrontTextureEnabled(): boolean {
+        return this._DepthPeelingFrontTextureEnabled;
+    }
+    public static set DepthPeelingFrontTextureEnabled(value: boolean) {
+        if (this._DepthPeelingFrontTextureEnabled === value) {
+            return;
+        }
+
+        this._DepthPeelingFrontTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private static _DepthPeelingBackTextureEnabled = true;
+    /**
+     * Are transparency textures enabled in the application.
+     */
+    public static get DepthPeelingBackTextureEnabled(): boolean {
+        return this._DepthPeelingBackTextureEnabled;
+    }
+    public static set DepthPeelingBackTextureEnabled(value: boolean) {
+        if (this._DepthPeelingBackTextureEnabled === value) {
+            return;
+        }
+
+        this._DepthPeelingBackTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
     private static _ColorGradingTextureEnabled = true;
     /**
      * Are color grading textures enabled in the application.

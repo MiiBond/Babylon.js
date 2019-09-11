@@ -107,6 +107,11 @@ uniform mat4 view;
     #endif
 #endif
 
+// Depth Peeling
+#ifdef DEPTH_PEELING
+    uniform vec4 depthValues;
+#endif
+
 // SubSurface
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION

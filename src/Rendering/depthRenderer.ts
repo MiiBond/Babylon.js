@@ -34,6 +34,9 @@ export class DepthRenderer {
     private _cachedDefines: string;
     private _camera: Nullable<Camera>;
 
+    public useDepthPeeling: boolean = false;
+    public depthPeelingMap: Nullable<RenderTargetTexture>;
+
     /**
      * Specifiess that the depth renderer will only be used within
      * the camera it is created for.
@@ -53,7 +56,7 @@ export class DepthRenderer {
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
      */
-    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNonLinearDepth = false) {
+    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNonLinearDepth = false, size: Nullable<number> = null) {
         this._scene = scene;
         this._storeNonLinearDepth = storeNonLinearDepth;
         this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -68,10 +71,12 @@ export class DepthRenderer {
 
         this._camera = camera;
         var engine = scene.getEngine();
+        var width = size ? size : engine.getRenderWidth();
+        var height = size ? size : engine.getRenderHeight();
 
         // Render target
         var format = (this.isPacked || engine.webGLVersion === 1) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
-        this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
+        this._depthMap = new RenderTargetTexture("depthMap", { width, height }, this._scene, false, true, type,
             false, undefined, undefined, undefined, undefined,
             format);
         this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -104,7 +109,11 @@ export class DepthRenderer {
             }
 
             // Culling and reverse (right handed system)
-            engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
+            if (this.useDepthPeeling) {
+                engine.setState(false, 0, false, scene.useRightHandedSystem);
+            } else {
+                engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
+            }
 
             // Managing instances
             var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -132,6 +141,11 @@ export class DepthRenderer {
                         this._effect.setTexture("diffuseSampler", alphaTexture);
                         this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                     }
+                }
+
+                if (this.useDepthPeeling && this.depthPeelingMap) {
+                    this._effect.setTexture("depthSampler", this.depthPeelingMap);
+                    this._effect.setFloat2("depthPeelInfos", this.depthPeelingMap.getRenderWidth(), this.depthPeelingMap.getRenderHeight());
                 }
 
                 // Bones
@@ -200,6 +214,11 @@ export class DepthRenderer {
             }
         }
 
+        // Depth Peeling
+        if (this.useDepthPeeling && this.depthPeelingMap) {
+            defines.push("#define DEPTHPEEL");
+        }
+
         // Bones
         if (mesh.useBones && mesh.computeBonesUsingShaders) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
@@ -251,7 +270,7 @@ export class DepthRenderer {
             this._effect = this._scene.getEngine().createEffect("depth",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences"],
-                ["diffuseSampler"], join,
+                ["diffuseSampler", "depthSampler"], join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 

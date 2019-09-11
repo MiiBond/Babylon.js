@@ -123,6 +123,15 @@
     #endif
 #endif
 
+#ifdef DEPTH_PEELING
+    #ifdef DEPTH_PEELING_FRONT
+        uniform sampler2D frontDepthTexture;
+    #endif
+    #ifdef DEPTH_PEELING_BACK
+        uniform sampler2D backDepthTexture;
+    #endif
+#endif
+
 #ifdef ANISOTROPIC
     #ifdef ANISOTROPIC_TEXTURE
         #if ANISOTROPIC_TEXTUREDIRECTUV == 1

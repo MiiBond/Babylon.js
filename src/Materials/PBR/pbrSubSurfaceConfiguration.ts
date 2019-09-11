@@ -33,6 +33,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_RGBDREFRACTION: boolean;
     SS_LINEARSPECULARREFRACTION: boolean;
     SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
+    SS_DEPTHINREFRACTIONALPHA: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
 
@@ -183,6 +184,15 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useMaskFromThicknessTexture: boolean = false;
 
+    private _depthInRefractionAlpha = false;
+    /**
+     * This parameter says that the scene depth is stored in the refraction texture's alpha channel.
+     * This allows the true thickness of a solid volume to be determined.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public depthInRefractionAlpha = false;
+
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
@@ -247,6 +257,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_REFRACTIONMAP_OPPOSITEZ = false;
             defines.SS_LODINREFRACTIONALPHA = false;
             defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
+            defines.SS_DEPTHINREFRACTIONALPHA = false;
 
             if (this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled) {
                 defines.SUBSURFACE = true;
@@ -274,6 +285,7 @@ export class PBRSubSurfaceConfiguration {
                         defines.SS_REFRACTIONMAP_OPPOSITEZ = refractionTexture.invertZ;
                         defines.SS_LODINREFRACTIONALPHA = refractionTexture.lodLevelInAlpha;
                         defines.SS_LINKREFRACTIONTOTRANSPARENCY = this._linkRefractionWithTransparency;
+                        defines.SS_DEPTHINREFRACTIONALPHA = this._depthInRefractionAlpha;
                     }
                 }
             }

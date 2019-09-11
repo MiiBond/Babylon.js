@@ -1,3 +1,4 @@
+export * from "./ADOBE_materials_thin_transparency";
 export * from "./EXT_lights_image_based";
 export * from "./KHR_draco_mesh_compression";
 export * from "./KHR_lights_punctual";

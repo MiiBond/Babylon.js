@@ -97,10 +97,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
-/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
+/*!*******************************************************************!*\
+  !*** /Users/mbond/dev/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*******************************************************************/
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -117,7 +117,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__values", function() { return __values; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spread", function() { return __spread; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spreadArrays", function() { return __spreadArrays; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__await", function() { return __await; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncGenerator", function() { return __asyncGenerator; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncDelegator", function() { return __asyncDelegator; });
@@ -170,10 +169,8 @@ function __rest(s, e) {
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
         t[p] = s[p];
     if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
     return t;
 }
 
@@ -266,14 +263,6 @@ function __spread() {
         ar = ar.concat(__read(arguments[i]));
     return ar;
 }
-
-function __spreadArrays() {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
-};
 
 function __await(v) {
     return this instanceof __await ? (this.v = v, this) : new __await(v);
@@ -5821,6 +5810,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__);
+<<<<<<< Updated upstream
 
 
 
@@ -6260,6 +6250,447 @@ var Grid = /** @class */ (function (_super) {
     return Grid;
 }(_container__WEBPACK_IMPORTED_MODULE_1__["Container"]));
 
+=======
+
+
+
+
+
+/**
+ * Class used to create a 2D grid container
+ */
+var Grid = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Grid, _super);
+    /**
+     * Creates a new Grid
+     * @param name defines control name
+     */
+    function Grid(name) {
+        var _this = _super.call(this, name) || this;
+        _this.name = name;
+        _this._rowDefinitions = new Array();
+        _this._columnDefinitions = new Array();
+        _this._cells = {};
+        _this._childControls = new Array();
+        return _this;
+    }
+    Object.defineProperty(Grid.prototype, "columnCount", {
+        /**
+         * Gets the number of columns
+         */
+        get: function () {
+            return this._columnDefinitions.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Grid.prototype, "rowCount", {
+        /**
+         * Gets the number of rows
+         */
+        get: function () {
+            return this._rowDefinitions.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Grid.prototype, "children", {
+        /** Gets the list of children */
+        get: function () {
+            return this._childControls;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Grid.prototype, "cells", {
+        /** Gets the list of cells (e.g. the containers) */
+        get: function () {
+            return this._cells;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Gets the definition of a specific row
+     * @param index defines the index of the row
+     * @returns the row definition
+     */
+    Grid.prototype.getRowDefinition = function (index) {
+        if (index < 0 || index >= this._rowDefinitions.length) {
+            return null;
+        }
+        return this._rowDefinitions[index];
+    };
+    /**
+     * Gets the definition of a specific column
+     * @param index defines the index of the column
+     * @returns the column definition
+     */
+    Grid.prototype.getColumnDefinition = function (index) {
+        if (index < 0 || index >= this._columnDefinitions.length) {
+            return null;
+        }
+        return this._columnDefinitions[index];
+    };
+    /**
+     * Adds a new row to the grid
+     * @param height defines the height of the row (either in pixel or a value between 0 and 1)
+     * @param isPixel defines if the height is expressed in pixel (or in percentage)
+     * @returns the current grid
+     */
+    Grid.prototype.addRowDefinition = function (height, isPixel) {
+        if (isPixel === void 0) { isPixel = false; }
+        this._rowDefinitions.push(new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](height, isPixel ? _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL : _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PERCENTAGE));
+        this._markAsDirty();
+        return this;
+    };
+    /**
+     * Adds a new column to the grid
+     * @param width defines the width of the column (either in pixel or a value between 0 and 1)
+     * @param isPixel defines if the width is expressed in pixel (or in percentage)
+     * @returns the current grid
+     */
+    Grid.prototype.addColumnDefinition = function (width, isPixel) {
+        if (isPixel === void 0) { isPixel = false; }
+        this._columnDefinitions.push(new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](width, isPixel ? _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL : _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PERCENTAGE));
+        this._markAsDirty();
+        return this;
+    };
+    /**
+     * Update a row definition
+     * @param index defines the index of the row to update
+     * @param height defines the height of the row (either in pixel or a value between 0 and 1)
+     * @param isPixel defines if the weight is expressed in pixel (or in percentage)
+     * @returns the current grid
+     */
+    Grid.prototype.setRowDefinition = function (index, height, isPixel) {
+        if (isPixel === void 0) { isPixel = false; }
+        if (index < 0 || index >= this._rowDefinitions.length) {
+            return this;
+        }
+        var current = this._rowDefinitions[index];
+        if (current && current.isPixel === isPixel && current.internalValue === height) {
+            return this;
+        }
+        this._rowDefinitions[index] = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](height, isPixel ? _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL : _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PERCENTAGE);
+        this._markAsDirty();
+        return this;
+    };
+    /**
+     * Update a column definition
+     * @param index defines the index of the column to update
+     * @param width defines the width of the column (either in pixel or a value between 0 and 1)
+     * @param isPixel defines if the width is expressed in pixel (or in percentage)
+     * @returns the current grid
+     */
+    Grid.prototype.setColumnDefinition = function (index, width, isPixel) {
+        if (isPixel === void 0) { isPixel = false; }
+        if (index < 0 || index >= this._columnDefinitions.length) {
+            return this;
+        }
+        var current = this._columnDefinitions[index];
+        if (current && current.isPixel === isPixel && current.internalValue === width) {
+            return this;
+        }
+        this._columnDefinitions[index] = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](width, isPixel ? _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL : _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PERCENTAGE);
+        this._markAsDirty();
+        return this;
+    };
+    /**
+     * Gets the list of children stored in a specific cell
+     * @param row defines the row to check
+     * @param column defines the column to check
+     * @returns the list of controls
+     */
+    Grid.prototype.getChildrenAt = function (row, column) {
+        var cell = this._cells[row + ":" + column];
+        if (!cell) {
+            return null;
+        }
+        return cell.children;
+    };
+    /**
+     * Gets a string representing the child cell info (row x column)
+     * @param child defines the control to get info from
+     * @returns a string containing the child cell info (row x column)
+     */
+    Grid.prototype.getChildCellInfo = function (child) {
+        return child._tag;
+    };
+    Grid.prototype._removeCell = function (cell, key) {
+        if (!cell) {
+            return;
+        }
+        _super.prototype.removeControl.call(this, cell);
+        for (var _i = 0, _a = cell.children; _i < _a.length; _i++) {
+            var control = _a[_i];
+            var childIndex = this._childControls.indexOf(control);
+            if (childIndex !== -1) {
+                this._childControls.splice(childIndex, 1);
+            }
+        }
+        delete this._cells[key];
+    };
+    Grid.prototype._offsetCell = function (previousKey, key) {
+        if (!this._cells[key]) {
+            return;
+        }
+        this._cells[previousKey] = this._cells[key];
+        for (var _i = 0, _a = this._cells[previousKey].children; _i < _a.length; _i++) {
+            var control = _a[_i];
+            control._tag = previousKey;
+        }
+        delete this._cells[key];
+    };
+    /**
+     * Remove a column definition at specified index
+     * @param index defines the index of the column to remove
+     * @returns the current grid
+     */
+    Grid.prototype.removeColumnDefinition = function (index) {
+        if (index < 0 || index >= this._columnDefinitions.length) {
+            return this;
+        }
+        for (var x = 0; x < this._rowDefinitions.length; x++) {
+            var key = x + ":" + index;
+            var cell = this._cells[key];
+            this._removeCell(cell, key);
+        }
+        for (var x = 0; x < this._rowDefinitions.length; x++) {
+            for (var y = index + 1; y < this._columnDefinitions.length; y++) {
+                var previousKey = x + ":" + (y - 1);
+                var key = x + ":" + y;
+                this._offsetCell(previousKey, key);
+            }
+        }
+        this._columnDefinitions.splice(index, 1);
+        this._markAsDirty();
+        return this;
+    };
+    /**
+     * Remove a row definition at specified index
+     * @param index defines the index of the row to remove
+     * @returns the current grid
+     */
+    Grid.prototype.removeRowDefinition = function (index) {
+        if (index < 0 || index >= this._rowDefinitions.length) {
+            return this;
+        }
+        for (var y = 0; y < this._columnDefinitions.length; y++) {
+            var key = index + ":" + y;
+            var cell = this._cells[key];
+            this._removeCell(cell, key);
+        }
+        for (var y = 0; y < this._columnDefinitions.length; y++) {
+            for (var x = index + 1; x < this._rowDefinitions.length; x++) {
+                var previousKey = x - 1 + ":" + y;
+                var key = x + ":" + y;
+                this._offsetCell(previousKey, key);
+            }
+        }
+        this._rowDefinitions.splice(index, 1);
+        this._markAsDirty();
+        return this;
+    };
+    /**
+     * Adds a new control to the current grid
+     * @param control defines the control to add
+     * @param row defines the row where to add the control (0 by default)
+     * @param column defines the column where to add the control (0 by default)
+     * @returns the current grid
+     */
+    Grid.prototype.addControl = function (control, row, column) {
+        if (row === void 0) { row = 0; }
+        if (column === void 0) { column = 0; }
+        if (this._rowDefinitions.length === 0) {
+            // Add default row definition
+            this.addRowDefinition(1, false);
+        }
+        if (this._columnDefinitions.length === 0) {
+            // Add default column definition
+            this.addColumnDefinition(1, false);
+        }
+        if (this._childControls.indexOf(control) !== -1) {
+            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].Warn("Control (Name:" + control.name + ", UniqueId:" + control.uniqueId + ") is already associated with this grid. You must remove it before reattaching it");
+            return this;
+        }
+        var x = Math.min(row, this._rowDefinitions.length - 1);
+        var y = Math.min(column, this._columnDefinitions.length - 1);
+        var key = x + ":" + y;
+        var goodContainer = this._cells[key];
+        if (!goodContainer) {
+            goodContainer = new _container__WEBPACK_IMPORTED_MODULE_1__["Container"](key);
+            this._cells[key] = goodContainer;
+            goodContainer.horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_LEFT;
+            goodContainer.verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_TOP;
+            _super.prototype.addControl.call(this, goodContainer);
+        }
+        goodContainer.addControl(control);
+        this._childControls.push(control);
+        control._tag = key;
+        control.parent = this;
+        this._markAsDirty();
+        return this;
+    };
+    /**
+     * Removes a control from the current container
+     * @param control defines the control to remove
+     * @returns the current container
+     */
+    Grid.prototype.removeControl = function (control) {
+        var index = this._childControls.indexOf(control);
+        if (index !== -1) {
+            this._childControls.splice(index, 1);
+        }
+        var cell = this._cells[control._tag];
+        if (cell) {
+            cell.removeControl(control);
+            control._tag = null;
+        }
+        this._markAsDirty();
+        return this;
+    };
+    Grid.prototype._getTypeName = function () {
+        return "Grid";
+    };
+    Grid.prototype._getGridDefinitions = function (definitionCallback) {
+        var widths = [];
+        var heights = [];
+        var lefts = [];
+        var tops = [];
+        var availableWidth = this._currentMeasure.width;
+        var globalWidthPercentage = 0;
+        var availableHeight = this._currentMeasure.height;
+        var globalHeightPercentage = 0;
+        // Heights
+        var index = 0;
+        for (var _i = 0, _a = this._rowDefinitions; _i < _a.length; _i++) {
+            var value = _a[_i];
+            if (value.isPixel) {
+                var height = value.getValue(this._host);
+                availableHeight -= height;
+                heights[index] = height;
+            }
+            else {
+                globalHeightPercentage += value.internalValue;
+            }
+            index++;
+        }
+        var top = 0;
+        index = 0;
+        for (var _b = 0, _c = this._rowDefinitions; _b < _c.length; _b++) {
+            var value = _c[_b];
+            tops.push(top);
+            if (!value.isPixel) {
+                var height = (value.internalValue / globalHeightPercentage) * availableHeight;
+                top += height;
+                heights[index] = height;
+            }
+            else {
+                top += value.getValue(this._host);
+            }
+            index++;
+        }
+        // Widths
+        index = 0;
+        for (var _d = 0, _e = this._columnDefinitions; _d < _e.length; _d++) {
+            var value = _e[_d];
+            if (value.isPixel) {
+                var width = value.getValue(this._host);
+                availableWidth -= width;
+                widths[index] = width;
+            }
+            else {
+                globalWidthPercentage += value.internalValue;
+            }
+            index++;
+        }
+        var left = 0;
+        index = 0;
+        for (var _f = 0, _g = this._columnDefinitions; _f < _g.length; _f++) {
+            var value = _g[_f];
+            lefts.push(left);
+            if (!value.isPixel) {
+                var width = (value.internalValue / globalWidthPercentage) * availableWidth;
+                left += width;
+                widths[index] = width;
+            }
+            else {
+                left += value.getValue(this._host);
+            }
+            index++;
+        }
+        definitionCallback(lefts, tops, widths, heights);
+    };
+    Grid.prototype._additionalProcessing = function (parentMeasure, context) {
+        var _this = this;
+        this._getGridDefinitions(function (lefts, tops, widths, heights) {
+            // Setting child sizes
+            for (var key in _this._cells) {
+                if (!_this._cells.hasOwnProperty(key)) {
+                    continue;
+                }
+                var split = key.split(":");
+                var x = parseInt(split[0]);
+                var y = parseInt(split[1]);
+                var cell = _this._cells[key];
+                cell.left = lefts[y] + "px";
+                cell.top = tops[x] + "px";
+                cell.width = widths[y] + "px";
+                cell.height = heights[x] + "px";
+                cell._left.ignoreAdaptiveScaling = true;
+                cell._top.ignoreAdaptiveScaling = true;
+                cell._width.ignoreAdaptiveScaling = true;
+                cell._height.ignoreAdaptiveScaling = true;
+            }
+        });
+        _super.prototype._additionalProcessing.call(this, parentMeasure, context);
+    };
+    Grid.prototype._flagDescendantsAsMatrixDirty = function () {
+        for (var key in this._cells) {
+            if (!this._cells.hasOwnProperty(key)) {
+                continue;
+            }
+            var child = this._cells[key];
+            child._markMatrixAsDirty();
+        }
+    };
+    Grid.prototype._renderHighlightSpecific = function (context) {
+        var _this = this;
+        _super.prototype._renderHighlightSpecific.call(this, context);
+        this._getGridDefinitions(function (lefts, tops, widths, heights) {
+            // Columns
+            for (var index = 0; index < lefts.length; index++) {
+                var left = _this._currentMeasure.left + lefts[index] + widths[index];
+                context.beginPath();
+                context.moveTo(left, _this._currentMeasure.top);
+                context.lineTo(left, _this._currentMeasure.top + _this._currentMeasure.height);
+                context.stroke();
+            }
+            // Rows
+            for (var index = 0; index < tops.length; index++) {
+                var top_1 = _this._currentMeasure.top + tops[index] + heights[index];
+                context.beginPath();
+                context.moveTo(_this._currentMeasure.left, top_1);
+                context.lineTo(_this._currentMeasure.left + _this._currentMeasure.width, top_1);
+                context.stroke();
+            }
+        });
+        context.restore();
+    };
+    /** Releases associated resources */
+    Grid.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        for (var _i = 0, _a = this._childControls; _i < _a.length; _i++) {
+            var control = _a[_i];
+            control.dispose();
+        }
+        this._childControls = [];
+    };
+    return Grid;
+}(_container__WEBPACK_IMPORTED_MODULE_1__["Container"]));
+
+>>>>>>> Stashed changes
 
 
 /***/ }),
@@ -6278,6 +6709,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
+<<<<<<< Updated upstream
 
 
 
@@ -6958,6 +7390,688 @@ var Image = /** @class */ (function (_super) {
     return Image;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
+=======
+
+
+
+
+/**
+ * Class used to create 2D images
+ */
+var Image = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Image, _super);
+    /**
+     * Creates a new Image
+     * @param name defines the control name
+     * @param url defines the image url
+     */
+    function Image(name, url) {
+        if (url === void 0) { url = null; }
+        var _this = _super.call(this, name) || this;
+        _this.name = name;
+        _this._loaded = false;
+        _this._stretch = Image.STRETCH_FILL;
+        _this._autoScale = false;
+        _this._sourceLeft = 0;
+        _this._sourceTop = 0;
+        _this._sourceWidth = 0;
+        _this._sourceHeight = 0;
+        _this._cellWidth = 0;
+        _this._cellHeight = 0;
+        _this._cellId = -1;
+        _this._populateNinePatchSlicesFromImage = false;
+        /**
+         * Observable notified when the content is loaded
+         */
+        _this.onImageLoadedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        /**
+         * Observable notified when _sourceLeft, _sourceTop, _sourceWidth and _sourceHeight are computed
+         */
+        _this.onSVGAttributesComputedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        _this.source = url;
+        return _this;
+    }
+    Object.defineProperty(Image.prototype, "isLoaded", {
+        /**
+         * Gets a boolean indicating that the content is loaded
+         */
+        get: function () {
+            return this._loaded;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "populateNinePatchSlicesFromImage", {
+        /**
+         * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+         */
+        get: function () {
+            return this._populateNinePatchSlicesFromImage;
+        },
+        set: function (value) {
+            if (this._populateNinePatchSlicesFromImage === value) {
+                return;
+            }
+            this._populateNinePatchSlicesFromImage = value;
+            if (this._populateNinePatchSlicesFromImage && this._loaded) {
+                this._extractNinePatchSliceDataFromImage();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "detectPointerOnOpaqueOnly", {
+        /**
+         * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
+         * Beware using this as this will comsume more memory as the image has to be stored twice
+         */
+        get: function () {
+            return this._detectPointerOnOpaqueOnly;
+        },
+        set: function (value) {
+            if (this._detectPointerOnOpaqueOnly === value) {
+                return;
+            }
+            this._detectPointerOnOpaqueOnly = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "sliceLeft", {
+        /**
+         * Gets or sets the left value for slicing (9-patch)
+         */
+        get: function () {
+            return this._sliceLeft;
+        },
+        set: function (value) {
+            if (this._sliceLeft === value) {
+                return;
+            }
+            this._sliceLeft = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "sliceRight", {
+        /**
+         * Gets or sets the right value for slicing (9-patch)
+         */
+        get: function () {
+            return this._sliceRight;
+        },
+        set: function (value) {
+            if (this._sliceRight === value) {
+                return;
+            }
+            this._sliceRight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "sliceTop", {
+        /**
+         * Gets or sets the top value for slicing (9-patch)
+         */
+        get: function () {
+            return this._sliceTop;
+        },
+        set: function (value) {
+            if (this._sliceTop === value) {
+                return;
+            }
+            this._sliceTop = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "sliceBottom", {
+        /**
+         * Gets or sets the bottom value for slicing (9-patch)
+         */
+        get: function () {
+            return this._sliceBottom;
+        },
+        set: function (value) {
+            if (this._sliceBottom === value) {
+                return;
+            }
+            this._sliceBottom = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "sourceLeft", {
+        /**
+         * Gets or sets the left coordinate in the source image
+         */
+        get: function () {
+            return this._sourceLeft;
+        },
+        set: function (value) {
+            if (this._sourceLeft === value) {
+                return;
+            }
+            this._sourceLeft = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "sourceTop", {
+        /**
+         * Gets or sets the top coordinate in the source image
+         */
+        get: function () {
+            return this._sourceTop;
+        },
+        set: function (value) {
+            if (this._sourceTop === value) {
+                return;
+            }
+            this._sourceTop = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "sourceWidth", {
+        /**
+         * Gets or sets the width to capture in the source image
+         */
+        get: function () {
+            return this._sourceWidth;
+        },
+        set: function (value) {
+            if (this._sourceWidth === value) {
+                return;
+            }
+            this._sourceWidth = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "sourceHeight", {
+        /**
+         * Gets or sets the height to capture in the source image
+         */
+        get: function () {
+            return this._sourceHeight;
+        },
+        set: function (value) {
+            if (this._sourceHeight === value) {
+                return;
+            }
+            this._sourceHeight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "autoScale", {
+        /**
+         * Gets or sets a boolean indicating if the image can force its container to adapt its size
+         * @see http://doc.babylonjs.com/how_to/gui#image
+         */
+        get: function () {
+            return this._autoScale;
+        },
+        set: function (value) {
+            if (this._autoScale === value) {
+                return;
+            }
+            this._autoScale = value;
+            if (value && this._loaded) {
+                this.synchronizeSizeWithContent();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "stretch", {
+        /** Gets or sets the streching mode used by the image */
+        get: function () {
+            return this._stretch;
+        },
+        set: function (value) {
+            if (this._stretch === value) {
+                return;
+            }
+            this._stretch = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "domImage", {
+        get: function () {
+            return this._domImage;
+        },
+        /**
+         * Gets or sets the internal DOM image used to render the control
+         */
+        set: function (value) {
+            var _this = this;
+            this._domImage = value;
+            this._loaded = false;
+            if (this._domImage.width) {
+                this._onImageLoaded();
+            }
+            else {
+                this._domImage.onload = function () {
+                    _this._onImageLoaded();
+                };
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Image.prototype._onImageLoaded = function () {
+        this._imageWidth = this._domImage.width;
+        this._imageHeight = this._domImage.height;
+        this._loaded = true;
+        if (this._populateNinePatchSlicesFromImage) {
+            this._extractNinePatchSliceDataFromImage();
+        }
+        if (this._autoScale) {
+            this.synchronizeSizeWithContent();
+        }
+        this.onImageLoadedObservable.notifyObservers(this);
+        this._markAsDirty();
+    };
+    Image.prototype._extractNinePatchSliceDataFromImage = function () {
+        if (!Image._WorkingCanvas) {
+            Image._WorkingCanvas = document.createElement('canvas');
+        }
+        var canvas = Image._WorkingCanvas;
+        var context = canvas.getContext('2d');
+        var width = this._domImage.width;
+        var height = this._domImage.height;
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(this._domImage, 0, 0, width, height);
+        var imageData = context.getImageData(0, 0, width, height);
+        // Left and right
+        this._sliceLeft = -1;
+        this._sliceRight = -1;
+        for (var x = 0; x < width; x++) {
+            var alpha = imageData.data[x * 4 + 3];
+            if (alpha > 127 && this._sliceLeft === -1) {
+                this._sliceLeft = x;
+                continue;
+            }
+            if (alpha < 127 && this._sliceLeft > -1) {
+                this._sliceRight = x;
+                break;
+            }
+        }
+        // top and bottom
+        this._sliceTop = -1;
+        this._sliceBottom = -1;
+        for (var y = 0; y < height; y++) {
+            var alpha = imageData.data[y * width * 4 + 3];
+            if (alpha > 127 && this._sliceTop === -1) {
+                this._sliceTop = y;
+                continue;
+            }
+            if (alpha < 127 && this._sliceTop > -1) {
+                this._sliceBottom = y;
+                break;
+            }
+        }
+    };
+    Object.defineProperty(Image.prototype, "source", {
+        /**
+         * Gets or sets image source url
+         */
+        set: function (value) {
+            var _this = this;
+            if (this._source === value) {
+                return;
+            }
+            this._loaded = false;
+            this._source = value;
+            if (value) {
+                this._svgCheck(value);
+            }
+            this._domImage = document.createElement("img");
+            this._domImage.onload = function () {
+                _this._onImageLoaded();
+            };
+            if (value) {
+                babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Tools"].SetCorsBehavior(value, this._domImage);
+                this._domImage.src = value;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Checks for svg document with icon id present
+     */
+    Image.prototype._svgCheck = function (value) {
+        var _this = this;
+        if ((value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+            var svgsrc = value.split('#')[0];
+            var elemid = value.split('#')[1];
+            // check if object alr exist in document
+            var svgExist = document.body.querySelector('object[data="' + svgsrc + '"]');
+            if (svgExist) {
+                if (svgExist.contentDocument) {
+                    // svg object alr exists
+                    this._getSVGAttribs(svgExist, elemid);
+                }
+                else {
+                    // wait for object to load
+                    svgExist.addEventListener("load", function () {
+                        _this._getSVGAttribs(svgExist, elemid);
+                    });
+                }
+            }
+            else {
+                // create document object
+                var svgImage = document.createElement("object");
+                svgImage.data = svgsrc;
+                svgImage.type = "image/svg+xml";
+                svgImage.width = "0%";
+                svgImage.height = "0%";
+                document.body.appendChild(svgImage);
+                // when the object has loaded, get the element attribs
+                svgImage.onload = function () {
+                    var svgobj = document.body.querySelector('object[data="' + svgsrc + '"]');
+                    if (svgobj) {
+                        _this._getSVGAttribs(svgobj, elemid);
+                    }
+                };
+            }
+        }
+    };
+    /**
+     * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
+     * given external svg file and icon id
+     */
+    Image.prototype._getSVGAttribs = function (svgsrc, elemid) {
+        var svgDoc = svgsrc.contentDocument;
+        // get viewbox width and height, get svg document width and height in px
+        if (svgDoc && svgDoc.documentElement) {
+            var vb = svgDoc.documentElement.getAttribute("viewBox");
+            var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
+            var docheight = Number(svgDoc.documentElement.getAttribute("height"));
+            // get element bbox and matrix transform
+            var elem = svgDoc.getElementById(elemid);
+            if (elem instanceof SVGElement && vb && docwidth && docheight) {
+                var vb_width = Number(vb.split(" ")[2]);
+                var vb_height = Number(vb.split(" ")[3]);
+                var elem_bbox = elem.getBBox();
+                var elem_matrix_a = 1;
+                var elem_matrix_d = 1;
+                var elem_matrix_e = 0;
+                var elem_matrix_f = 0;
+                if (elem.transform && elem.transform.baseVal.consolidate()) {
+                    elem_matrix_a = elem.transform.baseVal.consolidate().matrix.a;
+                    elem_matrix_d = elem.transform.baseVal.consolidate().matrix.d;
+                    elem_matrix_e = elem.transform.baseVal.consolidate().matrix.e;
+                    elem_matrix_f = elem.transform.baseVal.consolidate().matrix.f;
+                }
+                // compute source coordinates and dimensions
+                this.sourceLeft = ((elem_matrix_a * elem_bbox.x + elem_matrix_e) * docwidth) / vb_width;
+                this.sourceTop = ((elem_matrix_d * elem_bbox.y + elem_matrix_f) * docheight) / vb_height;
+                this.sourceWidth = (elem_bbox.width * elem_matrix_a) * (docwidth / vb_width);
+                this.sourceHeight = (elem_bbox.height * elem_matrix_d) * (docheight / vb_height);
+                this.onSVGAttributesComputedObservable.notifyObservers(this);
+            }
+        }
+    };
+    Object.defineProperty(Image.prototype, "cellWidth", {
+        /**
+         * Gets or sets the cell width to use when animation sheet is enabled
+         * @see http://doc.babylonjs.com/how_to/gui#image
+         */
+        get: function () {
+            return this._cellWidth;
+        },
+        set: function (value) {
+            if (this._cellWidth === value) {
+                return;
+            }
+            this._cellWidth = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "cellHeight", {
+        /**
+         * Gets or sets the cell height to use when animation sheet is enabled
+         * @see http://doc.babylonjs.com/how_to/gui#image
+         */
+        get: function () {
+            return this._cellHeight;
+        },
+        set: function (value) {
+            if (this._cellHeight === value) {
+                return;
+            }
+            this._cellHeight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "cellId", {
+        /**
+         * Gets or sets the cell id to use (this will turn on the animation sheet mode)
+         * @see http://doc.babylonjs.com/how_to/gui#image
+         */
+        get: function () {
+            return this._cellId;
+        },
+        set: function (value) {
+            if (this._cellId === value) {
+                return;
+            }
+            this._cellId = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Tests if a given coordinates belong to the current control
+     * @param x defines x coordinate to test
+     * @param y defines y coordinate to test
+     * @returns true if the coordinates are inside the control
+     */
+    Image.prototype.contains = function (x, y) {
+        if (!_super.prototype.contains.call(this, x, y)) {
+            return false;
+        }
+        if (!this._detectPointerOnOpaqueOnly || !Image._WorkingCanvas) {
+            return true;
+        }
+        var canvas = Image._WorkingCanvas;
+        var context = canvas.getContext("2d");
+        var width = this._currentMeasure.width | 0;
+        var height = this._currentMeasure.height | 0;
+        var imageData = context.getImageData(0, 0, width, height).data;
+        x = (x - this._currentMeasure.left) | 0;
+        y = (y - this._currentMeasure.top) | 0;
+        var pickedPixel = imageData[(x + y * this._currentMeasure.width) * 4 + 3];
+        return pickedPixel > 0;
+    };
+    Image.prototype._getTypeName = function () {
+        return "Image";
+    };
+    /** Force the control to synchronize with its content */
+    Image.prototype.synchronizeSizeWithContent = function () {
+        if (!this._loaded) {
+            return;
+        }
+        this.width = this._domImage.width + "px";
+        this.height = this._domImage.height + "px";
+    };
+    Image.prototype._processMeasures = function (parentMeasure, context) {
+        if (this._loaded) {
+            switch (this._stretch) {
+                case Image.STRETCH_NONE:
+                    break;
+                case Image.STRETCH_FILL:
+                    break;
+                case Image.STRETCH_UNIFORM:
+                    break;
+                case Image.STRETCH_NINE_PATCH:
+                    break;
+                case Image.STRETCH_EXTEND:
+                    if (this._autoScale) {
+                        this.synchronizeSizeWithContent();
+                    }
+                    if (this.parent && this.parent.parent) { // Will update root size if root is not the top root
+                        this.parent.adaptWidthToChildren = true;
+                        this.parent.adaptHeightToChildren = true;
+                    }
+                    break;
+            }
+        }
+        _super.prototype._processMeasures.call(this, parentMeasure, context);
+    };
+    Image.prototype._prepareWorkingCanvasForOpaqueDetection = function () {
+        if (!this._detectPointerOnOpaqueOnly) {
+            return;
+        }
+        if (!Image._WorkingCanvas) {
+            Image._WorkingCanvas = document.createElement('canvas');
+        }
+        var canvas = Image._WorkingCanvas;
+        var width = this._currentMeasure.width;
+        var height = this._currentMeasure.height;
+        var context = canvas.getContext("2d");
+        canvas.width = width;
+        canvas.height = height;
+        context.clearRect(0, 0, width, height);
+    };
+    Image.prototype._drawImage = function (context, sx, sy, sw, sh, tx, ty, tw, th) {
+        context.drawImage(this._domImage, sx, sy, sw, sh, tx, ty, tw, th);
+        if (!this._detectPointerOnOpaqueOnly) {
+            return;
+        }
+        var canvas = Image._WorkingCanvas;
+        context = canvas.getContext("2d");
+        context.drawImage(this._domImage, sx, sy, sw, sh, tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
+    };
+    Image.prototype._draw = function (context) {
+        context.save();
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowColor = this.shadowColor;
+            context.shadowBlur = this.shadowBlur;
+            context.shadowOffsetX = this.shadowOffsetX;
+            context.shadowOffsetY = this.shadowOffsetY;
+        }
+        var x, y, width, height;
+        if (this.cellId == -1) {
+            x = this._sourceLeft;
+            y = this._sourceTop;
+            width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
+            height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+        }
+        else {
+            var rowCount = this._domImage.naturalWidth / this.cellWidth;
+            var column = (this.cellId / rowCount) >> 0;
+            var row = this.cellId % rowCount;
+            x = this.cellWidth * row;
+            y = this.cellHeight * column;
+            width = this.cellWidth;
+            height = this.cellHeight;
+        }
+        this._prepareWorkingCanvasForOpaqueDetection();
+        this._applyStates(context);
+        if (this._loaded) {
+            switch (this._stretch) {
+                case Image.STRETCH_NONE:
+                    this._drawImage(context, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    break;
+                case Image.STRETCH_FILL:
+                    this._drawImage(context, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    break;
+                case Image.STRETCH_UNIFORM:
+                    var hRatio = this._currentMeasure.width / width;
+                    var vRatio = this._currentMeasure.height / height;
+                    var ratio = Math.min(hRatio, vRatio);
+                    var centerX = (this._currentMeasure.width - width * ratio) / 2;
+                    var centerY = (this._currentMeasure.height - height * ratio) / 2;
+                    this._drawImage(context, x, y, width, height, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
+                    break;
+                case Image.STRETCH_EXTEND:
+                    this._drawImage(context, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    break;
+                case Image.STRETCH_NINE_PATCH:
+                    this._renderNinePatch(context);
+                    break;
+            }
+        }
+        context.restore();
+    };
+    Image.prototype._renderCornerPatch = function (context, x, y, width, height, targetX, targetY) {
+        this._drawImage(context, x, y, width, height, this._currentMeasure.left + targetX, this._currentMeasure.top + targetY, width, height);
+    };
+    Image.prototype._renderNinePatch = function (context) {
+        var height = this._imageHeight;
+        var leftWidth = this._sliceLeft;
+        var topHeight = this._sliceTop;
+        var bottomHeight = this._imageHeight - this._sliceBottom;
+        var rightWidth = this._imageWidth - this._sliceRight;
+        var left = 0;
+        var top = 0;
+        if (this._populateNinePatchSlicesFromImage) {
+            left = 1;
+            top = 1;
+            height -= 2;
+            leftWidth -= 1;
+            topHeight -= 1;
+            bottomHeight -= 1;
+            rightWidth -= 1;
+        }
+        var centerWidth = this._sliceRight - this._sliceLeft + 1;
+        var targetCenterWidth = this._currentMeasure.width - rightWidth - this.sliceLeft + 1;
+        var targetTopHeight = this._currentMeasure.height - height + this._sliceBottom;
+        // Corners
+        this._renderCornerPatch(context, left, top, leftWidth, topHeight, 0, 0);
+        this._renderCornerPatch(context, left, this._sliceBottom, leftWidth, height - this._sliceBottom, 0, targetTopHeight);
+        this._renderCornerPatch(context, this._sliceRight, top, rightWidth, topHeight, this._currentMeasure.width - rightWidth, 0);
+        this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, rightWidth, height - this._sliceBottom, this._currentMeasure.width - rightWidth, targetTopHeight);
+        // Center
+        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop + 1, this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight + 1);
+        // Borders
+        this._drawImage(context, left, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
+        this._drawImage(context, this._sliceRight, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left + this._currentMeasure.width - rightWidth, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
+        this._drawImage(context, this._sliceLeft, top, centerWidth, topHeight, this._currentMeasure.left + leftWidth, this._currentMeasure.top, targetCenterWidth, topHeight);
+        this._drawImage(context, this._sliceLeft, this._sliceBottom, centerWidth, bottomHeight, this._currentMeasure.left + leftWidth, this._currentMeasure.top + targetTopHeight, targetCenterWidth, bottomHeight);
+    };
+    Image.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        this.onImageLoadedObservable.clear();
+        this.onSVGAttributesComputedObservable.clear();
+    };
+    Image._WorkingCanvas = null;
+    // Static
+    /** STRETCH_NONE */
+    Image.STRETCH_NONE = 0;
+    /** STRETCH_FILL */
+    Image.STRETCH_FILL = 1;
+    /** STRETCH_UNIFORM */
+    Image.STRETCH_UNIFORM = 2;
+    /** STRETCH_EXTEND */
+    Image.STRETCH_EXTEND = 3;
+    /** NINE_PATCH */
+    Image.STRETCH_NINE_PATCH = 4;
+    return Image;
+}(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
+
+>>>>>>> Stashed changes
 
 
 /***/ }),

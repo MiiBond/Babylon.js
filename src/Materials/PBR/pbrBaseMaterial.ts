@@ -18,6 +18,7 @@ import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrA
 import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { IMaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
+import { IMaterialDepthPeelingDefines, PBRDepthPeelingConfiguration } from "./pbrDepthPeelingConfiguration";
 import { Color3, TmpColors } from '../../Maths/math.color';
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
@@ -49,6 +50,7 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialAnisotropicDefines,
     IMaterialBRDFDefines,
     IMaterialSheenDefines,
+    IMaterialDepthPeelingDefines,
     IMaterialSubSurfaceDefines {
     public PBR = true;
 
@@ -211,6 +213,11 @@ export class PBRMaterialDefines extends MaterialDefines
     public SHEEN_TEXTUREDIRECTUV = 0;
     public SHEEN_LINKWITHALBEDO = false;
 
+    public DEPTH_PEELING = false;
+    public DEPTH_PEELING_FRONT = false;
+    public DEPTH_PEELING_FRONT_INVERSE = false;
+    public DEPTH_PEELING_BACK = false;
+
     public SUBSURFACE = false;
 
     public SS_REFRACTION = false;
@@ -229,6 +236,11 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_LINKREFRACTIONTOTRANSPARENCY = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
+    public SS_DEPTHINREFRACTIONALPHA = false;
+
+    public ADOBE_TRANSPARENCY_G_BUFFER = false;
+    public ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 3;
+    public ADOBE_TRANSPARENCY_G_BUFFER_VOLUME_INFO = false;
 
     public UNLIT = false;
 
@@ -507,6 +519,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     protected _useAutoMicroSurfaceFromReflectivityMap = false;
 
+    protected useAdobeGBufferRendering = false;
+
+    protected adobeGBufferVolumeInfoEnabled = false;
+
     /**
      * Defines the  falloff type used in this material.
      * It by default is Physical.
@@ -728,6 +744,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Defines the SubSurface parameters for the material.
      */
     public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+
+    /**
+     * Defines the Transparency parameters for the material.
+     */
+    public readonly depthPeeling = new PBRDepthPeelingConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     /**
      * Custom callback helping to override the default shader used in the material.
@@ -1220,6 +1241,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRSheenConfiguration.AddUniforms(uniforms);
         PBRSheenConfiguration.AddSamplers(samplers);
 
+        PBRDepthPeelingConfiguration.AddUniforms(uniforms);
+        PBRDepthPeelingConfiguration.AddSamplers(samplers);
+
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
             ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
@@ -1499,6 +1523,19 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
             defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
             defines.LINEARALPHAFRESNEL = this._useLinearAlphaFresnel;
+
+            if (this.useAdobeGBufferRendering) {
+                defines.ADOBE_TRANSPARENCY_G_BUFFER = true;
+                if (this.adobeGBufferVolumeInfoEnabled) {
+                    defines.ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 5;
+                    defines.ADOBE_TRANSPARENCY_G_BUFFER_VOLUME_INFO = true;
+                } else {
+                    defines.ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 3;
+                    defines.ADOBE_TRANSPARENCY_G_BUFFER_VOLUME_INFO = false;
+                }
+            } else {
+                defines.ADOBE_TRANSPARENCY_G_BUFFER = false;
+            }
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
@@ -1524,6 +1561,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.anisotropy.prepareDefines(defines, mesh, scene);
         this.brdf.prepareDefines(defines);
         this.sheen.prepareDefines(defines, scene);
+        this.depthPeeling.prepareDefines(defines, scene);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);
@@ -1599,6 +1637,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRAnisotropicConfiguration.PrepareUniformBuffer(ubo);
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
+        PBRDepthPeelingConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
@@ -1879,6 +1918,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
             this.sheen.bindForSubMesh(ubo, scene, this.isFrozen);
+            this.depthPeeling.bindForSubMesh(ubo, scene, this.isFrozen);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
@@ -1975,6 +2015,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.clearCoat.getAnimatables(results);
         this.sheen.getAnimatables(results);
         this.anisotropy.getAnimatables(results);
+        this.depthPeeling.getAnimatables(results);
 
         return results;
     }
@@ -2042,6 +2083,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.clearCoat.getActiveTextures(activeTextures);
         this.sheen.getActiveTextures(activeTextures);
         this.anisotropy.getActiveTextures(activeTextures);
+        this.depthPeeling.getActiveTextures(activeTextures);
 
         return activeTextures;
     }
@@ -2095,7 +2137,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         return this.subSurface.hasTexture(texture) ||
             this.clearCoat.hasTexture(texture) ||
             this.sheen.hasTexture(texture) ||
-            this.anisotropy.hasTexture(texture);
+            this.anisotropy.hasTexture(texture) ||
+            this.depthPeeling.hasTexture(texture);
     }
 
     /**
@@ -2150,6 +2193,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.clearCoat.dispose(forceDisposeTextures);
         this.sheen.dispose(forceDisposeTextures);
         this.anisotropy.dispose(forceDisposeTextures);
+        this.depthPeeling.dispose(forceDisposeTextures);
 
         this._renderTargets.dispose();
 
