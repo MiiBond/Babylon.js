@@ -438,11 +438,11 @@ float transmission = 0.0;
             #endif
             #if defined(TRANSPARENCY) && !defined(SS_REFRACTIONMAP_3D) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
                 // vec4 refraction_clear = texture2D(refractionSampler, refractionCoords);
-                #if defined(ALPHABLEND)
-                    if (alpha <= 0.4) {
-                        requestedRefractionLOD = 0.0;
-                    }
-                #endif
+                // #if defined(ALPHABLEND)
+                //     if (alpha <= 0.4) {
+                //         requestedRefractionLOD = 0.0;
+                //     }
+                // #endif
                 vec4 refraction_colour = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
                 #ifdef TRANSPARENCY_DEPTH_IN_REFRACTION_ALPHA
                     refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;

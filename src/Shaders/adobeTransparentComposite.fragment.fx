@@ -83,7 +83,7 @@ void main(void) {
         }
     
         vec4 background_refracted = sampleRefractionLod(textureSampler, refractionCoords, refractionLOD);
-        vec4 background_clear = sampleRefractionLod(textureSampler, vUV, refractionLOD);
+        vec4 background_clear = sampleRefractionLod(textureSampler, vUV, 0.0);
         if (front_facing == 0.0) {
             float norm_length = length(norm);
             float refracted_light_amount = min((norm_length * norm_length + 0.25) * misc.g, 1.0);
