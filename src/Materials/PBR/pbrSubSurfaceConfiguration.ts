@@ -37,6 +37,9 @@ export interface IMaterialSubSurfaceDefines {
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
 
+    SS_VOLUME_SCATTERING: boolean;
+    SS_VOLUME_THICKNESS: boolean;
+
     /** @hidden */
     _areTexturesDirty: boolean;
 }
@@ -62,20 +65,34 @@ export class PBRSubSurfaceConfiguration {
     public isTranslucencyEnabled = false;
 
     private _isScatteringEnabled = false;
-    // /**
-    //  * Defines if the sub surface scattering is enabled in the material.
-    //  */
-    // @serialize()
-    // @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    // public isScatteringEnabled = false;
+    /**
+     * Defines if the sub surface scattering is enabled in the material.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public isScatteringEnabled = false;
+
+    private _isVolumeScatteringEnabled = false;
+    /**
+     * Defines if the volume surface scattering is enabled in the material.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public isVolumeScatteringEnabled = false;
 
     /**
      * Defines the refraction intensity of the material.
      * The refraction when enabled replaces the Diffuse part of the material.
-     * The intensity helps transitionning between diffuse and refraction.
+     * The intensity helps transitioning between diffuse and refraction.
      */
     @serialize()
     public refractionIntensity: number = 1;
+
+    /**
+     * Defines the interior scattering colour for the volume.
+     */
+    @serializeAsColor3()
+    public volumeScatterColor: Color3 = Color3.White();
 
     /**
      * Defines the translucency intensity of the material.
@@ -193,6 +210,12 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public depthInRefractionAlpha = false;
 
+    /** 
+     * Scale the apparent thickness of the material (and how much it scatters, refracts, etc.).
+     */
+    @serialize()
+    public thicknessScale: number = 1.0;
+
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
@@ -258,7 +281,9 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_LODINREFRACTIONALPHA = false;
             defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
             defines.SS_DEPTHINREFRACTIONALPHA = false;
-
+            defines.SS_VOLUME_SCATTERING = this._isVolumeScatteringEnabled;
+            defines.SS_VOLUME_THICKNESS = true;
+            
             if (this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled) {
                 defines.SUBSURFACE = true;
 
@@ -273,6 +298,11 @@ export class PBRSubSurfaceConfiguration {
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture;
             }
 
+            if (this._isVolumeScatteringEnabled) {
+                defines.SS_VOLUME_SCATTERING = true;
+                // defines.SS_VOLUME_THICKNESS = true;
+            }
+            
             if (this._isRefractionEnabled) {
                 if (scene.texturesEnabled) {
                     var refractionTexture = this._getRefractionTexture(scene);
@@ -309,7 +339,7 @@ export class PBRSubSurfaceConfiguration {
                 MaterialHelper.BindTextureMatrix(this._thicknessTexture, uniformBuffer, "thickness");
             }
 
-            uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness, this.maximumThickness - this.minimumThickness);
+            uniformBuffer.updateFloat3("vThicknessParam", this.minimumThickness, this.maximumThickness - this.minimumThickness, this.thicknessScale);
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                 uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
@@ -335,6 +365,12 @@ export class PBRSubSurfaceConfiguration {
                 this.tintColorAtDistance);
 
             uniformBuffer.updateFloat3("vSubSurfaceIntensity", this.refractionIntensity, this.translucencyIntensity, this.scatteringIntensity);
+
+            if (this._isVolumeScatteringEnabled) {
+                uniformBuffer.updateFloat3("vVolumeScatterColor", this.volumeScatterColor.r,
+                    this.volumeScatterColor.g,
+                    this.volumeScatterColor.b);
+            }
         }
 
         // Textures
@@ -512,7 +548,7 @@ export class PBRSubSurfaceConfiguration {
             "vDiffusionDistance", "vTintColor", "vSubSurfaceIntensity",
             "vRefractionMicrosurfaceInfos",
             "vRefractionInfos", "vThicknessInfos", "vThicknessParam",
-            "refractionMatrix", "thicknessMatrix");
+            "refractionMatrix", "thicknessMatrix", "vVolumeScatterColor");
     }
 
     /**
@@ -534,7 +570,8 @@ export class PBRSubSurfaceConfiguration {
         uniformBuffer.addUniform("refractionMatrix", 16);
         uniformBuffer.addUniform("vThicknessInfos", 2);
         uniformBuffer.addUniform("thicknessMatrix", 16);
-        uniformBuffer.addUniform("vThicknessParam", 2);
+        uniformBuffer.addUniform("vVolumeScatterColor", 3);
+        uniformBuffer.addUniform("vThicknessParam", 3);
         uniformBuffer.addUniform("vDiffusionDistance", 3);
         uniformBuffer.addUniform("vTintColor", 4);
         uniformBuffer.addUniform("vSubSurfaceIntensity", 3);

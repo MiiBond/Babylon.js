@@ -53,17 +53,18 @@ uniform Material
     uniform vec2 vSheenInfos;
     uniform mat4 sheenMatrix;
 
-    uniform vec4 depthValues;
-
     uniform vec3 vRefractionMicrosurfaceInfos;
     uniform vec4 vRefractionInfos;
     uniform mat4 refractionMatrix;
     uniform vec2 vThicknessInfos;
     uniform mat4 thicknessMatrix;
-    uniform vec2 vThicknessParam;
+    uniform vec3 vVolumeScatterColor;
+    uniform vec3 vThicknessParam;
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
+
+    uniform vec4 depthValues;
 };
 
 uniform Scene {

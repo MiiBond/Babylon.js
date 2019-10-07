@@ -180,6 +180,13 @@ export class DepthRenderer {
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
                 renderSubMesh(alphaTestSubMeshes.data[index]);
             }
+
+            for (index = 0; index < transparentSubMeshes.length; index++) {
+                const material = transparentSubMeshes.data[index].getMaterial();
+                if (material && material.forceDepthWrite) {
+                    renderSubMesh(transparentSubMeshes.data[index]);
+                }
+            }
         };
     }
 

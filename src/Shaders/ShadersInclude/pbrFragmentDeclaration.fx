@@ -107,11 +107,6 @@ uniform mat4 view;
     #endif
 #endif
 
-// Depth Peeling
-#ifdef DEPTH_PEELING
-    uniform vec4 depthValues;
-#endif
-
 // SubSurface
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION
@@ -122,11 +117,20 @@ uniform mat4 view;
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         uniform vec2 vThicknessInfos;
-        uniform mat4 thicknessMatrix;;
+        uniform mat4 thicknessMatrix;
     #endif
 
-    uniform vec2 vThicknessParam;
+    #ifdef SS_VOLUME_SCATTERING
+        uniform vec3 vVolumeScatterColor;
+    #endif
+
+    uniform vec3 vThicknessParam;
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
+#endif
+
+// Depth Peeling
+#ifdef DEPTH_PEELING
+    uniform vec4 depthValues;
 #endif

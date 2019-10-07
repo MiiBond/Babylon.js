@@ -347,6 +347,10 @@ void main(void) {
         vec3 anisotropicNormal = getAnisotropicBentNormals(anisotropicTangent, anisotropicBitangent, normalW, viewDirectionW, anisotropy);
     #endif
 
+    #if defined(SUBSURFACE) || defined(SS_REFRACTION)
+        float thickness = 0.0;
+    #endif
+
     // _____________________________ Refraction Info _______________________________________
     #ifdef SS_REFRACTION
         vec4 environmentRefraction = vec4(0., 0., 0., 0.);
@@ -378,10 +382,9 @@ void main(void) {
             refractionVector.y = refractionVector.y * vRefractionInfos.w;
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
-        #elif defined(SS_DEPTHINREFRACTIONALPHA)
-        // define thickness here
-            float refraction_thickness = vRefractionInfos.z * ((1.0 - refraction_clear.a) - sceneDepth);
-            vec3 vRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW + refractionVector * refraction_thickness, 1.0));
+        #elif defined(SS_VOLUME_THICKNESS) && defined(SS_DEPTHINREFRACTIONALPHA)
+            thickness = vRefractionInfos.z * ((1.0 - refraction_clear.a) - sceneDepth);
+            vec3 vRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW + refractionVector * thickness, 1.0));
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
             refractionCoords.y = 1.0 - refractionCoords.y;
         #else
@@ -419,36 +422,29 @@ void main(void) {
                 float requestedRefractionLOD = refractionLOD;
             #endif
 
-            #if defined(ADOBE_TRANSPARENCY_G_BUFFER) && defined(TRANSPARENCY_INTERIOR)
-                float density = vInteriorTransparency.a;
-                requestedRefractionLOD += density * 100.0;
-            #endif
-            
-            #if defined(TRANSPARENCY) && !defined(SS_REFRACTIONMAP_3D) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
-                // vec4 refraction_clear = texture2D(refractionSampler, refractionCoords);
-                #if defined(ALPHABLEND)
-                    if (alpha <= 0.4) {
-                        requestedRefractionLOD = 0.0;
-                    }
-                #endif
+            #if defined(SS_DEPTHINREFRACTIONALPHA) && !defined(SS_REFRACTIONMAP_3D) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+                // #if defined(ALPHABLEND)
+                //     if (alpha <= 0.4) {
+                //         requestedRefractionLOD = 0.0;
+                //     }
+                // #endif
                 vec4 refraction_colour = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
-                #ifdef SS_DEPTHINREFRACTIONALPHA
-                    refraction_thickness = (1.0 - refraction_colour.a) - sceneDepth;
-                    if (refraction_thickness < -0.002) {
+                #if defined(SS_VOLUME_THICKNESS) && defined(SS_DEPTHINREFRACTIONALPHA)
+                    // If the refracted texel is closer to the camera than the pixel being rendered, use the un-refracted texel instead.
+                    if ((1.0 - refraction_colour.a) - sceneDepth < -0.005) {
                         refraction_colour = refraction_clear;
                     }
-                    refraction_thickness = (1.0 - refraction_clear.a) - sceneDepth;
-                    refraction_thickness = max(refraction_thickness, 0.0);
+                    thickness = (1.0 - refraction_clear.a) - sceneDepth;
+                    thickness = max(thickness, 0.0);
                 #endif
                 #if defined(ALPHABLEND)
                     // Blend between clear, unrefracted background and the refracted one.
                     refraction_colour.rgb = mix(refraction_clear.rgb, refraction_colour.rgb, alpha);
                 #endif
 
-                #ifdef TRANSPARENCY_INTERIOR
+                #ifdef SS_VOLUME_SCATTERING
                     // Do density calculation here.
-                    vec3 clamped_color = clamp(vInteriorTransparency.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
-                    float density = vInteriorTransparency.a;
+                    vec3 clamped_color = clamp(vVolumeScatterColor.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
                     float ior = vRefractionInfos.y;
                     #ifndef TRANSPARENCY_SCENE_SCALE
                         #define TRANSPARENCY_SCENE_SCALE 1.0
@@ -481,7 +477,7 @@ void main(void) {
             }
         #endif
 
-        #if defined(LODBASEDMICROSFURACE) && defined(ALPHABLEND) && defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+        #if defined(LODBASEDMICROSFURACE) && defined(ALPHABLEND) && defined(SS_REFRACTION) && defined(SS_DEPTHINREFRACTIONALPHA) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
             vec3 sceneColor = refraction_colour.rgb;
         #endif
 
@@ -496,22 +492,6 @@ void main(void) {
         // _____________________________ Levels _____________________________________
         environmentRefraction.rgb *= vRefractionInfos.x;
 
-        #if defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
-            #ifdef TRANSPARENCY_INTERIOR
-                #ifdef SS_DEPTHINREFRACTIONALPHA
-                    float thickness_scale = 4000.0*refraction_thickness;
-                #else
-                    float thickness_scale = vRefractionInfos.z;
-                #endif
-                vec3 volumetric_scattering_fog = vec3(0.0);
-                if (gl_FrontFacing) {
-                    // Based on Volumetric Light Scattering Eq 1
-                    // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
-                    environmentRefraction.rgb *= 1.0 / exp((absorption_coeff) * density * thickness_scale * TRANSPARENCY_SCENE_SCALE);
-                    volumetric_scattering_fog = clamped_color * clamped_color * scattering_coeff * (1.0 - 1.0 / exp((scattering_coeff) * density * 0.1 * thickness_scale * TRANSPARENCY_SCENE_SCALE));
-                }
-            #endif
-        #endif
     #endif
 
     // _____________________________ Reflection Info _______________________________________
@@ -631,16 +611,6 @@ void main(void) {
         environmentRadiance.rgb *= vReflectionColor.rgb;
         environmentIrradiance *= vReflectionColor.rgb;
 
-        #if defined(SS_REFRACTION) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
-            #ifdef TRANSPARENCY_INTERIOR
-                if (gl_FrontFacing) {
-
-                    volumetric_scattering_fog *= environmentIrradiance * 0.5;
-                    environmentRefraction.rgb += volumetric_scattering_fog;
-                    environmentRefraction.rgb = clamp(environmentRefraction.rgb, 0.0, 1.0);
-                }
-            #endif
-        #endif
     #endif
 
     // ___________________ Compute Reflectance aka R0 F0 info _________________________
@@ -918,7 +888,11 @@ void main(void) {
 
         #ifdef SS_THICKNESSANDMASK_TEXTURE
             vec4 thicknessMap = texture2D(thicknessSampler, vThicknessUV + uvOffset);
-            float thickness = thicknessMap.r * vThicknessParam.y + vThicknessParam.x;
+
+            // If the scene depth is in the refraction alpha then we already have an accurate thickness value.
+            #if !defined(SS_DEPTHINREFRACTIONALPHA)
+                thickness = thicknessMap.r * vThicknessParam.y + vThicknessParam.x;
+            #endif
 
             #ifdef SS_MASK_FROM_THICKNESS_TEXTURE
                 #ifdef SS_REFRACTION
@@ -931,10 +905,54 @@ void main(void) {
                     scatteringIntensity *= thicknessMap.a;
                 #endif
             #endif
-        // #elsif using full depth peeling, set thickness to refraction_thickness
-        #else
-            float thickness = vThicknessParam.y;
         #endif
+
+        //  #if defined(SS_DEPTHINREFRACTIONALPHA) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+        //     #ifdef SS_VOLUME_SCATTERING
+        //         #ifdef SS_DEPTHINREFRACTIONALPHA
+        //             float thickness_scale = 1000.0 * thickness;
+        //         #else
+        //             float thickness_scale = vRefractionInfos.z;
+        //         #endif
+        //         vec3 volumetric_scattering_fog = vec3(0.0);
+        //         if (gl_FrontFacing) {
+        //             // Based on Volumetric Light Scattering Eq 1
+        //             // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
+        //             environmentRefraction.rgb *= 1.0 / exp((absorption_coeff) * thickness_scale * TRANSPARENCY_SCENE_SCALE);
+        //             volumetric_scattering_fog = clamped_color * clamped_color * scattering_coeff * (1.0 - 1.0 / exp((scattering_coeff) * thickness_scale * TRANSPARENCY_SCENE_SCALE));
+        //         }
+        //     #endif
+        // #endif
+
+        // #if defined(SS_REFRACTION) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+        //     #ifdef SS_VOLUME_SCATTERING
+        //         if (gl_FrontFacing) {
+
+        //             volumetric_scattering_fog *= environmentIrradiance;
+        //             environmentRefraction.rgb += volumetric_scattering_fog;
+        //             environmentRefraction.rgb = clamp(environmentRefraction.rgb, 0.0, 1.0);
+        //         }
+        //     #endif
+        // #endif
+
+
+
+        // #if defined(SS_VOLUME_THICKNESS) && !defined(SS_REFRACTIONMAP_3D) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+        //     thickness = 4000.0*thickness;
+        // #else
+        //     thickness = vThicknessParam.y;
+        // #endif
+
+        // #if defined(SS_VOLUME_SCATTERING) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+        //     vec3 volumetric_scattering_fog = vec3(0.0);
+        //     if (gl_FrontFacing) {
+        //         float density = 1.0;
+        //         // Based on Volumetric Light Scattering Eq 1
+        //         // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
+        //         environmentRefraction.rgb *= 1.0 / exp((absorption_coeff) * density * thickness * TRANSPARENCY_SCENE_SCALE);
+        //         volumetric_scattering_fog = clamped_color * clamped_color * scattering_coeff * (1.0 - 1.0 / exp((scattering_coeff) * density * 0.1 * thickness_scale * TRANSPARENCY_SCENE_SCALE));
+        //     }
+        // #endif
 
         #ifdef SS_TRANSLUCENCY
             thickness = maxEps(thickness);
@@ -1083,8 +1101,13 @@ void main(void) {
     // _____________________________ Transmittance + Tint ________________________________
     #ifdef SS_REFRACTION
         vec3 refractionTransmittance = vec3(refractionIntensity);
-        #ifdef SS_THICKNESSANDMASK_TEXTURE
-            vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
+        #if defined(SS_THICKNESSANDMASK_TEXTURE) || defined(SS_DEPTHINREFRACTIONALPHA)
+            #ifdef USE_ALBEDOFORREFRACTIONTINT
+            // TODO - this def is not defined and the thickness value needs to be scaled before the tint will be visible.
+                vec3 volumeAlbedo = computeColorAtDistanceInMedia(surfaceAlbedo.rgb, vTintColor.w);
+            #else
+                vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
+            #endif
 
             // // Simulate Flat Surface
             // thickness /=  dot(refractionVector, -normalW);
@@ -1371,23 +1394,27 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
         vec2 norm = (view * vec4(normalW, 1.0)).xy;
         norm = norm * 0.5 + 0.5;
         #ifndef SS_REFRACTION
-            float refractionIntensity = 0;
+            float refractionIntensity = 0.0;
         #endif
         gl_FragData[2] = vec4(refractionIntensity, roughness, norm.x, norm.y);
        
     #else
         gl_FragData[1] = vec4(1.0);
         gl_FragData[2] = vec4(1.0);
-        // gl_FragData[3] = vec4(1.0);
+        gl_FragData[3] = vec4(1.0);
+        gl_FragData[4] = vec4(1.0);
+        gl_FragData[5] = vec4(1.0);
     #endif
     
     #ifdef ADOBE_TRANSPARENCY_G_BUFFER_VOLUME_INFO
-        #ifdef TRANSPARENCY_INTERIOR
-            gl_FragData[3] = vec4(vInteriorTransparency.xyz, 1.0);
-            gl_FragData[4] = vec4(vInteriorTransparency.a, vRefractionInfos.y, gl_FrontFacing, 1.0);
+        #ifdef SS_VOLUME_SCATTERING
+            gl_FragData[3] = vec4(vTintColor.a, vRefractionInfos.y, gl_FrontFacing, 1.0);
+            gl_FragData[4] = vec4(vVolumeScatterColor, 1.0);
+            gl_FragData[5] = vec4(surfaceAlbedo, 1.0);
         #else
-            gl_FragData[3] = vec4(1.0);
-            gl_FragData[4] = vec4(0.0, vRefractionInfos.y, gl_FrontFacing, 1.0);
+            gl_FragData[3] = vec4(0.0, vRefractionInfos.y, gl_FrontFacing, 1.0);
+            gl_FragData[4] = vec4(1.0);
+            gl_FragData[5] = vec4(1.0);
         #endif
     #endif
 #else
@@ -1421,7 +1448,7 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
         finalColor = applyImageProcessing(finalColor);
     #endif
 
-    #if defined(SS_REFRACTION) && defined(ALPHABLEND) && defined(TRANSPARENCY) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+    #if defined(SS_REFRACTION) && defined(ALPHABLEND) && defined(SS_DEPTHINREFRACTIONALPHA) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
         // Use refraction texture rather than actual alpha blending.
         finalColor.rgb = mix(sceneColor.rgb, finalColor.rgb, alpha);
         finalColor.a = 1.0;

@@ -227,6 +227,9 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_THICKNESSANDMASK_TEXTURE = false;
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
 
+    public SS_VOLUME_SCATTERING = false;
+    public SS_VOLUME_THICKNESS = false;
+
     public SS_REFRACTIONMAP_3D = false;
     public SS_REFRACTIONMAP_OPPOSITEZ = false;
     public SS_LODINREFRACTIONALPHA = false;
@@ -1527,7 +1530,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             if (this.useAdobeGBufferRendering) {
                 defines.ADOBE_TRANSPARENCY_G_BUFFER = true;
                 if (this.adobeGBufferVolumeInfoEnabled) {
-                    defines.ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 5;
+                    defines.ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 6;
                     defines.ADOBE_TRANSPARENCY_G_BUFFER_VOLUME_INFO = true;
                 } else {
                     defines.ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 3;

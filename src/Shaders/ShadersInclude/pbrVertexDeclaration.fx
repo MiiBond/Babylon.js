@@ -96,5 +96,9 @@ uniform float pointSize;
         uniform vec2 vThicknessInfos;
         uniform mat4 thicknessMatrix;;
     #endif
+
+    #ifdef SS_VOLUME_SCATTERING
+        uniform vec3 vVolumeScatterColor;
+    #endif
 #endif
 
