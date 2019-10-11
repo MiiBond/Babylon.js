@@ -1,5 +1,5 @@
 import { Nullable } from "babylonjs/types";
-import { Color3 } from "babylonjs/Maths/math";
+// import { Color3 } from "babylonjs/Maths/math";
 // import { Mesh } from "babylonjs/Meshes/mesh";
 // import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
