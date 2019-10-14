@@ -5,7 +5,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Texture } from "../Materials/Textures/texture";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
+// import { DepthCullingState, StencilState, AlphaState } from "../States/index";
 import { Constants } from "../Engines/constants";
 
 import "../Meshes/Builders/planeBuilder";
@@ -102,7 +102,7 @@ export class AdobeTransparencyHelper {
         this._parseScene();
 
         const engine = scene.getEngine();
-        
+
         if (!engine.getCaps().drawBuffersExtension) {
             this._mrtDisabled = true;
         }
@@ -120,7 +120,7 @@ export class AdobeTransparencyHelper {
         if (!newValues.length) {
             return;
         }
-        
+
         const newOptions = {
             ...this._options,
             ...options
@@ -264,9 +264,9 @@ export class AdobeTransparencyHelper {
         //     floatTextureType = Engine.TEXTURETYPE_HALF_FLOAT;
         // }
         // else if (this._scene.getEngine().getCaps().textureFloatRender) {
-            floatTextureType = Engine.TEXTURETYPE_FLOAT;
+        floatTextureType = Engine.TEXTURETYPE_FLOAT;
         // }
-        
+
         // Remove any layers rendering to the opaque scene.
         if (this._scene.layers) {
             this._scene.layers.forEach((layer) => {
@@ -314,7 +314,7 @@ export class AdobeTransparencyHelper {
             }
             return;
         }
-        
+
         if (this._opaqueDepthRenderer) {
             rt_idx = this._scene.customRenderTargets.indexOf(this._opaqueDepthRenderer.getDepthMap());
             this._opaqueDepthRenderer.dispose();
@@ -364,13 +364,13 @@ export class AdobeTransparencyHelper {
 
         // Create all the render targets for the depth-peeling passes
         this._mrtRenderTargets = [];
-        
+
         if (this.disabled) {
             return;
         }
 
         for (let idx = 0; idx < this._options.numPasses; idx++) {
-            
+
             const renderBufferCount = this._volumeRenderingEnabled ? 5 : 3;
             const multiRenderTarget = new MultiRenderTarget("transparency_mrt_" + idx, this._options.renderSize, renderBufferCount, this._scene, {
                 defaultType: floatTextureType,
@@ -461,7 +461,8 @@ export class AdobeTransparencyHelper {
             numPasses: this._options.numPasses,
             volumeRendering: this._volumeRenderingEnabled,
             refractionScale: this._options.refractionScale,
-            sceneScale: this._options.sceneScale }, this._scene);
+            sceneScale: this._options.sceneScale
+        }, this._scene);
         this._compositor.setBackgroundDepthTexture(this._opaqueDepthRenderer.getDepthMap());
         this._compositor.setBackgroundTexture(this._opaqueRenderTarget);
         this._compositor.setTransparentTextures(this._mrtRenderTargets);

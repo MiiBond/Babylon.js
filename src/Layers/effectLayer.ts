@@ -5,7 +5,8 @@ import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Color4, ISize } from "../Maths/math";
+import { ISize } from "../Maths/math.size";
+import { Color4 } from '../Maths/math.color';
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -14,11 +15,10 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Effect, EffectFallbacks } from "../Materials/effect";
+import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Constants } from "../Engines/constants";
@@ -27,6 +27,7 @@ import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
 import { _DevTools } from '../Misc/devTools';
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { EffectFallbacks } from '../Materials/effectFallbacks';
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -298,8 +299,8 @@ export abstract class EffectLayer {
             this._mainTextureDesiredSize.width = this._engine.getRenderWidth() * this._effectLayerOptions.mainTextureRatio;
             this._mainTextureDesiredSize.height = this._engine.getRenderHeight() * this._effectLayerOptions.mainTextureRatio;
 
-            this._mainTextureDesiredSize.width = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize) : this._mainTextureDesiredSize.width;
-            this._mainTextureDesiredSize.height = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize) : this._mainTextureDesiredSize.height;
+            this._mainTextureDesiredSize.width = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize) : this._mainTextureDesiredSize.width;
+            this._mainTextureDesiredSize.height = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize) : this._mainTextureDesiredSize.height;
         }
 
         this._mainTextureDesiredSize.width = Math.floor(this._mainTextureDesiredSize.width);
@@ -479,8 +480,16 @@ export abstract class EffectLayer {
                 attribs.push(VertexBuffer.MatricesIndicesExtraKind);
                 attribs.push(VertexBuffer.MatricesWeightsExtraKind);
             }
+
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            defines.push("#define BonesPerMesh " + (mesh.skeleton ? (mesh.skeleton.bones.length + 1) : 0));
+
+            let skeleton = mesh.skeleton;
+            if (skeleton && skeleton.isUsingTextureForMatrices) {
+                defines.push("#define BONETEXTURE");
+            } else {
+                defines.push("#define BonesPerMesh " + (skeleton ? (skeleton.bones.length + 1) : 0));
+            }
+
             if (mesh.numBoneInfluencers > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
             }
@@ -515,9 +524,9 @@ export abstract class EffectLayer {
             this._effectLayerMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
                 attribs,
                 ["world", "mBones", "viewProjection",
-                    "glowColor", "morphTargetInfluences",
+                    "glowColor", "morphTargetInfluences", "boneTextureWidth",
                     "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
-                ["diffuseSampler", "emissiveSampler", "opacitySampler"], join,
+                ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler"], join,
                 fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }
 
@@ -713,7 +722,19 @@ export abstract class EffectLayer {
 
             // Bones
             if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                this._effectLayerMapGenerationEffect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                const skeleton = mesh.skeleton;
+
+                if (skeleton.isUsingTextureForMatrices) {
+                    const boneTexture = skeleton.getTransformMatrixTexture(mesh);
+                    if (!boneTexture) {
+                        return;
+                    }
+
+                    this._effectLayerMapGenerationEffect.setTexture("boneSampler", boneTexture);
+                    this._effectLayerMapGenerationEffect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                } else {
+                    this._effectLayerMapGenerationEffect.setMatrices("mBones", skeleton.getTransformMatrices((mesh)));
+                }
             }
 
             // Morph targets

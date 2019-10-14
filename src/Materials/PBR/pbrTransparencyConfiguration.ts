@@ -1,11 +1,11 @@
 import { SerializationHelper, serialize, expandToProperty, serializeAsTexture, serializeAsColor3 } from "../../Misc/decorators";
-import { EffectFallbacks } from "../../Materials/effect";
+import { EffectFallbacks } from '../effectFallbacks';
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Scene } from "../../scene";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { IAnimatable } from "../../Misc/tools";
+import { IAnimatable } from '../../Animations/animatable.interface';
 import { Nullable } from "../../types";
 import { Color3 } from '../../Maths/math';
 
@@ -164,7 +164,7 @@ export class PBRTransparencyConfiguration {
             if (this.interiorDensity > 0) {
                 defines.TRANSPARENCY_INTERIOR = true;
             }
-            
+
             defines.TRANSPARENCY_DEPTH_IN_REFRACTION_ALPHA = this.depthInRefractionAlpha;
             defines.TRANSPARENCY_REFRACTION_SCALE = this.refractionScale.toFixed(20).toString();
             defines.TRANSPARENCY_SCENE_SCALE = this.sceneScale.toFixed(20).toString();

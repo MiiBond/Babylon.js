@@ -1,6 +1,6 @@
 import { SerializationHelper } from "../Misc/decorators";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math";
+import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BaseSubMesh } from "../Meshes/subMesh";
@@ -8,9 +8,11 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
-import { EffectFallbacks, EffectCreationOptions } from "./effect";
+import { IEffectCreationOptions } from "./effect";
 import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
+import { Color3, Color4 } from '../Maths/math.color';
+import { EffectFallbacks } from './effectFallbacks';
 
 /**
  * Defines the options associated with the creation of a shader material.
@@ -92,9 +94,10 @@ export class ShaderMaterial extends Material {
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
-     *     - object - { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
-     *     - object - { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in <script> tags
-     *     - string - "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+     *  * object: { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
+     *  * object: { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in script tags
+     *  * object: { vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" } using with strings containing the shaders code
+     *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
      * @param options Define the options used to create the shader
      */
     constructor(name: string, scene: Scene, shaderPath: any, options: Partial<IShaderMaterialOptions> = {}) {
@@ -512,7 +515,7 @@ export class ShaderMaterial extends Material {
         var previousEffect = this._effect;
         var join = defines.join("\n");
 
-        this._effect = engine.createEffect(this._shaderPath, <EffectCreationOptions>{
+        this._effect = engine.createEffect(this._shaderPath, <IEffectCreationOptions>{
             attributes: attribs,
             uniformsNames: this._options.uniforms,
             uniformBuffersNames: this._options.uniformBuffers,

@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { IDisposable, Scene } from "../../scene";
-import { Quaternion, Vector3 } from "../../Maths/math";
+import { Quaternion, Vector3 } from "../../Maths/math.vector";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
@@ -29,7 +29,7 @@ export enum WebXRState {
     NOT_IN_XR
 }
 /**
- * Helper class used to enable XR
+ * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
  * @see https://doc.babylonjs.com/how_to/webxr
  */
 export class WebXRExperienceHelper implements IDisposable {
@@ -89,8 +89,12 @@ export class WebXRExperienceHelper implements IDisposable {
     private constructor(private scene: Scene) {
         this.camera = new WebXRCamera("", scene);
         this.sessionManager = new WebXRSessionManager(scene);
-        this.container = new AbstractMesh("", scene);
+        this.container = new AbstractMesh("WebXR Container", scene);
         this.camera.parent = this.container;
+
+        scene.onDisposeObservable.add(() => {
+            this.exitXRAsync();
+        });
     }
 
     /**
@@ -119,7 +123,7 @@ export class WebXRExperienceHelper implements IDisposable {
         }).then(() => {
             return outputCanvas.initializeXRLayerAsync(this.sessionManager.session);
         }).then(() => {
-            return this.sessionManager.updateRenderStateAsync({baseLayer: outputCanvas.xrLayer});
+            return this.sessionManager.updateRenderStateAsync({ depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: outputCanvas.xrLayer! });
         }).then(() => {
             return this.sessionManager.startRenderingToXRAsync();
         }).then(() => {
@@ -144,11 +148,14 @@ export class WebXRExperienceHelper implements IDisposable {
                 // Restore scene settings
                 this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
-                this.sessionManager.onXRFrameObservable.clear();
 
                 this._setState(WebXRState.NOT_IN_XR);
             });
-            this._setState(WebXRState.IN_XR);
+
+            // Wait until the first frame arrives before setting state to in xr
+            this.sessionManager.onXRFrameObservable.addOnce(() => {
+                this._setState(WebXRState.IN_XR);
+            });
         }).catch((e: any) => {
             console.log(e);
             console.log(e.message);

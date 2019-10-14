@@ -1,11 +1,12 @@
 import { Nullable } from "./types";
-import { IAnimatable, IFileRequest, Tools, PerfCounter } from "./Misc/tools";
+import { Tools } from "./Misc/tools";
+import { IAnimatable } from './Animations/animatable.interface';
 import { PrecisionDate } from "./Misc/precisionDate";
 import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Frustum } from "./Maths/math";
+import { Vector2, Vector3, Matrix } from "./Maths/math.vector";
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
@@ -47,6 +48,13 @@ import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
+import { PerfCounter } from './Misc/perfCounter';
+import { IFileRequest } from './Misc/fileRequest';
+import { Color4, Color3 } from './Maths/math.color';
+import { Plane } from './Maths/math.plane';
+import { Frustum } from './Maths/math.frustum';
+import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
+import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -95,9 +103,6 @@ export interface SceneOptions {
  * @see http://doc.babylonjs.com/features/scene
  */
 export class Scene extends AbstractScene implements IAnimatable {
-    // Statics
-    private static _uniqueIdCounter = 0;
-
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = 0;
     /** The fog density is following an exponential function */
@@ -195,6 +200,32 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         this._environmentTexture = value;
+        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    /** @hidden */
+    protected _environmentIntensity: number = 1;
+    /**
+     * Intensity of the environment in all pbr material.
+     * This dims or reinforces the IBL lighting overall (reflection and diffuse).
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
+     */
+    public get environmentIntensity(): number {
+        return this._environmentIntensity;
+    }
+    /**
+     * Intensity of the environment in all pbr material.
+     * This dims or reinforces the IBL lighting overall (reflection and diffuse).
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to set here than in all the materials.
+     */
+    public set environmentIntensity(value: number) {
+        if (this._environmentIntensity === value) {
+            return;
+        }
+
+        this._environmentIntensity = value;
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
@@ -299,6 +330,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Defines the HTML default cursor to use (empty by default)
      */
     public defaultCursor: string = "";
+    /**
+     * Defines wether cursors are handled by the scene.
+     */
+    public doNotHandleCursors = false;
     /**
      * This is used to call preventDefault() on pointer down
      * in order to block unwanted artifacts like system double clicks
@@ -1856,6 +1891,12 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
 
+        if (this._isDisposed) {
+            this.onReadyObservable.clear();
+            this._executeWhenReadyTimeoutId = -1;
+            return;
+        }
+
         this._executeWhenReadyTimeoutId = setTimeout(() => {
             this._checkIsReady();
         }, 150);
@@ -1950,9 +1991,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns an unique number for the scene
      */
     public getUniqueId() {
-        var result = Scene._uniqueIdCounter;
-        Scene._uniqueIdCounter++;
-        return result;
+        return UniqueIdGenerator.UniqueId;
     }
 
     /**
@@ -2072,7 +2111,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (index !== -1) {
             // Remove from meshes
             for (var mesh of this.meshes) {
-                mesh._removeLightSource(toRemove);
+                mesh._removeLightSource(toRemove, false);
             }
 
             // Remove from the scene if mesh found
@@ -2472,6 +2511,21 @@ export class Scene extends AbstractScene implements IAnimatable {
         for (var index = 0; index < this.materials.length; index++) {
             if (this.materials[index].name === name) {
                 return this.materials[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get a texture using its unique id
+     * @param uniqueId defines the texture's unique id
+     * @return the texture or null if none found.
+     */
+    public getTextureByUniqueID(uniqueId: number): Nullable<BaseTexture> {
+        for (var index = 0; index < this.textures.length; index++) {
+            if (this.textures[index].uniqueId === uniqueId) {
+                return this.textures[index];
             }
         }
 
@@ -3104,7 +3158,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
-        if (initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+        if (initialMesh.hasInstances || initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
             for (let step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }
@@ -3121,7 +3175,6 @@ export class Scene extends AbstractScene implements IAnimatable {
                 }
 
                 // Dispatch
-                this._activeIndices.addCount(subMesh.indexCount, false);
                 this._renderingManager.dispatch(subMesh, mesh, material);
             }
         }
@@ -3233,20 +3286,22 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public freezeActiveMeshes(): Scene {
-        if (!this.activeCamera) {
-            return this;
-        }
+        this.executeWhenReady(() => {
+            if (!this.activeCamera) {
+                return;
+            }
 
-        if (!this._frustumPlanes) {
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-        }
+            if (!this._frustumPlanes) {
+                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            }
 
-        this._evaluateActiveMeshes();
-        this._activeMeshesFrozen = true;
+            this._evaluateActiveMeshes();
+            this._activeMeshesFrozen = true;
 
-        for (var index = 0; index < this._activeMeshes.length; index++) {
-            this._activeMeshes.data[index]._freeze();
-        }
+            for (var index = 0; index < this._activeMeshes.length; index++) {
+                this._activeMeshes.data[index]._freeze();
+            }
+        });
         return this;
     }
 
@@ -3325,7 +3380,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             // Switch to current LOD
-            const meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
@@ -3348,6 +3403,10 @@ export class Scene extends AbstractScene implements IAnimatable {
                 if (mesh._activate(this._renderId, false)) {
                     if (!mesh.isAnInstance) {
                         meshToRender._internalAbstractMeshDataInfo._onlyForInstances = false;
+                    } else {
+                        if (mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
+                            meshToRender = mesh;
+                        }
                     }
                     meshToRender._internalAbstractMeshDataInfo._isActive = true;
                     this._activeMesh(mesh, meshToRender);
@@ -4156,8 +4215,8 @@ export class Scene extends AbstractScene implements IAnimatable {
             var minBox = boundingInfo.boundingBox.minimumWorld;
             var maxBox = boundingInfo.boundingBox.maximumWorld;
 
-            Tools.CheckExtends(minBox, min, max);
-            Tools.CheckExtends(maxBox, min, max);
+            Vector3.CheckExtends(minBox, min, max);
+            Vector3.CheckExtends(maxBox, min, max);
         });
 
         return {
@@ -4467,8 +4526,8 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
-        let request = Tools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
+    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
+        const request = FileTools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -4477,12 +4536,54 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /** @hidden */
-    public _loadFileAsync(url: string, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+    public _loadFileAsync(url: string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {
             this._loadFile(url, (data) => {
                 resolve(data);
-            }, undefined, useOfflineSupport, useArrayBuffer, (request, exception) => {
+            }, onProgress, useOfflineSupport, useArrayBuffer, (request, exception) => {
                 reject(exception);
+            });
+        });
+    }
+
+    /** @hidden */
+    public _requestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
+        const request = FileTools.RequestFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
+        this._activeRequests.push(request);
+        request.onCompleteObservable.add((request) => {
+            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
+        });
+        return request;
+    }
+
+    /** @hidden */
+    public _requestFileAsync(url: string, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onOpened?: (request: WebRequest) => void): Promise<string | ArrayBuffer> {
+        return new Promise((resolve, reject) => {
+            this._requestFile(url, (data) => {
+                resolve(data);
+            }, onProgress, useOfflineSupport, useArrayBuffer, (error) => {
+                reject(error);
+            }, onOpened);
+        });
+    }
+
+    /** @hidden */
+    public _readFile(file: File, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
+        const request = FileTools.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
+        this._activeRequests.push(request);
+        request.onCompleteObservable.add((request) => {
+            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
+        });
+        return request;
+    }
+
+    /** @hidden */
+    public _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+        return new Promise((resolve, reject) => {
+            this._readFile(file, (data) => {
+                resolve(data);
+            }, onProgress, useArrayBuffer, (error) => {
+                reject(error);
             });
         });
     }

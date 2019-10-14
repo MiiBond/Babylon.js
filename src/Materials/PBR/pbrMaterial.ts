@@ -2,9 +2,8 @@ import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, se
 import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Color3 } from "../../Maths/math";
+import { Color3 } from "../../Maths/math.color";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import { ColorCurves } from "../../Materials/colorCurves";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -250,10 +249,10 @@ export class PBRMaterial extends PBRBaseMaterial {
      * source material index of refraction (IOR)' / 'destination material IOR.
      */
     public get indexOfRefraction(): number {
-        return  1 / this.subSurface.indexOfRefraction;
+        return 1 / this.subSurface.indexOfRefraction;
     }
     public set indexOfRefraction(value: number) {
-        this.subSurface.indexOfRefraction =  1 / value;
+        this.subSurface.indexOfRefraction = 1 / value;
     }
 
     /**
@@ -373,7 +372,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public adobeGBufferVolumeInfoEnabled = false;
-    
+
     /**
      * BJS is using an harcoded light falloff based on a manually sets up range.
      * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.

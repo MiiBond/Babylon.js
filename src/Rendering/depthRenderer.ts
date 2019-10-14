@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Color4 } from "../Maths/math";
+import { Color4 } from "../Maths/math.color";
 import { Mesh } from "../Meshes/mesh";
 import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -100,6 +100,8 @@ export class DepthRenderer {
             var scene = this._scene;
             var engine = scene.getEngine();
             let material = subMesh.getMaterial();
+
+            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
             if (!material) {
                 return;

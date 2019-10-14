@@ -20,7 +20,7 @@ precision highp float;
 
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
-    #define FROMLINEARSPACE;
+    #define FROMLINEARSPACE
 #endif
 
 #ifdef ADOBE_TRANSPARENCY_G_BUFFER
@@ -802,7 +802,7 @@ float transmission = 0.0;
                 clearCoatNormalW = normalize(texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset).xyz  * 2.0 - 1.0);
                 clearCoatNormalW = normalize(mat3(normalMatrix) * clearCoatNormalW);
             #else
-                clearCoatNormalW = perturbNormal(TBN, vClearCoatBumpUV + uvOffset, clearCoatBumpSampler, vClearCoatBumpInfos.y);
+                clearCoatNormalW = perturbNormal(TBN, texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset).xyz, vClearCoatBumpInfos.y);
             #endif
         #endif
 
@@ -908,7 +908,7 @@ float transmission = 0.0;
     // _____________________________ IBL BRDF + Energy Cons ________________________________
     #if defined(ENVIRONMENTBRDF)
         // BRDF Lookup
-        vec3 environmentBrdf = getBRDFLookup(NdotV, roughness, environmentBrdfSampler);
+        vec3 environmentBrdf = getBRDFLookup(NdotV, roughness);
 
         #ifdef MS_BRDF_ENERGY_CONSERVATION
             vec3 energyConservationFactor = getEnergyConservationFactor(specularEnvironmentR0, environmentBrdf);
@@ -973,11 +973,16 @@ float transmission = 0.0;
     #endif
 
     #ifdef LIGHTMAP
-        vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb;
-        #ifdef GAMMALIGHTMAP
-            lightmapColor = toLinearSpace(lightmapColor);
+        vec4 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset);
+
+        #ifdef RGBDLIGHTMAP
+            lightmapColor.rgb = fromRGBD(lightmapColor);
         #endif
-        lightmapColor *= vLightmapInfos.y;
+
+        #ifdef GAMMALIGHTMAP
+            lightmapColor.rgb = toLinearSpace(lightmapColor.rgb);
+        #endif
+        lightmapColor.rgb *= vLightmapInfos.y;
     #endif
 
     // Direct Lighting Variables
@@ -1036,7 +1041,7 @@ float transmission = 0.0;
     #ifdef CLEARCOAT
         #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
             // BRDF Lookup
-            vec3 environmentClearCoatBrdf = getBRDFLookup(clearCoatNdotV, clearCoatRoughness, environmentBrdfSampler);
+            vec3 environmentClearCoatBrdf = getBRDFLookup(clearCoatNdotV, clearCoatRoughness);
             vec3 clearCoatEnvironmentReflectance = getReflectanceFromBRDFLookup(vec3(vClearCoatRefractionParams.x), environmentClearCoatBrdf);
 
             #ifdef RADIANCEOCCLUSION
@@ -1167,7 +1172,9 @@ float transmission = 0.0;
     // _____________________________ Energy Conservation  ___________________________
     // Apply Energy Conservation.
     #ifndef METALLICWORKFLOW
-        surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+        #ifdef SPECULAR_GLOSSINESS_ENERGY_CONSERVATION
+            surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+        #endif
     #endif
 
     // _____________________________ Irradiance ______________________________________
@@ -1402,9 +1409,9 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
     #ifdef LIGHTMAP
         #ifndef LIGHTMAPEXCLUDED
             #ifdef USELIGHTMAPASSHADOWMAP
-                finalColor.rgb *= lightmapColor;
+                finalColor.rgb *= lightmapColor.rgb;
             #else
-                finalColor.rgb += lightmapColor;
+                finalColor.rgb += lightmapColor.rgb;
             #endif
         #endif
     #endif
