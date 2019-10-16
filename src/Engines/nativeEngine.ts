@@ -1,7 +1,7 @@
 import { Nullable, IndicesArray, DataArray } from "../types";
-import { Engine, EngineCapabilities } from "../Engines/engine";
+import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Texture } from "../Materials/Textures/texture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -19,6 +19,9 @@ import { IPipelineContext } from './IPipelineContext';
 import { WebRequest } from '../Misc/webRequest';
 import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
 import { Logger } from "../Misc/logger";
+import { Constants } from './constants';
+import { ThinEngine } from './thinEngine';
+import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 
 interface INativeEngine {
     requestAnimationFrame(callback: () => void): void;
@@ -78,9 +81,10 @@ interface INativeEngine {
     setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
 
-    createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMipMaps: boolean): WebGLFramebuffer;
-    bindFrameBuffer(frameBuffer: WebGLFramebuffer): void;
-    unbindFrameBuffer(frameBuffer: WebGLFramebuffer): void;
+    createFramebuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMipMaps: boolean): WebGLFramebuffer;
+    deleteFramebuffer(framebuffer: WebGLFramebuffer): void;
+    bindFramebuffer(framebuffer: WebGLFramebuffer): void;
+    unbindFramebuffer(framebuffer: WebGLFramebuffer): void;
 
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
     draw(fillMode: number, vertexStart: number, vertexCount: number): void;
@@ -155,6 +159,17 @@ class NativeTextureFormat {
 }
 
 /** @hidden */
+class NativeTexture extends InternalTexture {
+    public getInternalTexture(): InternalTexture {
+        return this;
+    }
+
+    public getViewCount(): number {
+        return 1;
+    }
+}
+
+/** @hidden */
 declare var nativeEngine: INativeEngine;
 
 /** @hidden */
@@ -174,46 +189,42 @@ export class NativeEngine extends Engine {
         // TODO: Initialize this more correctly based on the hardware capabilities.
         // Init caps
 
-        this._caps = new EngineCapabilities();
-        this._caps.maxTexturesImageUnits = 16;
-        this._caps.maxVertexTextureImageUnits = 16;
-        this._caps.maxTextureSize = 512;
-        this._caps.maxCubemapTextureSize = 512;
-        this._caps.maxRenderTextureSize = 512;
-        this._caps.maxVertexAttribs = 16;
-        this._caps.maxVaryingVectors = 16;
-        this._caps.maxFragmentUniformVectors = 16;
-        this._caps.maxVertexUniformVectors = 16;
-
-        // Extensions
-        this._caps.standardDerivatives = true;
-
-        this._caps.astc = null;
-        this._caps.s3tc = null;
-        this._caps.pvrtc = null;
-        this._caps.etc1 = null;
-        this._caps.etc2 = null;
-
-        this._caps.maxAnisotropy = 16;  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
-        this._caps.uintIndices = false;
-        this._caps.fragmentDepthSupported = false;
-        this._caps.highPrecisionShaderSupported = true;
-
-        this._caps.colorBufferFloat = false;
-        this._caps.textureFloat = false;
-        this._caps.textureFloatLinearFiltering = false;
-        this._caps.textureFloatRender = false;
-
-        this._caps.textureHalfFloat = false;
-        this._caps.textureHalfFloatLinearFiltering = false;
-        this._caps.textureHalfFloatRender = false;
-
-        this._caps.textureLOD = true;
-        this._caps.drawBuffersExtension = false;
-
-        this._caps.depthTextureExtension = false;
-        this._caps.vertexArrayObject = true;
-        this._caps.instancedArrays = false;
+        this._caps = {
+            maxTexturesImageUnits: 16,
+            maxVertexTextureImageUnits: 16,
+            maxCombinedTexturesImageUnits: 32,
+            maxTextureSize: 512,
+            maxCubemapTextureSize: 512,
+            maxRenderTextureSize: 512,
+            maxVertexAttribs: 16,
+            maxVaryingVectors: 16,
+            maxFragmentUniformVectors: 16,
+            maxVertexUniformVectors: 16,
+            standardDerivatives: true,
+            astc: null,
+            pvrtc: null,
+            etc1: null,
+            etc2: null,
+            maxAnisotropy: 16,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
+            uintIndices: false,
+            fragmentDepthSupported: false,
+            highPrecisionShaderSupported: true,
+            colorBufferFloat: false,
+            textureFloat: false,
+            textureFloatLinearFiltering: false,
+            textureFloatRender: false,
+            textureHalfFloat: false,
+            textureHalfFloatLinearFiltering: false,
+            textureHalfFloatRender: false,
+            textureLOD: true,
+            drawBuffersExtension: false,
+            depthTextureExtension: false,
+            vertexArrayObject: true,
+            instancedArrays: false,
+            canUseTimestampForTimerQuery: false,
+            blendMinMax: false,
+            maxMSAASamples: 1
+        };
 
         Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
 
@@ -237,9 +248,34 @@ export class NativeEngine extends Engine {
      * Can be used to override the current requestAnimationFrame requester.
      * @hidden
      */
-    protected _queueNewFrame(bindedRenderFunction: any, requester: any): number {
-        this._native.requestAnimationFrame(bindedRenderFunction);
+    protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
+        if (requester.requestAnimationFrame) {
+            requester.requestAnimationFrame(bindedRenderFunction);
+        } else {
+            this._native.requestAnimationFrame(bindedRenderFunction);
+        }
         return 0;
+    }
+
+    /**
+     * Override default engine behavior.
+     * @param color
+     * @param backBuffer
+     * @param depth
+     * @param stencil
+     */
+    public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
+        if (this._currentFramebuffer !== framebuffer) {
+            if (this._currentFramebuffer) {
+                this._native.unbindFramebuffer(this._currentFramebuffer!);
+            }
+
+            if (framebuffer) {
+                this._native.bindFramebuffer(framebuffer);
+            }
+
+            this._currentFramebuffer = framebuffer;
+        }
     }
 
     public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
@@ -378,8 +414,8 @@ export class NativeEngine extends Engine {
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
         const program = this._native.createProgram(
-            Engine._concatenateShader(vertexCode, defines),
-            Engine._concatenateShader(fragmentCode, defines)
+            ThinEngine._ConcatenateShader(vertexCode, defines),
+            ThinEngine._ConcatenateShader(fragmentCode, defines)
         );
         this.onAfterShaderCompilationObservable.notifyObservers(this);
         return program;
@@ -529,7 +565,7 @@ export class NativeEngine extends Engine {
 
     /**
      * Sets the current alpha mode
-     * @param mode defines the mode to use (one of the BABYLON.Engine.ALPHA_XXX)
+     * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
      * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      */
@@ -541,7 +577,7 @@ export class NativeEngine extends Engine {
         this._native.setBlendMode(mode);
 
         if (!noDepthWriteChange) {
-            this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
+            this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
         }
 
         this._alphaMode = mode;
@@ -785,7 +821,7 @@ export class NativeEngine extends Engine {
         noMipmap: boolean,
         invertY: boolean,
         scene: Nullable<Scene>,
-        samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | Blob> = null,
@@ -797,7 +833,7 @@ export class NativeEngine extends Engine {
         var fromBlob = url.substr(0, 5) === "blob:";
         var isBase64 = fromData && url.indexOf("base64") !== -1;
 
-        let texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
+        let texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
 
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
@@ -985,7 +1021,7 @@ export class NativeEngine extends Engine {
         lodOffset: number = 0,
         fallback: Nullable<InternalTexture> = null): InternalTexture
     {
-        var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
+        var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
         texture.url = rootUrl;
         texture.generateMipMaps = !noMipmap;
@@ -1022,8 +1058,8 @@ export class NativeEngine extends Engine {
                 texture._lodGenerationScale = specularInfo.lodGenerationScale;
                 const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(data, info);
 
-                texture.format = Engine.TEXTUREFORMAT_RGBA;
-                texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                texture.format = Constants.TEXTUREFORMAT_RGBA;
+                texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
                 texture.generateMipMaps = true;
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
@@ -1039,7 +1075,7 @@ export class NativeEngine extends Engine {
                 throw new Error(`Multi-file loading not yet supported.`);
             }
             else {
-                let onInternalError = (request?: WebRequest, exception?: any) => {
+                let onInternalError = (request?: IWebRequest, exception?: any) => {
                     if (onError && request) {
                         onError(request.status + " " + request.statusText, exception);
                     }
@@ -1060,29 +1096,29 @@ export class NativeEngine extends Engine {
     // Returns a NativeFilter.XXXX value.
     private _getSamplingFilter(samplingMode: number): number {
         switch (samplingMode) {
-            case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
+            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
                 return NativeFilter.MINLINEAR_MAGLINEAR_MIPPOINT;
-            case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
+            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
                 return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
-            case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
+            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
                 return NativeFilter.MINPOINT_MAGPOINT_MIPLINEAR;
-            case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
                 return NativeFilter.MINPOINT_MAGPOINT_MIPPOINT;
-            case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
                 return NativeFilter.MINLINEAR_MAGPOINT_MIPPOINT;
-            case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
                 return NativeFilter.MINLINEAR_MAGPOINT_MIPLINEAR;
-            case Engine.TEXTURE_NEAREST_LINEAR:
+            case Constants.TEXTURE_NEAREST_LINEAR:
                 return NativeFilter.MINLINEAR_MAGPOINT_MIPLINEAR;
-            case Engine.TEXTURE_NEAREST_NEAREST:
+            case Constants.TEXTURE_NEAREST_NEAREST:
                 return NativeFilter.MINPOINT_MAGPOINT_MIPPOINT;
-            case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
                 return NativeFilter.MINPOINT_MAGLINEAR_MIPPOINT;
-            case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
                 return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
-            case Engine.TEXTURE_LINEAR_LINEAR:
+            case Constants.TEXTURE_LINEAR_LINEAR:
                 return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
-            case Engine.TEXTURE_LINEAR_NEAREST:
+            case Constants.TEXTURE_LINEAR_NEAREST:
                 return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
             default:
                 throw new Error("Unexpected sampling mode: " + samplingMode + ".");
@@ -1090,10 +1126,10 @@ export class NativeEngine extends Engine {
     }
 
     private static _GetNativeTextureFormat(format: number, type: number): number {
-        if (format == Engine.TEXTUREFORMAT_RGBA && type == Engine.TEXTURETYPE_UNSIGNED_INT) {
+        if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
             return NativeTextureFormat.RGBA8;
         }
-        else if (format == Engine.TEXTUREFORMAT_RGBA && type == Engine.TEXTURETYPE_FLOAT) {
+        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
             return NativeTextureFormat.RGBA32F;
         }
         else {
@@ -1101,44 +1137,44 @@ export class NativeEngine extends Engine {
         }
     }
 
-    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
+    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): NativeTexture {
         let fullOptions = new RenderTargetCreationOptions();
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
             fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
             fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-            fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
-            fullOptions.samplingMode = options.samplingMode === undefined ? Engine.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            fullOptions.format = options.format === undefined ? Engine.TEXTUREFORMAT_RGBA : options.format;
+            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.generateDepthBuffer = true;
             fullOptions.generateStencilBuffer = false;
-            fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-            fullOptions.samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
-            fullOptions.format = Engine.TEXTUREFORMAT_RGBA;
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+            fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
         }
 
-        if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
+        var texture = new NativeTexture(this, InternalTextureSource.RenderTarget);
 
         var width = (<{ width: number, height: number }>size).width || <number>size;
         var height = (<{ width: number, height: number }>size).height || <number>size;
 
-        if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
-        var framebuffer = this._native.createFrameBuffer(
+        var framebuffer = this._native.createFramebuffer(
             texture._webGLTexture!,
             width,
             height,
@@ -1188,7 +1224,7 @@ export class NativeEngine extends Engine {
             throw new Error("forceFullscreenViewport for frame buffers not yet supported in NativeEngine.");
         }
 
-        this._native.bindFrameBuffer(texture._framebuffer!);
+        this._bindUnboundFramebuffer(texture._framebuffer);
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
@@ -1199,7 +1235,8 @@ export class NativeEngine extends Engine {
         if (onBeforeUnbind) {
             onBeforeUnbind();
         }
-        this._native.unbindFrameBuffer(texture._framebuffer!);
+
+        this._bindUnboundFramebuffer(null);
     }
 
     public createDynamicVertexBuffer(data: DataArray): DataBuffer {
@@ -1241,7 +1278,7 @@ export class NativeEngine extends Engine {
         if ((<VideoTexture>texture).video) {
             this._activeChannel = channel;
             (<VideoTexture>texture).update();
-        } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
+        } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) { // Delay loading
             texture.delayLoad();
             return false;
         }
@@ -1297,11 +1334,11 @@ export class NativeEngine extends Engine {
     // Returns a NativeAddressMode.XXX value.
     private _getAddressMode(wrapMode: number): number {
         switch (wrapMode) {
-            case Engine.TEXTURE_WRAP_ADDRESSMODE:
+            case Constants.TEXTURE_WRAP_ADDRESSMODE:
                 return NativeAddressMode.WRAP;
-            case Engine.TEXTURE_CLAMP_ADDRESSMODE:
+            case Constants.TEXTURE_CLAMP_ADDRESSMODE:
                 return NativeAddressMode.CLAMP;
-            case Engine.TEXTURE_MIRROR_ADDRESSMODE:
+            case Constants.TEXTURE_MIRROR_ADDRESSMODE:
                 return NativeAddressMode.MIRROR;
             default:
                 throw new Error("Unexpected wrap mode: " + wrapMode + ".");

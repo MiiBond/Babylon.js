@@ -25,6 +25,7 @@ import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { ShadowLight, IShadowLight } from 'babylonjs/Lights/shadowLight';
 import { CubeTexture } from 'babylonjs/Materials/Textures/cubeTexture';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
+import { HemisphericLight } from 'babylonjs/Lights/hemisphericLight';
 import { Scalar } from 'babylonjs/Maths/math.scalar';
 import { SpotLight } from 'babylonjs/Lights/spotLight';
 import { PointLight } from 'babylonjs/Lights/pointLight';
@@ -35,6 +36,7 @@ import { Behavior } from 'babylonjs/Behaviors/behavior';
 import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
 import { Scene } from 'babylonjs/scene';
 import { ShadowGenerator } from 'babylonjs/Lights/Shadows/shadowGenerator';
+import { Constants } from 'babylonjs/Engines/constants';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -1208,7 +1210,7 @@ export class SceneManager {
 
         if (!lightKeys.length) {
             if (!this.scene.lights.length) {
-                this.scene.createDefaultLight(true);
+                new HemisphericLight("default light", Vector3.Up(), this.scene);
             }
         } else {
 
@@ -1458,17 +1460,17 @@ export class SceneManager {
         this._hdrSupport = enableHDR && !!(linearFloatTargets || linearHalfFloatTargets);
 
         if (linearHalfFloatTargets) {
-            this._defaultHighpTextureType = Engine.TEXTURETYPE_HALF_FLOAT;
+            this._defaultHighpTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
             this._shadowGeneratorBias = 0.002;
         } else if (linearFloatTargets) {
-            this._defaultHighpTextureType = Engine.TEXTURETYPE_FLOAT;
+            this._defaultHighpTextureType = Constants.TEXTURETYPE_FLOAT;
             this._shadowGeneratorBias = 0.001;
         } else {
-            this._defaultHighpTextureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            this._defaultHighpTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
             this._shadowGeneratorBias = 0.001;
         }
 
-        this._defaultPipelineTextureType = this._hdrSupport ? this._defaultHighpTextureType : Engine.TEXTURETYPE_UNSIGNED_INT;
+        this._defaultPipelineTextureType = this._hdrSupport ? this._defaultHighpTextureType : Constants.TEXTURETYPE_UNSIGNED_INT;
     }
 
     /**

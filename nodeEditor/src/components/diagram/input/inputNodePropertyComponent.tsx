@@ -4,9 +4,9 @@ import { Vector2PropertyTabComponent } from '../../propertyTab/properties/vector
 import { Vector3PropertyTabComponent } from '../../propertyTab/properties/vector3PropertyTabComponent';
 import { GlobalState } from '../../../globalState';
 import { InputNodeModel } from './inputNodeModel';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { OptionsLineComponent } from '../../../sharedComponents/optionsLineComponent';
-import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/nodeMaterialSystemValues';
+import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/Enums/nodeMaterialSystemValues';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { Color3PropertyTabComponent } from '../../propertyTab/properties/color3PropertyTabComponent';
 import { FloatPropertyTabComponent } from '../../propertyTab/properties/floatPropertyTabComponent';
@@ -51,7 +51,7 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                         }        
                         {
                             !cantDisplaySlider &&
-                            <SliderLineComponent label="Value" target={inputBlock} propertyName="value" step={0.1} minimum={inputBlock.min} maximum={inputBlock.max} onChange={() => {
+                            <SliderLineComponent label="Value" target={inputBlock} propertyName="value" step={(inputBlock.max - inputBlock.min) / 100.0} minimum={inputBlock.min} maximum={inputBlock.max} onChange={() => {
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             }}/>
                         }
@@ -102,6 +102,9 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     { label: "None", value: AnimatedInputBlockTypes.None },
                     { label: "Time", value: AnimatedInputBlockTypes.Time },
                 ];
+                systemValuesOptions = [ 
+                    { label: "Delta time", value: NodeMaterialSystemValues.DeltaTime }
+                ]
                 break;      
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 systemValuesOptions = [
@@ -172,7 +175,16 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     {
                         inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
                         <CheckBoxLineComponent label="Visible in the Inspector" target={inputBlock} propertyName="visibleInInspector"/>
-                    }                 
+                    }           
+                    {
+                        inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
+                        <CheckBoxLineComponent label="IsConstant" target={inputBlock} propertyName="isConstant"
+                            onValueChanged={() => {
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            }}
+                        />
+                    }                             
                     <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock} 
                         noDirectUpdate={true}
                         getSelection={(block) => {

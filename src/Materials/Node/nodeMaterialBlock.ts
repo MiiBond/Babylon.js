@@ -1,9 +1,9 @@
-import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from './nodeMaterialBuildState';
 import { Nullable } from '../../types';
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
-import { Effect, EffectFallbacks } from '../effect';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
+import { Effect } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
 import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
@@ -11,6 +11,7 @@ import { InputBlock } from './Blocks/Input/inputBlock';
 import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
 import { Scene } from '../../scene';
 import { _TypeStore } from '../../Misc/typeStore';
+import { EffectFallbacks } from '../effectFallbacks';
 
 /**
  * Defines a block that can be used inside a node based material
@@ -320,8 +321,9 @@ export class NodeMaterialBlock {
      * @param state defines the state to update
      * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
+     * @param uniformBuffers defines the list of uniform buffer names
      */
-    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         // Do nothing
     }
 
@@ -335,6 +337,16 @@ export class NodeMaterialBlock {
     }
 
     /**
+     * Initialize defines for shader compilation
+     * @param mesh defines the mesh to be rendered
+     * @param nodeMaterial defines the node material requesting the update
+     * @param defines defines the material defines to update
+     * @param useInstances specifies that instances should be used
+     */
+    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+    }
+
+    /**
      * Update defines for shader compilation
      * @param mesh defines the mesh to be rendered
      * @param nodeMaterial defines the node material requesting the update
@@ -342,17 +354,6 @@ export class NodeMaterialBlock {
      * @param useInstances specifies that instances should be used
      */
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
-        // Do nothing
-    }
-
-    /**
-     * Initialize defines for shader compilation
-     * @param mesh defines the mesh to be rendered
-     * @param nodeMaterial defines the node material requesting the update
-     * @param defines defines the material defines to be prepared
-     * @param useInstances specifies that instances should be used
-     */
-    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
         // Do nothing
     }
 
@@ -426,6 +427,15 @@ export class NodeMaterialBlock {
             return true;
         }
 
+        if (!this.isInput) {
+            /** Prepare outputs */
+            for (var output of this._outputs) {
+                if (!output.associatedVariableName) {
+                    output.associatedVariableName = state._getFreeVariableName(output.name);
+                }
+            }
+        }
+
         // Check if "parent" blocks are compiled
         for (var input of this._inputs) {
             if (!input.connectedPoint) {
@@ -458,24 +468,6 @@ export class NodeMaterialBlock {
         // Logs
         if (state.sharedData.verbose) {
             console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
-        }
-
-        if (!this.isInput) {
-            /** Prepare outputs */
-            for (var output of this._outputs) {
-                if (this.target !== NodeMaterialBlockTargets.Neutral) {
-                    if ((output.target & this.target!) === 0) {
-                        continue;
-                    }
-                    if ((output.target & state.target!) === 0) {
-                        continue;
-                    }
-                }
-
-                if (!output.associatedVariableName) {
-                    output.associatedVariableName = state._getFreeVariableName(output.name);
-                }
-            }
         }
 
         // Checks final outputs
@@ -630,5 +622,18 @@ export class NodeMaterialBlock {
     /** @hidden */
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
+    }
+
+    /**
+     * Release resources
+     */
+    public dispose() {
+        for (var input of this.inputs) {
+            input.dispose();
+        }
+
+        for (var output of this.outputs) {
+            output.dispose();
+        }
     }
 }

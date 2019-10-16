@@ -22,20 +22,36 @@ export class GlobalState {
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onErrorMessageDialogRequiredObservable = new Observable<string>();
+    onIsLoadingChanged = new Observable<boolean>();
     onPreviewCommandActivated = new Observable<void>();
+    onLightUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
+    onBackFaceCullingChanged = new Observable<void>();
+    onDepthPrePassChanged = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
     previewMeshType: PreviewMeshType;
     previewMeshFile: File;
     rotatePreview: boolean;
     backgroundColor: Color4;
+    backFaceCulling: boolean;
+    depthPrePass: boolean;
     blockKeyboardEvents = false;
+    hemisphericLight: boolean;
+    directionalLight0: boolean;
+    directionalLight1: boolean;
+    controlCamera: boolean;    
     
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
     public constructor() {
         this.previewMeshType = DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box);
+        this.backFaceCulling = DataStorage.ReadBoolean("BackFaceCulling", true);
+        this.depthPrePass = DataStorage.ReadBoolean("DepthPrePass", false);
+        this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", true);
+        this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
+        this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
+        this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 
         let r = DataStorage.ReadNumber("BackgroundColorR", 0.37);
         let g = DataStorage.ReadNumber("BackgroundColorG", 0.37);

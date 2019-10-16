@@ -368,10 +368,8 @@ export class Vector2 {
             return this;
         }
 
-        var num = 1.0 / len;
-
-        this.x *= num;
-        this.y *= num;
+        this.x /= len;
+        this.y /= len;
 
         return this;
     }
@@ -1158,6 +1156,16 @@ export class Vector3 {
         MathTmp.Vector3[0].rotateByQuaternionToRef(quaternion, MathTmp.Vector3[0]);
         point.addToRef(MathTmp.Vector3[0], result);
         return result;
+    }
+
+    /**
+     * Returns a new Vector3 as the cross product of the current vector and the "other" one
+     * The cross product is then orthogonal to both current and "other"
+     * @param other defines the right operand
+     * @returns the cross product
+     */
+    public cross(other: Vector3) {
+        return Vector3.Cross(this, other);
     }
 
     /**

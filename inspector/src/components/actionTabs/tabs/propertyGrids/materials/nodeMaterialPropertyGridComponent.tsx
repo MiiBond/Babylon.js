@@ -15,10 +15,10 @@ import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
 import { Vector4LineComponent } from '../../../lines/vector4LineComponent';
 import { Vector2LineComponent } from '../../../lines/vector2LineComponent';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -55,7 +55,13 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 {
                     textureBlocks.map((textureBlock, i) => {
                         return (
-                            <TextureLinkLineComponent label={textureBlock.name} key={textureBlock.texture!.uniqueId + i} texture={textureBlock.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                            <TextureLinkLineComponent label={textureBlock.name} 
+                                key={i} 
+                                texture={textureBlock.texture} 
+                                material={material} 
+                                onTextureCreated={texture => textureBlock.texture = texture}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable} 
+                                onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                         )
                     })
                 }

@@ -1,4 +1,4 @@
-import { AlphaTestBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock';
+import { DiscardBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/discardBlock';
 import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
 import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
 import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
@@ -23,14 +23,16 @@ import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
 import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
 import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
 import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/fresnelBlock';
 import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
+import { NLerpBlock } from 'babylonjs/Materials/Node/Blocks/nLerpBlock';
 import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
 import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
 import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
+import { SmoothStepBlock } from 'babylonjs/Materials/Node/Blocks/smoothStepBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/nodeMaterialSystemValues';
+import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/Enums/nodeMaterialSystemValues';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 import { OneMinusBlock } from 'babylonjs/Materials/Node/Blocks/oneMinusBlock';
 import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
@@ -40,11 +42,21 @@ import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
 import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/perturbNormalBlock';
 import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
 import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
+import { FrontFacingBlock } from 'babylonjs/Materials/Node/Blocks/frontFacingBlock';
 import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
+import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
 import { Scene } from 'babylonjs/scene';
+import { RandomNumberBlock } from 'babylonjs/Materials/Node/Blocks/randomNumberBlock';
+import { ReplaceColorBlock } from 'babylonjs/Materials/Node/Blocks/replaceColorBlock';
+import { PosterizeBlock } from 'babylonjs/Materials/Node/Blocks/posterizeBlock';
+import { ArcTan2Block } from 'babylonjs/Materials/Node/Blocks/arcTan2Block';
+import { ReciprocalBlock } from 'babylonjs/Materials/Node/Blocks/reciprocalBlock';
+import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+import { WaveBlock, WaveBlockKind } from 'babylonjs/Materials/Node/Blocks/waveBlock';
+import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 
 export class BlockTools {
-    public static GetBlockFromString(data: string, scene: Scene) {
+    public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
             case "BonesBlock":
                 return new BonesBlock("Bones");
@@ -52,8 +64,8 @@ export class BlockTools {
                 return new InstancesBlock("Instances");
             case "MorphTargetsBlock":
                 return new MorphTargetsBlock("MorphTargets");
-            case "AlphaTestBlock":
-                return new AlphaTestBlock("AlphaTest");
+            case "DiscardBlock":
+                return new DiscardBlock("Discard");
             case "ImageProcessingBlock":
                 return new ImageProcessingBlock("ImageProcessing");
             case "ColorMergerBlock":
@@ -67,7 +79,7 @@ export class BlockTools {
             case "TextureBlock":
                 return new TextureBlock("Texture");
             case "ReflectionTextureBlock":
-                return new ReflectionTextureBlock("Texture");                
+                return new ReflectionTextureBlock("Reflection texture");                
             case "LightBlock":
                 return new LightBlock("Lights");
             case "FogBlock":
@@ -86,6 +98,8 @@ export class BlockTools {
                 return new CrossBlock("Cross");
             case "DotBlock":
                 return new DotBlock("Dot");
+            case "PowBlock":
+                return new PowBlock("Pow");
             case "MultiplyBlock":
                 return new MultiplyBlock("Multiply");
             case "TransformBlock":
@@ -100,14 +114,20 @@ export class BlockTools {
                 return new FresnelBlock("Fresnel");
             case "LerpBlock":
                 return new LerpBlock("Lerp");
+            case "NLerpBlock":
+                return new NLerpBlock("NLerp");
             case "DivideBlock":
                 return new DivideBlock("Divide");
             case "SubtractBlock":
                 return new SubtractBlock("Subtract"); 
             case "StepBlock":
                 return new StepBlock("Step");        
+            case "SmoothStepBlock":
+                return new SmoothStepBlock("Smooth step");        
             case "OneMinusBlock":
-                return new OneMinusBlock("One minus");      
+                return new OneMinusBlock("One minus");          
+            case "ReciprocalBlock":
+                return new ReciprocalBlock("Reciprocal");    
             case "ViewDirectionBlock":
                 return new ViewDirectionBlock("View direction");    
             case "LightInformationBlock":
@@ -125,7 +145,19 @@ export class BlockTools {
             case "NegateBlock":
                 return new NegateBlock("Negate");                                     
             case "PerturbNormalBlock":                                          
-                return new PerturbNormalBlock("Perturb normal");        
+                return new PerturbNormalBlock("Perturb normal");                     
+            case "RandomNumberBlock":                                          
+                return new RandomNumberBlock("Random number");         
+            case "ReplaceColorBlock":                                          
+                return new ReplaceColorBlock("Replace color");      
+            case "PosterizeBlock":                                          
+                return new PosterizeBlock("Posterize");                              
+            case "ArcTan2Block":                                          
+                return new ArcTan2Block("ArcTan2");                            
+            case "GradientBlock":                                          
+                return new GradientBlock("Gradient");                             
+            case "FrontFacingBlock":                                          
+                return new FrontFacingBlock("Front facing");            
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;
@@ -140,7 +172,47 @@ export class BlockTools {
                 let absBlock = new TrigonometryBlock("Abs");
                 absBlock.operation = TrigonometryBlockOperations.Abs;
                 return absBlock;
+            }            
+            case "SqrtBlock": {
+                let sqrtBlock = new TrigonometryBlock("Sqrt");
+                sqrtBlock.operation = TrigonometryBlockOperations.Sqrt;
+                return sqrtBlock;
             }
+            case "ArcCosBlock": {
+                let acosBlock = new TrigonometryBlock("ArcCos");
+                acosBlock.operation = TrigonometryBlockOperations.ArcCos;
+                return acosBlock;
+            }
+            case "ArcSinBlock": {
+                let asinBlock = new TrigonometryBlock("ArcSin");
+                asinBlock.operation = TrigonometryBlockOperations.ArcSin;
+                return asinBlock;
+            }
+            case "TanBlock": {
+                let tanBlock = new TrigonometryBlock("Tan");
+                tanBlock.operation = TrigonometryBlockOperations.Tan;
+                return tanBlock;
+            }
+            case "ArcTanBlock": {
+                let atanBlock = new TrigonometryBlock("ArcTan");
+                atanBlock.operation = TrigonometryBlockOperations.ArcTan;
+                return atanBlock;
+            }
+            case "FractBlock": {
+                let fractBlock = new TrigonometryBlock("Fract");
+                fractBlock.operation = TrigonometryBlockOperations.Fract;
+                return fractBlock;
+            }
+            case "SignBlock": {
+                let signBlock = new TrigonometryBlock("Sign");
+                signBlock.operation = TrigonometryBlockOperations.Sign;
+                return signBlock;
+            }            
+            case "LogBlock": {
+                let logBlock = new TrigonometryBlock("Log");
+                logBlock.operation = TrigonometryBlockOperations.Log;
+                return logBlock;
+            }                                                            
             case "ExpBlock": {
                 let expBlock = new TrigonometryBlock("Exp");
                 expBlock.operation = TrigonometryBlockOperations.Exp;
@@ -151,6 +223,16 @@ export class BlockTools {
                 exp2Block.operation = TrigonometryBlockOperations.Exp2;
                 return exp2Block;
             }
+            case "DegreesToRadiansBlock": {
+                let degreesToRadiansBlock = new TrigonometryBlock("Degrees to radians");
+                degreesToRadiansBlock.operation = TrigonometryBlockOperations.Radians;
+                return degreesToRadiansBlock;
+            }
+            case "RadiansToDegreesBlock": {
+                let radiansToDegreesBlock = new TrigonometryBlock("Radians to degrees");
+                radiansToDegreesBlock.operation = TrigonometryBlockOperations.Degrees;
+                return radiansToDegreesBlock;
+            }                        
             case "RoundBlock": {
                 let roundBlock = new TrigonometryBlock("Round");
                 roundBlock.operation = TrigonometryBlockOperations.Round;
@@ -166,6 +248,21 @@ export class BlockTools {
                 floorBlock.operation = TrigonometryBlockOperations.Floor;
                 return floorBlock;
             }       
+            case "SawToothWaveBlock": {
+                let sawToothWaveBlock = new WaveBlock("SawTooth wave");
+                sawToothWaveBlock.kind = WaveBlockKind.SawTooth;
+                return sawToothWaveBlock;
+            }     
+            case "SquareWaveBlock": {
+                let squareWaveBlock = new WaveBlock("Square wave");
+                squareWaveBlock.kind = WaveBlockKind.Square;
+                return squareWaveBlock;
+            }     
+            case "TriangleWaveBlock": {
+                let triangleWaveBlock = new WaveBlock("Triangle wave");
+                triangleWaveBlock.kind = WaveBlockKind.Triangle;
+                return triangleWaveBlock;
+            }
             case "WorldMatrixBlock": {
                 let worldMatrixBlock = new InputBlock("World");
                 worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
@@ -246,6 +343,51 @@ export class BlockTools {
                 timeBlock.animationType = AnimatedInputBlockTypes.Time;
                 return timeBlock;
             }   
+            case "DeltaTimeBlock": {
+                let deltaTimeBlock = new InputBlock("Delta time");                
+                deltaTimeBlock.setAsSystemValue(NodeMaterialSystemValues.DeltaTime);
+                return deltaTimeBlock;
+            }      
+            case "WorldPositionBlock": {
+                let worldPositionBlock = nodeMaterial.getInputBlockByPredicate(b => b.isAttribute && b.name === "position");                
+                if (!worldPositionBlock) {
+                    worldPositionBlock = new InputBlock("position");
+                    worldPositionBlock.setAsAttribute("position");
+                }
+
+                let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate(b => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);  
+
+                if (!worldMatrixBlock) {
+                    worldMatrixBlock = new InputBlock("World");
+                    worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
+                }
+
+                let transformBlock = new TransformBlock("World position");
+                worldPositionBlock.connectTo(transformBlock);
+                worldMatrixBlock.connectTo(transformBlock);
+
+                return transformBlock;
+            }        
+            case "WorldNormalBlock": {
+                let worldNormalBlock = nodeMaterial.getInputBlockByPredicate(b => b.isAttribute && b.name === "normal");                
+                if (!worldNormalBlock) {
+                    worldNormalBlock = new InputBlock("normal");
+                    worldNormalBlock.setAsAttribute("normal");
+                }
+
+                let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate(b => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);  
+
+                if (!worldMatrixBlock) {
+                    worldMatrixBlock = new InputBlock("World");
+                    worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
+                }
+
+                let transformBlock = new TransformBlock("World normal");
+                worldNormalBlock.connectTo(transformBlock);
+                worldMatrixBlock.connectTo(transformBlock);
+
+                return transformBlock;
+            }                  
         }
 
         return null;
@@ -255,7 +397,7 @@ export class BlockTools {
         let color = "Red";
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-				color = "#ca9e27";
+				color = "#cb9e27";
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:                
 				color = "#16bcb1";

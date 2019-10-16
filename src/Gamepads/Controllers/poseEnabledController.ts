@@ -6,7 +6,6 @@ import { TransformNode } from "../../Meshes/transformNode";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { EngineStore } from "../../Engines/engineStore";
 
 import { Gamepad } from "../../Gamepads/gamepad";
@@ -232,9 +231,6 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
      * Updates the state of the pose enbaled controller and mesh based on the current position and rotation of the controller
      */
     public update() {
-        if (this.isXR) {
-            return;
-        }
         super.update();
         this._updatePoseAndMesh();
     }

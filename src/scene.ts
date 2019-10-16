@@ -54,6 +54,7 @@ import { Color4, Color3 } from './Maths/math.color';
 import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
+import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -329,6 +330,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Defines the HTML default cursor to use (empty by default)
      */
     public defaultCursor: string = "";
+    /**
+     * Defines wether cursors are handled by the scene.
+     */
+    public doNotHandleCursors = false;
     /**
      * This is used to call preventDefault() on pointer down
      * in order to block unwanted artifacts like system double clicks
@@ -1999,6 +2004,10 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         newMesh._resyncLightSources();
 
+        if (!newMesh.parent) {
+            newMesh._addToSceneRootNodes();
+        }
+
         this.onNewMeshAddedObservable.notifyObservers(newMesh);
 
         if (recursive) {
@@ -2020,6 +2029,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             // Remove from the scene if mesh found
             this.meshes[index] = this.meshes[this.meshes.length - 1];
             this.meshes.pop();
+
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
 
         this.onMeshRemovedObservable.notifyObservers(toRemove);
@@ -2038,6 +2051,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     public addTransformNode(newTransformNode: TransformNode) {
         newTransformNode._indexInSceneTransformNodesArray = this.transformNodes.length;
         this.transformNodes.push(newTransformNode);
+
+        if (!newTransformNode.parent) {
+            newTransformNode._addToSceneRootNodes();
+        }
 
         this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
     }
@@ -2058,6 +2075,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             toRemove._indexInSceneTransformNodesArray = -1;
             this.transformNodes.pop();
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
 
         this.onTransformNodeRemovedObservable.notifyObservers(toRemove);
@@ -2112,6 +2132,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             // Remove from the scene if mesh found
             this.lights.splice(index, 1);
             this.sortLightsByPriority();
+
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
         this.onLightRemovedObservable.notifyObservers(toRemove);
         return index;
@@ -2127,6 +2151,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (index !== -1) {
             // Remove from the scene if mesh found
             this.cameras.splice(index, 1);
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
         // Remove from activeCameras
         var index2 = this.activeCameras.indexOf(toRemove);
@@ -2267,6 +2294,10 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.lights.push(newLight);
         this.sortLightsByPriority();
 
+        if (!newLight.parent) {
+            newLight._addToSceneRootNodes();
+        }
+
         // Add light to all meshes (To support if the light is removed and then readded)
         for (var mesh of this.meshes) {
             if (mesh.lightSources.indexOf(newLight) === -1) {
@@ -2294,6 +2325,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     public addCamera(newCamera: Camera): void {
         this.cameras.push(newCamera);
         this.onNewCameraAddedObservable.notifyObservers(newCamera);
+
+        if (!newCamera.parent) {
+            newCamera._addToSceneRootNodes();
+        }
     }
 
     /**
@@ -3170,7 +3205,6 @@ export class Scene extends AbstractScene implements IAnimatable {
                 }
 
                 // Dispatch
-                this._activeIndices.addCount(subMesh.indexCount, false);
                 this._renderingManager.dispatch(subMesh, mesh, material);
             }
         }
@@ -3282,20 +3316,22 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public freezeActiveMeshes(): Scene {
-        if (!this.activeCamera) {
-            return this;
-        }
+        this.executeWhenReady(() => {
+            if (!this.activeCamera) {
+                return;
+            }
 
-        if (!this._frustumPlanes) {
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-        }
+            if (!this._frustumPlanes) {
+                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            }
 
-        this._evaluateActiveMeshes();
-        this._activeMeshesFrozen = true;
+            this._evaluateActiveMeshes();
+            this._activeMeshesFrozen = true;
 
-        for (var index = 0; index < this._activeMeshes.length; index++) {
-            this._activeMeshes.data[index]._freeze();
-        }
+            for (var index = 0; index < this._activeMeshes.length; index++) {
+                this._activeMeshes.data[index]._freeze();
+            }
+        });
         return this;
     }
 
@@ -3374,7 +3410,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             // Switch to current LOD
-            const meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
@@ -3397,6 +3433,10 @@ export class Scene extends AbstractScene implements IAnimatable {
                 if (mesh._activate(this._renderId, false)) {
                     if (!mesh.isAnInstance) {
                         meshToRender._internalAbstractMeshDataInfo._onlyForInstances = false;
+                    } else {
+                        if (mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
+                            meshToRender = mesh;
+                        }
                     }
                     meshToRender._internalAbstractMeshDataInfo._isActive = true;
                     this._activeMesh(mesh, meshToRender);
@@ -4516,8 +4556,8 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
-        let request = Tools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
+    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
+        const request = FileTools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -4526,12 +4566,54 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /** @hidden */
-    public _loadFileAsync(url: string, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+    public _loadFileAsync(url: string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {
             this._loadFile(url, (data) => {
                 resolve(data);
-            }, undefined, useOfflineSupport, useArrayBuffer, (request, exception) => {
+            }, onProgress, useOfflineSupport, useArrayBuffer, (request, exception) => {
                 reject(exception);
+            });
+        });
+    }
+
+    /** @hidden */
+    public _requestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
+        const request = FileTools.RequestFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
+        this._activeRequests.push(request);
+        request.onCompleteObservable.add((request) => {
+            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
+        });
+        return request;
+    }
+
+    /** @hidden */
+    public _requestFileAsync(url: string, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onOpened?: (request: WebRequest) => void): Promise<string | ArrayBuffer> {
+        return new Promise((resolve, reject) => {
+            this._requestFile(url, (data) => {
+                resolve(data);
+            }, onProgress, useOfflineSupport, useArrayBuffer, (error) => {
+                reject(error);
+            }, onOpened);
+        });
+    }
+
+    /** @hidden */
+    public _readFile(file: File, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
+        const request = FileTools.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
+        this._activeRequests.push(request);
+        request.onCompleteObservable.add((request) => {
+            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
+        });
+        return request;
+    }
+
+    /** @hidden */
+    public _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+        return new Promise((resolve, reject) => {
+            this._readFile(file, (data) => {
+                resolve(data);
+            }, onProgress, useArrayBuffer, (error) => {
+                reject(error);
             });
         });
     }

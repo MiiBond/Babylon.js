@@ -97,15 +97,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!**********************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \**********************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \**************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "icon", function() { return icon; });
+/* WEBPACK VAR INJECTION */(function(global, setImmediate) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "icon", function() { return icon; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "noAuto", function() { return noAuto; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "config", function() { return config; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toHtml", function() { return toHtml; });
@@ -116,6 +116,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dom", function() { return dom; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return parse; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findIconDefinition", function() { return findIconDefinition; });
+function _typeof(obj) {
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function (obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
+}
+
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -265,9 +279,11 @@ var DEFAULT_FAMILY_PREFIX = 'fa';
 var DEFAULT_REPLACEMENT_CLASS = 'svg-inline--fa';
 var DATA_FA_I2SVG = 'data-fa-i2svg';
 var DATA_FA_PSEUDO_ELEMENT = 'data-fa-pseudo-element';
+var DATA_FA_PSEUDO_ELEMENT_PENDING = 'data-fa-pseudo-element-pending';
 var DATA_PREFIX = 'data-prefix';
 var DATA_ICON = 'data-icon';
 var HTML_CLASS_I2SVG_BASE_CLASS = 'fontawesome-i2svg';
+var MUTATION_APPROACH_ASYNC = 'async';
 var TAGNAMES_TO_SKIP_FOR_PSEUDOELEMENTS = ['HTML', 'HEAD', 'STYLE', 'SCRIPT'];
 var PRODUCTION = function () {
   try {
@@ -276,10 +292,31 @@ var PRODUCTION = function () {
     return false;
   }
 }();
+var PREFIX_TO_STYLE = {
+  'fas': 'solid',
+  'far': 'regular',
+  'fal': 'light',
+  'fab': 'brands',
+  'fa': 'solid'
+};
+var STYLE_TO_PREFIX = {
+  'solid': 'fas',
+  'regular': 'far',
+  'light': 'fal',
+  'brands': 'fab'
+};
+var LAYERS_TEXT_CLASSNAME = 'fa-layers-text';
+var FONT_FAMILY_PATTERN = /Font Awesome 5 (Solid|Regular|Light|Brands|Free|Pro)/;
+var FONT_WEIGHT_TO_PREFIX = {
+  '900': 'fas',
+  '400': 'far',
+  'normal': 'far',
+  '300': 'fal'
+};
 var oneToTen = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var oneToTwenty = oneToTen.concat([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
 var ATTRIBUTES_WATCHED_FOR_MUTATION = ['class', 'data-prefix', 'data-icon', 'data-fa-transform', 'data-fa-mask'];
-var RESERVED_CLASSES = ['xs', 'sm', 'lg', 'fw', 'ul', 'li', 'border', 'pull-left', 'pull-right', 'spin', 'pulse', 'rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'stack', 'stack-1x', 'stack-2x', 'inverse', 'layers', 'layers-text', 'layers-counter'].concat(oneToTen.map(function (n) {
+var RESERVED_CLASSES = ['xs', 'sm', 'lg', 'fw', 'ul', 'li', 'border', 'pull-left', 'pull-right', 'spin', 'pulse', 'rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both', 'stack', 'stack-1x', 'stack-2x', 'inverse', 'layers', 'layers-text', 'layers-counter'].concat(oneToTen.map(function (n) {
   return "".concat(n, "x");
 })).concat(oneToTwenty.map(function (n) {
   return "w-".concat(n);
@@ -306,7 +343,7 @@ function coerce(val) {
 }
 
 if (DOCUMENT && typeof DOCUMENT.querySelector === 'function') {
-  var attrs = [['data-family-prefix', 'familyPrefix'], ['data-replacement-class', 'replacementClass'], ['data-auto-replace-svg', 'autoReplaceSvg'], ['data-auto-add-css', 'autoAddCss'], ['data-auto-a11y', 'autoA11y'], ['data-search-pseudo-elements', 'searchPseudoElements'], ['data-observe-mutations', 'observeMutations'], ['data-keep-original-source', 'keepOriginalSource'], ['data-measure-performance', 'measurePerformance'], ['data-show-missing-icons', 'showMissingIcons']];
+  var attrs = [['data-family-prefix', 'familyPrefix'], ['data-replacement-class', 'replacementClass'], ['data-auto-replace-svg', 'autoReplaceSvg'], ['data-auto-add-css', 'autoAddCss'], ['data-auto-a11y', 'autoA11y'], ['data-search-pseudo-elements', 'searchPseudoElements'], ['data-observe-mutations', 'observeMutations'], ['data-mutate-approach', 'mutateApproach'], ['data-keep-original-source', 'keepOriginalSource'], ['data-measure-performance', 'measurePerformance'], ['data-show-missing-icons', 'showMissingIcons']];
   attrs.forEach(function (_ref) {
     var _ref2 = _slicedToArray(_ref, 2),
         attr = _ref2[0],
@@ -320,7 +357,7 @@ if (DOCUMENT && typeof DOCUMENT.querySelector === 'function') {
   });
 }
 
-var _default = _objectSpread({
+var _default = {
   familyPrefix: DEFAULT_FAMILY_PREFIX,
   replacementClass: DEFAULT_REPLACEMENT_CLASS,
   autoReplaceSvg: true,
@@ -328,14 +365,17 @@ var _default = _objectSpread({
   autoA11y: true,
   searchPseudoElements: false,
   observeMutations: true,
+  mutateApproach: 'async',
   keepOriginalSource: true,
   measurePerformance: false,
   showMissingIcons: true
-}, initial);
+};
 
-if (!_default.autoReplaceSvg) _default.observeMutations = false;
+var _config = _objectSpread({}, _default, initial);
 
-var config = _objectSpread({}, _default);
+if (!_config.autoReplaceSvg) _config.observeMutations = false;
+
+var config = _objectSpread({}, _config);
 
 WINDOW.FontAwesomeConfig = config;
 
@@ -367,6 +407,295 @@ function domready (fn) {
   if (!IS_DOM) return;
   loaded ? setTimeout(fn, 0) : functions.push(fn);
 }
+
+var PENDING = 'pending';
+var SETTLED = 'settled';
+var FULFILLED = 'fulfilled';
+var REJECTED = 'rejected';
+
+var NOOP = function NOOP() {};
+
+var isNode = typeof global !== 'undefined' && typeof global.process !== 'undefined' && typeof global.process.emit === 'function';
+var asyncSetTimer = typeof setImmediate === 'undefined' ? setTimeout : setImmediate;
+var asyncQueue = [];
+var asyncTimer;
+
+function asyncFlush() {
+  // run promise callbacks
+  for (var i = 0; i < asyncQueue.length; i++) {
+    asyncQueue[i][0](asyncQueue[i][1]);
+  } // reset async asyncQueue
+
+
+  asyncQueue = [];
+  asyncTimer = false;
+}
+
+function asyncCall(callback, arg) {
+  asyncQueue.push([callback, arg]);
+
+  if (!asyncTimer) {
+    asyncTimer = true;
+    asyncSetTimer(asyncFlush, 0);
+  }
+}
+
+function invokeResolver(resolver, promise) {
+  function resolvePromise(value) {
+    resolve(promise, value);
+  }
+
+  function rejectPromise(reason) {
+    reject(promise, reason);
+  }
+
+  try {
+    resolver(resolvePromise, rejectPromise);
+  } catch (e) {
+    rejectPromise(e);
+  }
+}
+
+function invokeCallback(subscriber) {
+  var owner = subscriber.owner;
+  var settled = owner._state;
+  var value = owner._data;
+  var callback = subscriber[settled];
+  var promise = subscriber.then;
+
+  if (typeof callback === 'function') {
+    settled = FULFILLED;
+
+    try {
+      value = callback(value);
+    } catch (e) {
+      reject(promise, e);
+    }
+  }
+
+  if (!handleThenable(promise, value)) {
+    if (settled === FULFILLED) {
+      resolve(promise, value);
+    }
+
+    if (settled === REJECTED) {
+      reject(promise, value);
+    }
+  }
+}
+
+function handleThenable(promise, value) {
+  var resolved;
+
+  try {
+    if (promise === value) {
+      throw new TypeError('A promises callback cannot return that same promise.');
+    }
+
+    if (value && (typeof value === 'function' || _typeof(value) === 'object')) {
+      // then should be retrieved only once
+      var then = value.then;
+
+      if (typeof then === 'function') {
+        then.call(value, function (val) {
+          if (!resolved) {
+            resolved = true;
+
+            if (value === val) {
+              fulfill(promise, val);
+            } else {
+              resolve(promise, val);
+            }
+          }
+        }, function (reason) {
+          if (!resolved) {
+            resolved = true;
+            reject(promise, reason);
+          }
+        });
+        return true;
+      }
+    }
+  } catch (e) {
+    if (!resolved) {
+      reject(promise, e);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+function resolve(promise, value) {
+  if (promise === value || !handleThenable(promise, value)) {
+    fulfill(promise, value);
+  }
+}
+
+function fulfill(promise, value) {
+  if (promise._state === PENDING) {
+    promise._state = SETTLED;
+    promise._data = value;
+    asyncCall(publishFulfillment, promise);
+  }
+}
+
+function reject(promise, reason) {
+  if (promise._state === PENDING) {
+    promise._state = SETTLED;
+    promise._data = reason;
+    asyncCall(publishRejection, promise);
+  }
+}
+
+function publish(promise) {
+  promise._then = promise._then.forEach(invokeCallback);
+}
+
+function publishFulfillment(promise) {
+  promise._state = FULFILLED;
+  publish(promise);
+}
+
+function publishRejection(promise) {
+  promise._state = REJECTED;
+  publish(promise);
+
+  if (!promise._handled && isNode) {
+    global.process.emit('unhandledRejection', promise._data, promise);
+  }
+}
+
+function notifyRejectionHandled(promise) {
+  global.process.emit('rejectionHandled', promise);
+}
+/**
+ * @class
+ */
+
+
+function P(resolver) {
+  if (typeof resolver !== 'function') {
+    throw new TypeError('Promise resolver ' + resolver + ' is not a function');
+  }
+
+  if (this instanceof P === false) {
+    throw new TypeError('Failed to construct \'Promise\': Please use the \'new\' operator, this object constructor cannot be called as a function.');
+  }
+
+  this._then = [];
+  invokeResolver(resolver, this);
+}
+
+P.prototype = {
+  constructor: P,
+  _state: PENDING,
+  _then: null,
+  _data: undefined,
+  _handled: false,
+  then: function then(onFulfillment, onRejection) {
+    var subscriber = {
+      owner: this,
+      then: new this.constructor(NOOP),
+      fulfilled: onFulfillment,
+      rejected: onRejection
+    };
+
+    if ((onRejection || onFulfillment) && !this._handled) {
+      this._handled = true;
+
+      if (this._state === REJECTED && isNode) {
+        asyncCall(notifyRejectionHandled, this);
+      }
+    }
+
+    if (this._state === FULFILLED || this._state === REJECTED) {
+      // already resolved, call callback async
+      asyncCall(invokeCallback, subscriber);
+    } else {
+      // subscribe
+      this._then.push(subscriber);
+    }
+
+    return subscriber.then;
+  },
+  catch: function _catch(onRejection) {
+    return this.then(null, onRejection);
+  }
+};
+
+P.all = function (promises) {
+  if (!Array.isArray(promises)) {
+    throw new TypeError('You must pass an array to Promise.all().');
+  }
+
+  return new P(function (resolve, reject) {
+    var results = [];
+    var remaining = 0;
+
+    function resolver(index) {
+      remaining++;
+      return function (value) {
+        results[index] = value;
+
+        if (! --remaining) {
+          resolve(results);
+        }
+      };
+    }
+
+    for (var i = 0, promise; i < promises.length; i++) {
+      promise = promises[i];
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(resolver(i), reject);
+      } else {
+        results[i] = promise;
+      }
+    }
+
+    if (!remaining) {
+      resolve(results);
+    }
+  });
+};
+
+P.race = function (promises) {
+  if (!Array.isArray(promises)) {
+    throw new TypeError('You must pass an array to Promise.race().');
+  }
+
+  return new P(function (resolve, reject) {
+    for (var i = 0, promise; i < promises.length; i++) {
+      promise = promises[i];
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(resolve, reject);
+      } else {
+        resolve(promise);
+      }
+    }
+  });
+};
+
+P.resolve = function (value) {
+  if (value && _typeof(value) === 'object' && value.constructor === P) {
+    return value;
+  }
+
+  return new P(function (resolve) {
+    resolve(value);
+  });
+};
+
+P.reject = function (reason) {
+  return new P(function (resolve, reject) {
+    reject(reason);
+  });
+};
+
+var picked = typeof Promise === 'function' ? Promise : P;
 
 var d = UNITS_IN_GRID;
 var meaninglessTransform = {
@@ -699,7 +1028,7 @@ function makeInlineSvgAbstract(params) {
       'data-prefix': prefix,
       'data-icon': iconName,
       'class': attrClass,
-      'role': 'img',
+      'role': extra.attributes.role || 'img',
       'xmlns': 'http://www.w3.org/2000/svg',
       'viewBox': "0 0 ".concat(width, " ").concat(height)
     })
@@ -840,7 +1169,7 @@ var p = config.measurePerformance && PERFORMANCE && PERFORMANCE.mark && PERFORMA
   mark: noop$1,
   measure: noop$1
 };
-var preamble = "FA \"5.6.3\"";
+var preamble = "FA \"5.9.0\"";
 
 var begin = function begin(name) {
   p.mark("".concat(preamble, " ").concat(name, " begins"));
@@ -907,6 +1236,52 @@ var reduce = function fastReduceObject(subject, fn, initialValue, thisContext) {
   return result;
 };
 
+function toHex(unicode) {
+  var result = '';
+
+  for (var i = 0; i < unicode.length; i++) {
+    var hex = unicode.charCodeAt(i).toString(16);
+    result += ('000' + hex).slice(-4);
+  }
+
+  return result;
+}
+
+function defineIcons(prefix, icons) {
+  var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var _params$skipHooks = params.skipHooks,
+      skipHooks = _params$skipHooks === void 0 ? false : _params$skipHooks;
+  var normalized = Object.keys(icons).reduce(function (acc, iconName) {
+    var icon = icons[iconName];
+    var expanded = !!icon.icon;
+
+    if (expanded) {
+      acc[icon.iconName] = icon.icon;
+    } else {
+      acc[iconName] = icon;
+    }
+
+    return acc;
+  }, {});
+
+  if (typeof namespace.hooks.addPack === 'function' && !skipHooks) {
+    namespace.hooks.addPack(prefix, normalized);
+  } else {
+    namespace.styles[prefix] = _objectSpread({}, namespace.styles[prefix] || {}, normalized);
+  }
+  /**
+   * Font Awesome 4 used the prefix of `fa` for all icons. With the introduction
+   * of new styles we needed to differentiate between them. Prefix `fa` is now an alias
+   * for `fas` so we'll easy the upgrade process for our users by automatically defining
+   * this as well.
+   */
+
+
+  if (prefix === 'fas') {
+    defineIcons('fa', icons);
+  }
+}
+
 var styles = namespace.styles,
     shims = namespace.shims;
 var _byUnicode = {};
@@ -921,7 +1296,10 @@ var build = function build() {
   };
 
   _byUnicode = lookup(function (acc, icon, iconName) {
-    acc[icon[3]] = iconName;
+    if (icon[3]) {
+      acc[icon[3]] = iconName;
+    }
+
     return acc;
   });
   _byLigature = lookup(function (acc, icon, iconName) {
@@ -951,10 +1329,10 @@ var build = function build() {
 };
 build();
 function byUnicode(prefix, unicode) {
-  return _byUnicode[prefix][unicode];
+  return (_byUnicode[prefix] || {})[unicode];
 }
 function byLigature(prefix, ligature) {
-  return _byLigature[prefix][ligature];
+  return (_byLigature[prefix] || {})[ligature];
 }
 function byOldName(name) {
   return _byOldName[name] || {
@@ -976,6 +1354,8 @@ function getCanonicalIcon(values) {
     var iconName = getIconName(config.familyPrefix, cls);
 
     if (styles$1[cls]) {
+      acc.prefix = cls;
+    } else if (config.autoFetchSvg && ['fas', 'far', 'fal', 'fab', 'fa'].indexOf(cls) > -1) {
       acc.prefix = cls;
     } else if (iconName) {
       var shim = acc.prefix === 'fa' ? byOldName(iconName) : {};
@@ -1076,15 +1456,22 @@ var mutators = {
     node.innerHTML = newInnerHTML;
   }
 };
+
+function performOperationSync(op) {
+  op();
+}
+
 function perform(mutations, callback) {
   var callbackFunction = typeof callback === 'function' ? callback : noop$2;
 
   if (mutations.length === 0) {
     callbackFunction();
   } else {
-    var frame = WINDOW.requestAnimationFrame || function (op) {
-      return op();
-    };
+    var frame = performOperationSync;
+
+    if (config.mutateApproach === MUTATION_APPROACH_ASYNC) {
+      frame = WINDOW.requestAnimationFrame || performOperationSync;
+    }
 
     frame(function () {
       var mutator = getMutator();
@@ -1096,9 +1483,10 @@ function perform(mutations, callback) {
   }
 }
 var disabled = false;
-function disableObservation(operation) {
+function disableObservation() {
   disabled = true;
-  operation();
+}
+function enableObservation() {
   disabled = false;
 }
 var mo = null;
@@ -1115,7 +1503,7 @@ function observe(options) {
       nodeCallback = options.nodeCallback,
       pseudoElementsCallback = options.pseudoElementsCallback,
       _options$observeMutat = options.observeMutationsRoot,
-      observeMutationsRoot = _options$observeMutat === void 0 ? DOCUMENT.body : _options$observeMutat;
+      observeMutationsRoot = _options$observeMutat === void 0 ? DOCUMENT : _options$observeMutat;
   mo = new MUTATION_OBSERVER(function (objects) {
     if (disabled) return;
     toArray(objects).forEach(function (mutationRecord) {
@@ -1177,17 +1565,6 @@ function styleParser (node) {
   }
 
   return val;
-}
-
-function toHex(unicode) {
-  var result = '';
-
-  for (var i = 0; i < unicode.length; i++) {
-    var hex = unicode.charCodeAt(i).toString(16);
-    result += ('000' + hex).slice(-4);
-  }
-
-  return result;
 }
 
 function classParser (node) {
@@ -1302,6 +1679,7 @@ function attributesParser (node) {
       extraAttributes['aria-labelledby'] = "".concat(config.replacementClass, "-title-").concat(nextUniqueId());
     } else {
       extraAttributes['aria-hidden'] = 'true';
+      extraAttributes['focusable'] = 'false';
     }
   }
 
@@ -1320,19 +1698,21 @@ function maskParser (node) {
   }
 }
 
-var blankMeta = {
-  iconName: null,
-  title: null,
-  prefix: null,
-  transform: meaninglessTransform,
-  symbol: false,
-  mask: null,
-  extra: {
-    classes: [],
-    styles: {},
-    attributes: {}
-  }
-};
+function blankMeta() {
+  return {
+    iconName: null,
+    title: null,
+    prefix: null,
+    transform: meaninglessTransform,
+    symbol: false,
+    mask: null,
+    extra: {
+      classes: [],
+      styles: {},
+      attributes: {}
+    }
+  };
+}
 function parseMeta(node) {
   var _classParser = classParser(node),
       iconName = _classParser.iconName,
@@ -1438,51 +1818,44 @@ var missing = {
 };
 
 var styles$2 = namespace.styles;
-var LAYERS_TEXT_CLASSNAME = 'fa-layers-text';
-var FONT_FAMILY_PATTERN = /Font Awesome 5 (Solid|Regular|Light|Brands|Free|Pro)/;
-var STYLE_TO_PREFIX = {
-  'Solid': 'fas',
-  'Regular': 'far',
-  'Light': 'fal',
-  'Brands': 'fab'
-};
-var FONT_WEIGHT_TO_PREFIX = {
-  '900': 'fas',
-  '400': 'far',
-  '300': 'fal'
-};
-
 function findIcon(iconName, prefix) {
-  var val = {
-    found: false,
-    width: 512,
-    height: 512,
-    icon: missing
-  };
-
-  if (iconName && prefix && styles$2[prefix] && styles$2[prefix][iconName]) {
-    var icon = styles$2[prefix][iconName];
-    var width = icon[0];
-    var height = icon[1];
-    var vectorData = icon.slice(4);
-    val = {
-      found: true,
-      width: width,
-      height: height,
-      icon: {
-        tag: 'path',
-        attributes: {
-          fill: 'currentColor',
-          d: vectorData[0]
-        }
-      }
+  return new picked(function (resolve, reject) {
+    var val = {
+      found: false,
+      width: 512,
+      height: 512,
+      icon: missing
     };
-  } else if (iconName && prefix && !config.showMissingIcons) {
-    throw new MissingIcon("Icon is missing for prefix ".concat(prefix, " with icon name ").concat(iconName));
-  }
 
-  return val;
+    if (iconName && prefix && styles$2[prefix] && styles$2[prefix][iconName]) {
+      var icon = styles$2[prefix][iconName];
+      var width = icon[0];
+      var height = icon[1];
+      var vectorData = icon.slice(4);
+      val = {
+        found: true,
+        width: width,
+        height: height,
+        icon: {
+          tag: 'path',
+          attributes: {
+            fill: 'currentColor',
+            d: vectorData[0]
+          }
+        }
+      };
+      return resolve(val);
+    }
+
+    if (iconName && prefix && !config.showMissingIcons) {
+      reject(new MissingIcon("Icon is missing for prefix ".concat(prefix, " with icon name ").concat(iconName)));
+    } else {
+      resolve(val);
+    }
+  });
 }
+
+var styles$3 = namespace.styles;
 
 function generateSvgReplacementMutation(node, nodeMeta) {
   var iconName = nodeMeta.iconName,
@@ -1492,20 +1865,28 @@ function generateSvgReplacementMutation(node, nodeMeta) {
       symbol = nodeMeta.symbol,
       mask = nodeMeta.mask,
       extra = nodeMeta.extra;
-  return [node, makeInlineSvgAbstract({
-    icons: {
-      main: findIcon(iconName, prefix),
-      mask: findIcon(mask.iconName, mask.prefix)
-    },
-    prefix: prefix,
-    iconName: iconName,
-    transform: transform,
-    symbol: symbol,
-    mask: mask,
-    title: title,
-    extra: extra,
-    watchable: true
-  })];
+  return new picked(function (resolve, reject) {
+    picked.all([findIcon(iconName, prefix), findIcon(mask.iconName, mask.prefix)]).then(function (_ref) {
+      var _ref2 = _slicedToArray(_ref, 2),
+          main = _ref2[0],
+          mask = _ref2[1];
+
+      resolve([node, makeInlineSvgAbstract({
+        icons: {
+          main: main,
+          mask: mask
+        },
+        prefix: prefix,
+        iconName: iconName,
+        transform: transform,
+        symbol: symbol,
+        mask: mask,
+        title: title,
+        extra: extra,
+        watchable: true
+      })]);
+    });
+  });
 }
 
 function generateLayersText(node, nodeMeta) {
@@ -1526,7 +1907,7 @@ function generateLayersText(node, nodeMeta) {
     extra.attributes['aria-hidden'] = 'true';
   }
 
-  return [node, makeLayersTextAbstract({
+  return picked.resolve([node, makeLayersTextAbstract({
     content: node.innerHTML,
     width: width,
     height: height,
@@ -1534,7 +1915,7 @@ function generateLayersText(node, nodeMeta) {
     title: title,
     extra: extra,
     watchable: true
-  })];
+  })]);
 }
 
 function generateMutation(node) {
@@ -1547,69 +1928,6 @@ function generateMutation(node) {
   }
 }
 
-function searchPseudoElements(root) {
-  if (!IS_DOM) return;
-  var end = perf.begin('searchPseudoElements');
-  disableObservation(function () {
-    toArray(root.querySelectorAll('*')).filter(function (n) {
-      return n.parentNode !== document.head && !~TAGNAMES_TO_SKIP_FOR_PSEUDOELEMENTS.indexOf(n.tagName.toUpperCase()) && !n.getAttribute(DATA_FA_PSEUDO_ELEMENT) && (!n.parentNode || n.parentNode.tagName !== 'svg');
-    }).forEach(function (node) {
-      [':before', ':after'].forEach(function (pos) {
-        var children = toArray(node.children);
-        var alreadyProcessedPseudoElement = children.filter(function (c) {
-          return c.getAttribute(DATA_FA_PSEUDO_ELEMENT) === pos;
-        })[0];
-        var styles = WINDOW.getComputedStyle(node, pos);
-        var fontFamily = styles.getPropertyValue('font-family').match(FONT_FAMILY_PATTERN);
-        var fontWeight = styles.getPropertyValue('font-weight');
-
-        if (alreadyProcessedPseudoElement && !fontFamily) {
-          // If we've already processed it but the current computed style does not result in a font-family,
-          // that probably means that a class name that was previously present to make the icon has been
-          // removed. So we now should delete the icon.
-          node.removeChild(alreadyProcessedPseudoElement);
-        } else if (fontFamily) {
-          var content = styles.getPropertyValue('content');
-          var prefix = ~['Light', 'Regular', 'Solid', 'Brands'].indexOf(fontFamily[1]) ? STYLE_TO_PREFIX[fontFamily[1]] : FONT_WEIGHT_TO_PREFIX[fontWeight];
-          var iconName = byUnicode(prefix, toHex(content.length === 3 ? content.substr(1, 1) : content)); // Only convert the pseudo element in this :before/:after position into an icon if we haven't
-          // already done so with the same prefix and iconName
-
-          if (!alreadyProcessedPseudoElement || alreadyProcessedPseudoElement.getAttribute(DATA_PREFIX) !== prefix || alreadyProcessedPseudoElement.getAttribute(DATA_ICON) !== iconName) {
-            if (alreadyProcessedPseudoElement) {
-              // Delete the old one, since we're replacing it with a new one
-              node.removeChild(alreadyProcessedPseudoElement);
-            }
-
-            var extra = blankMeta.extra;
-            extra.attributes[DATA_FA_PSEUDO_ELEMENT] = pos;
-            var abstract = makeInlineSvgAbstract(_objectSpread({}, blankMeta, {
-              icons: {
-                main: findIcon(iconName, prefix),
-                mask: emptyCanonicalIcon()
-              },
-              prefix: prefix,
-              iconName: iconName,
-              extra: extra,
-              watchable: true
-            }));
-            var element = DOCUMENT.createElement('svg');
-
-            if (pos === ':before') {
-              node.insertBefore(element, node.firstChild);
-            } else {
-              node.appendChild(element);
-            }
-
-            element.outerHTML = abstract.map(function (a) {
-              return toHtml(a);
-            }).join('\n');
-          }
-        }
-      });
-    });
-  });
-  end();
-}
 function onTree(root) {
   var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
   if (!IS_DOM) return;
@@ -1623,7 +1941,7 @@ function onTree(root) {
     return htmlClassList.remove("".concat(HTML_CLASS_I2SVG_BASE_CLASS, "-").concat(suffix));
   };
 
-  var prefixes = Object.keys(styles$2);
+  var prefixes = config.autoFetchSvg ? Object.keys(PREFIX_TO_STYLE) : Object.keys(styles$3);
   var prefixesDomQuery = [".".concat(LAYERS_TEXT_CLASSNAME, ":not([").concat(DATA_FA_I2SVG, "])")].concat(prefixes.map(function (p) {
     return ".".concat(p, ":not([").concat(DATA_FA_I2SVG, "])");
   })).join(', ');
@@ -1632,7 +1950,12 @@ function onTree(root) {
     return;
   }
 
-  var candidates = toArray(root.querySelectorAll(prefixesDomQuery));
+  var candidates = [];
+
+  try {
+    candidates = toArray(root.querySelectorAll(prefixesDomQuery));
+  } catch (e) {// noop
+  }
 
   if (candidates.length > 0) {
     hclAdd('pending');
@@ -1659,24 +1982,133 @@ function onTree(root) {
 
     return acc;
   }, []);
-  mark();
-  perform(mutations, function () {
-    hclAdd('active');
-    hclAdd('complete');
-    hclRemove('pending');
-    if (typeof callback === 'function') callback();
+  return new picked(function (resolve, reject) {
+    picked.all(mutations).then(function (resolvedMutations) {
+      perform(resolvedMutations, function () {
+        hclAdd('active');
+        hclAdd('complete');
+        hclRemove('pending');
+        if (typeof callback === 'function') callback();
+        mark();
+        resolve();
+      });
+    }).catch(function () {
+      mark();
+      reject();
+    });
   });
 }
 function onNode(node) {
   var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-  var mutation = generateMutation(node);
-
-  if (mutation) {
-    perform([mutation], callback);
-  }
+  generateMutation(node).then(function (mutation) {
+    if (mutation) {
+      perform([mutation], callback);
+    }
+  });
 }
 
-var baseStyles = "svg:not(:root).svg-inline--fa {\n  overflow: visible;\n}\n\n.svg-inline--fa {\n  display: inline-block;\n  font-size: inherit;\n  height: 1em;\n  overflow: visible;\n  vertical-align: -0.125em;\n}\n.svg-inline--fa.fa-lg {\n  vertical-align: -0.225em;\n}\n.svg-inline--fa.fa-w-1 {\n  width: 0.0625em;\n}\n.svg-inline--fa.fa-w-2 {\n  width: 0.125em;\n}\n.svg-inline--fa.fa-w-3 {\n  width: 0.1875em;\n}\n.svg-inline--fa.fa-w-4 {\n  width: 0.25em;\n}\n.svg-inline--fa.fa-w-5 {\n  width: 0.3125em;\n}\n.svg-inline--fa.fa-w-6 {\n  width: 0.375em;\n}\n.svg-inline--fa.fa-w-7 {\n  width: 0.4375em;\n}\n.svg-inline--fa.fa-w-8 {\n  width: 0.5em;\n}\n.svg-inline--fa.fa-w-9 {\n  width: 0.5625em;\n}\n.svg-inline--fa.fa-w-10 {\n  width: 0.625em;\n}\n.svg-inline--fa.fa-w-11 {\n  width: 0.6875em;\n}\n.svg-inline--fa.fa-w-12 {\n  width: 0.75em;\n}\n.svg-inline--fa.fa-w-13 {\n  width: 0.8125em;\n}\n.svg-inline--fa.fa-w-14 {\n  width: 0.875em;\n}\n.svg-inline--fa.fa-w-15 {\n  width: 0.9375em;\n}\n.svg-inline--fa.fa-w-16 {\n  width: 1em;\n}\n.svg-inline--fa.fa-w-17 {\n  width: 1.0625em;\n}\n.svg-inline--fa.fa-w-18 {\n  width: 1.125em;\n}\n.svg-inline--fa.fa-w-19 {\n  width: 1.1875em;\n}\n.svg-inline--fa.fa-w-20 {\n  width: 1.25em;\n}\n.svg-inline--fa.fa-pull-left {\n  margin-right: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-pull-right {\n  margin-left: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-border {\n  height: 1.5em;\n}\n.svg-inline--fa.fa-li {\n  width: 2em;\n}\n.svg-inline--fa.fa-fw {\n  width: 1.25em;\n}\n\n.fa-layers svg.svg-inline--fa {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.fa-layers {\n  display: inline-block;\n  height: 1em;\n  position: relative;\n  text-align: center;\n  vertical-align: -0.125em;\n  width: 1em;\n}\n.fa-layers svg.svg-inline--fa {\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter, .fa-layers-text {\n  display: inline-block;\n  position: absolute;\n  text-align: center;\n}\n\n.fa-layers-text {\n  left: 50%;\n  top: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter {\n  background-color: #ff253a;\n  border-radius: 1em;\n  -webkit-box-sizing: border-box;\n          box-sizing: border-box;\n  color: #fff;\n  height: 1.5em;\n  line-height: 1;\n  max-width: 5em;\n  min-width: 1.5em;\n  overflow: hidden;\n  padding: 0.25em;\n  right: 0;\n  text-overflow: ellipsis;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-bottom-right {\n  bottom: 0;\n  right: 0;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom right;\n          transform-origin: bottom right;\n}\n\n.fa-layers-bottom-left {\n  bottom: 0;\n  left: 0;\n  right: auto;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom left;\n          transform-origin: bottom left;\n}\n\n.fa-layers-top-right {\n  right: 0;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-top-left {\n  left: 0;\n  right: auto;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top left;\n          transform-origin: top left;\n}\n\n.fa-lg {\n  font-size: 1.3333333333em;\n  line-height: 0.75em;\n  vertical-align: -0.0667em;\n}\n\n.fa-xs {\n  font-size: 0.75em;\n}\n\n.fa-sm {\n  font-size: 0.875em;\n}\n\n.fa-1x {\n  font-size: 1em;\n}\n\n.fa-2x {\n  font-size: 2em;\n}\n\n.fa-3x {\n  font-size: 3em;\n}\n\n.fa-4x {\n  font-size: 4em;\n}\n\n.fa-5x {\n  font-size: 5em;\n}\n\n.fa-6x {\n  font-size: 6em;\n}\n\n.fa-7x {\n  font-size: 7em;\n}\n\n.fa-8x {\n  font-size: 8em;\n}\n\n.fa-9x {\n  font-size: 9em;\n}\n\n.fa-10x {\n  font-size: 10em;\n}\n\n.fa-fw {\n  text-align: center;\n  width: 1.25em;\n}\n\n.fa-ul {\n  list-style-type: none;\n  margin-left: 2.5em;\n  padding-left: 0;\n}\n.fa-ul > li {\n  position: relative;\n}\n\n.fa-li {\n  left: -2em;\n  position: absolute;\n  text-align: center;\n  width: 2em;\n  line-height: inherit;\n}\n\n.fa-border {\n  border: solid 0.08em #eee;\n  border-radius: 0.1em;\n  padding: 0.2em 0.25em 0.15em;\n}\n\n.fa-pull-left {\n  float: left;\n}\n\n.fa-pull-right {\n  float: right;\n}\n\n.fa.fa-pull-left,\n.fas.fa-pull-left,\n.far.fa-pull-left,\n.fal.fa-pull-left,\n.fab.fa-pull-left {\n  margin-right: 0.3em;\n}\n.fa.fa-pull-right,\n.fas.fa-pull-right,\n.far.fa-pull-right,\n.fal.fa-pull-right,\n.fab.fa-pull-right {\n  margin-left: 0.3em;\n}\n\n.fa-spin {\n  -webkit-animation: fa-spin 2s infinite linear;\n          animation: fa-spin 2s infinite linear;\n}\n\n.fa-pulse {\n  -webkit-animation: fa-spin 1s infinite steps(8);\n          animation: fa-spin 1s infinite steps(8);\n}\n\n@-webkit-keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n\n@keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n.fa-rotate-90 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)\";\n  -webkit-transform: rotate(90deg);\n          transform: rotate(90deg);\n}\n\n.fa-rotate-180 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)\";\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n\n.fa-rotate-270 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)\";\n  -webkit-transform: rotate(270deg);\n          transform: rotate(270deg);\n}\n\n.fa-flip-horizontal {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)\";\n  -webkit-transform: scale(-1, 1);\n          transform: scale(-1, 1);\n}\n\n.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(1, -1);\n          transform: scale(1, -1);\n}\n\n.fa-flip-horizontal.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(-1, -1);\n          transform: scale(-1, -1);\n}\n\n:root .fa-rotate-90,\n:root .fa-rotate-180,\n:root .fa-rotate-270,\n:root .fa-flip-horizontal,\n:root .fa-flip-vertical {\n  -webkit-filter: none;\n          filter: none;\n}\n\n.fa-stack {\n  display: inline-block;\n  height: 2em;\n  position: relative;\n  width: 2.5em;\n}\n\n.fa-stack-1x,\n.fa-stack-2x {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.svg-inline--fa.fa-stack-1x {\n  height: 1em;\n  width: 1.25em;\n}\n.svg-inline--fa.fa-stack-2x {\n  height: 2em;\n  width: 2.5em;\n}\n\n.fa-inverse {\n  color: #fff;\n}\n\n.sr-only {\n  border: 0;\n  clip: rect(0, 0, 0, 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\n.sr-only-focusable:active, .sr-only-focusable:focus {\n  clip: auto;\n  height: auto;\n  margin: 0;\n  overflow: visible;\n  position: static;\n  width: auto;\n}";
+function replaceForPosition(node, position) {
+  var pendingAttribute = "".concat(DATA_FA_PSEUDO_ELEMENT_PENDING).concat(position.replace(':', '-'));
+  return new picked(function (resolve, reject) {
+    if (node.getAttribute(pendingAttribute) !== null) {
+      // This node is already being processed
+      return resolve();
+    }
+
+    var children = toArray(node.children);
+    var alreadyProcessedPseudoElement = children.filter(function (c) {
+      return c.getAttribute(DATA_FA_PSEUDO_ELEMENT) === position;
+    })[0];
+    var styles = WINDOW.getComputedStyle(node, position);
+    var fontFamily = styles.getPropertyValue('font-family').match(FONT_FAMILY_PATTERN);
+    var fontWeight = styles.getPropertyValue('font-weight');
+
+    if (alreadyProcessedPseudoElement && !fontFamily) {
+      // If we've already processed it but the current computed style does not result in a font-family,
+      // that probably means that a class name that was previously present to make the icon has been
+      // removed. So we now should delete the icon.
+      node.removeChild(alreadyProcessedPseudoElement);
+      return resolve();
+    } else if (fontFamily) {
+      var content = styles.getPropertyValue('content');
+      var prefix = ~['Light', 'Regular', 'Solid', 'Brands'].indexOf(fontFamily[1]) ? STYLE_TO_PREFIX[fontFamily[1].toLowerCase()] : FONT_WEIGHT_TO_PREFIX[fontWeight];
+      var hexValue = toHex(content.length === 3 ? content.substr(1, 1) : content);
+      var iconName = byUnicode(prefix, hexValue);
+      var iconIdentifier = iconName; // Only convert the pseudo element in this :before/:after position into an icon if we haven't
+      // already done so with the same prefix and iconName
+
+      if (iconName && (!alreadyProcessedPseudoElement || alreadyProcessedPseudoElement.getAttribute(DATA_PREFIX) !== prefix || alreadyProcessedPseudoElement.getAttribute(DATA_ICON) !== iconIdentifier)) {
+        node.setAttribute(pendingAttribute, iconIdentifier);
+
+        if (alreadyProcessedPseudoElement) {
+          // Delete the old one, since we're replacing it with a new one
+          node.removeChild(alreadyProcessedPseudoElement);
+        }
+
+        var meta = blankMeta();
+        var extra = meta.extra;
+        extra.attributes[DATA_FA_PSEUDO_ELEMENT] = position;
+        findIcon(iconName, prefix).then(function (main) {
+          var abstract = makeInlineSvgAbstract(_objectSpread({}, meta, {
+            icons: {
+              main: main,
+              mask: emptyCanonicalIcon()
+            },
+            prefix: prefix,
+            iconName: iconIdentifier,
+            extra: extra,
+            watchable: true
+          }));
+          var element = DOCUMENT.createElement('svg');
+
+          if (position === ':before') {
+            node.insertBefore(element, node.firstChild);
+          } else {
+            node.appendChild(element);
+          }
+
+          element.outerHTML = abstract.map(function (a) {
+            return toHtml(a);
+          }).join('\n');
+          node.removeAttribute(pendingAttribute);
+          resolve();
+        }).catch(reject);
+      } else {
+        resolve();
+      }
+    } else {
+      resolve();
+    }
+  });
+}
+
+function replace(node) {
+  return picked.all([replaceForPosition(node, ':before'), replaceForPosition(node, ':after')]);
+}
+
+function processable(node) {
+  return node.parentNode !== document.head && !~TAGNAMES_TO_SKIP_FOR_PSEUDOELEMENTS.indexOf(node.tagName.toUpperCase()) && !node.getAttribute(DATA_FA_PSEUDO_ELEMENT) && (!node.parentNode || node.parentNode.tagName !== 'svg');
+}
+
+function searchPseudoElements (root) {
+  if (!IS_DOM) return;
+  return new picked(function (resolve, reject) {
+    var operations = toArray(root.querySelectorAll('*')).filter(processable).map(replace);
+    var end = perf.begin('searchPseudoElements');
+    disableObservation();
+    picked.all(operations).then(function () {
+      end();
+      enableObservation();
+      resolve();
+    }).catch(function () {
+      end();
+      enableObservation();
+      reject();
+    });
+  });
+}
+
+var baseStyles = "svg:not(:root).svg-inline--fa {\n  overflow: visible;\n}\n\n.svg-inline--fa {\n  display: inline-block;\n  font-size: inherit;\n  height: 1em;\n  overflow: visible;\n  vertical-align: -0.125em;\n}\n.svg-inline--fa.fa-lg {\n  vertical-align: -0.225em;\n}\n.svg-inline--fa.fa-w-1 {\n  width: 0.0625em;\n}\n.svg-inline--fa.fa-w-2 {\n  width: 0.125em;\n}\n.svg-inline--fa.fa-w-3 {\n  width: 0.1875em;\n}\n.svg-inline--fa.fa-w-4 {\n  width: 0.25em;\n}\n.svg-inline--fa.fa-w-5 {\n  width: 0.3125em;\n}\n.svg-inline--fa.fa-w-6 {\n  width: 0.375em;\n}\n.svg-inline--fa.fa-w-7 {\n  width: 0.4375em;\n}\n.svg-inline--fa.fa-w-8 {\n  width: 0.5em;\n}\n.svg-inline--fa.fa-w-9 {\n  width: 0.5625em;\n}\n.svg-inline--fa.fa-w-10 {\n  width: 0.625em;\n}\n.svg-inline--fa.fa-w-11 {\n  width: 0.6875em;\n}\n.svg-inline--fa.fa-w-12 {\n  width: 0.75em;\n}\n.svg-inline--fa.fa-w-13 {\n  width: 0.8125em;\n}\n.svg-inline--fa.fa-w-14 {\n  width: 0.875em;\n}\n.svg-inline--fa.fa-w-15 {\n  width: 0.9375em;\n}\n.svg-inline--fa.fa-w-16 {\n  width: 1em;\n}\n.svg-inline--fa.fa-w-17 {\n  width: 1.0625em;\n}\n.svg-inline--fa.fa-w-18 {\n  width: 1.125em;\n}\n.svg-inline--fa.fa-w-19 {\n  width: 1.1875em;\n}\n.svg-inline--fa.fa-w-20 {\n  width: 1.25em;\n}\n.svg-inline--fa.fa-pull-left {\n  margin-right: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-pull-right {\n  margin-left: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-border {\n  height: 1.5em;\n}\n.svg-inline--fa.fa-li {\n  width: 2em;\n}\n.svg-inline--fa.fa-fw {\n  width: 1.25em;\n}\n\n.fa-layers svg.svg-inline--fa {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.fa-layers {\n  display: inline-block;\n  height: 1em;\n  position: relative;\n  text-align: center;\n  vertical-align: -0.125em;\n  width: 1em;\n}\n.fa-layers svg.svg-inline--fa {\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter, .fa-layers-text {\n  display: inline-block;\n  position: absolute;\n  text-align: center;\n}\n\n.fa-layers-text {\n  left: 50%;\n  top: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter {\n  background-color: #ff253a;\n  border-radius: 1em;\n  -webkit-box-sizing: border-box;\n          box-sizing: border-box;\n  color: #fff;\n  height: 1.5em;\n  line-height: 1;\n  max-width: 5em;\n  min-width: 1.5em;\n  overflow: hidden;\n  padding: 0.25em;\n  right: 0;\n  text-overflow: ellipsis;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-bottom-right {\n  bottom: 0;\n  right: 0;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom right;\n          transform-origin: bottom right;\n}\n\n.fa-layers-bottom-left {\n  bottom: 0;\n  left: 0;\n  right: auto;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom left;\n          transform-origin: bottom left;\n}\n\n.fa-layers-top-right {\n  right: 0;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-top-left {\n  left: 0;\n  right: auto;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top left;\n          transform-origin: top left;\n}\n\n.fa-lg {\n  font-size: 1.3333333333em;\n  line-height: 0.75em;\n  vertical-align: -0.0667em;\n}\n\n.fa-xs {\n  font-size: 0.75em;\n}\n\n.fa-sm {\n  font-size: 0.875em;\n}\n\n.fa-1x {\n  font-size: 1em;\n}\n\n.fa-2x {\n  font-size: 2em;\n}\n\n.fa-3x {\n  font-size: 3em;\n}\n\n.fa-4x {\n  font-size: 4em;\n}\n\n.fa-5x {\n  font-size: 5em;\n}\n\n.fa-6x {\n  font-size: 6em;\n}\n\n.fa-7x {\n  font-size: 7em;\n}\n\n.fa-8x {\n  font-size: 8em;\n}\n\n.fa-9x {\n  font-size: 9em;\n}\n\n.fa-10x {\n  font-size: 10em;\n}\n\n.fa-fw {\n  text-align: center;\n  width: 1.25em;\n}\n\n.fa-ul {\n  list-style-type: none;\n  margin-left: 2.5em;\n  padding-left: 0;\n}\n.fa-ul > li {\n  position: relative;\n}\n\n.fa-li {\n  left: -2em;\n  position: absolute;\n  text-align: center;\n  width: 2em;\n  line-height: inherit;\n}\n\n.fa-border {\n  border: solid 0.08em #eee;\n  border-radius: 0.1em;\n  padding: 0.2em 0.25em 0.15em;\n}\n\n.fa-pull-left {\n  float: left;\n}\n\n.fa-pull-right {\n  float: right;\n}\n\n.fa.fa-pull-left,\n.fas.fa-pull-left,\n.far.fa-pull-left,\n.fal.fa-pull-left,\n.fab.fa-pull-left {\n  margin-right: 0.3em;\n}\n.fa.fa-pull-right,\n.fas.fa-pull-right,\n.far.fa-pull-right,\n.fal.fa-pull-right,\n.fab.fa-pull-right {\n  margin-left: 0.3em;\n}\n\n.fa-spin {\n  -webkit-animation: fa-spin 2s infinite linear;\n          animation: fa-spin 2s infinite linear;\n}\n\n.fa-pulse {\n  -webkit-animation: fa-spin 1s infinite steps(8);\n          animation: fa-spin 1s infinite steps(8);\n}\n\n@-webkit-keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n\n@keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n.fa-rotate-90 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)\";\n  -webkit-transform: rotate(90deg);\n          transform: rotate(90deg);\n}\n\n.fa-rotate-180 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)\";\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n\n.fa-rotate-270 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)\";\n  -webkit-transform: rotate(270deg);\n          transform: rotate(270deg);\n}\n\n.fa-flip-horizontal {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)\";\n  -webkit-transform: scale(-1, 1);\n          transform: scale(-1, 1);\n}\n\n.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(1, -1);\n          transform: scale(1, -1);\n}\n\n.fa-flip-both, .fa-flip-horizontal.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(-1, -1);\n          transform: scale(-1, -1);\n}\n\n:root .fa-rotate-90,\n:root .fa-rotate-180,\n:root .fa-rotate-270,\n:root .fa-flip-horizontal,\n:root .fa-flip-vertical,\n:root .fa-flip-both {\n  -webkit-filter: none;\n          filter: none;\n}\n\n.fa-stack {\n  display: inline-block;\n  height: 2em;\n  position: relative;\n  width: 2.5em;\n}\n\n.fa-stack-1x,\n.fa-stack-2x {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.svg-inline--fa.fa-stack-1x {\n  height: 1em;\n  width: 1.25em;\n}\n.svg-inline--fa.fa-stack-2x {\n  height: 2em;\n  width: 2.5em;\n}\n\n.fa-inverse {\n  color: #fff;\n}\n\n.sr-only {\n  border: 0;\n  clip: rect(0, 0, 0, 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\n.sr-only-focusable:active, .sr-only-focusable:focus {\n  clip: auto;\n  height: auto;\n  margin: 0;\n  overflow: visible;\n  position: static;\n  width: auto;\n}";
 
 function css () {
   var dfp = DEFAULT_FAMILY_PREFIX;
@@ -1692,38 +2124,6 @@ function css () {
   }
 
   return s;
-}
-
-function define(prefix, icons) {
-  var normalized = Object.keys(icons).reduce(function (acc, iconName) {
-    var icon = icons[iconName];
-    var expanded = !!icon.icon;
-
-    if (expanded) {
-      acc[icon.iconName] = icon.icon;
-    } else {
-      acc[iconName] = icon;
-    }
-
-    return acc;
-  }, {});
-
-  if (typeof namespace.hooks.addPack === 'function') {
-    namespace.hooks.addPack(prefix, normalized);
-  } else {
-    namespace.styles[prefix] = _objectSpread({}, namespace.styles[prefix] || {}, normalized);
-  }
-  /**
-   * Font Awesome 4 used the prefix of `fa` for all icons. With the introduction
-   * of new styles we needed to differentiate between them. Prefix `fa` is now an alias
-   * for `fas` so we'll easy the upgrade process for our users by automatically defining
-   * this as well.
-   */
-
-
-  if (prefix === 'fas') {
-    define('fa', icons);
-  }
 }
 
 var Library =
@@ -1747,7 +2147,7 @@ function () {
       var additions = definitions.reduce(this._pullDefinitions, {});
       Object.keys(additions).forEach(function (key) {
         _this.definitions[key] = _objectSpread({}, _this.definitions[key] || {}, additions[key]);
-        define(key, additions[key]);
+        defineIcons(key, additions[key]);
         build();
       });
     }
@@ -1825,10 +2225,10 @@ function apiObject(val, abstractCreator) {
   return val;
 }
 
-function findIconDefinition(params) {
-  var _params$prefix = params.prefix,
-      prefix = _params$prefix === void 0 ? 'fa' : _params$prefix,
-      iconName = params.iconName;
+function findIconDefinition(iconLookup) {
+  var _iconLookup$prefix = iconLookup.prefix,
+      prefix = _iconLookup$prefix === void 0 ? 'fa' : _iconLookup$prefix,
+      iconName = iconLookup.iconName;
   if (!iconName) return;
   return iconFromMapping(library.definitions, prefix, iconName) || iconFromMapping(namespace.styles, prefix, iconName);
 }
@@ -1871,7 +2271,9 @@ var dom = {
         searchPseudoElements(node);
       }
 
-      onTree(node, callback);
+      return onTree(node, callback);
+    } else {
+      return picked.reject('Operation requires a DOM of some kind.');
     }
   },
   css: css,
@@ -1940,6 +2342,7 @@ var icon = resolveIcons(function (iconDefinition) {
         attributes['aria-labelledby'] = "".concat(config.replacementClass, "-title-").concat(nextUniqueId());
       } else {
         attributes['aria-hidden'] = 'true';
+        attributes['focusable'] = 'false';
       }
     }
 
@@ -2059,20 +2462,21 @@ var autoReplace = function autoReplace() {
   var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var _params$autoReplaceSv = params.autoReplaceSvgRoot,
       autoReplaceSvgRoot = _params$autoReplaceSv === void 0 ? DOCUMENT : _params$autoReplaceSv;
-  if (Object.keys(namespace.styles).length > 0 && IS_DOM && config.autoReplaceSvg) api.dom.i2svg({
+  if ((Object.keys(namespace.styles).length > 0 || config.autoFetchSvg) && IS_DOM && config.autoReplaceSvg) api.dom.i2svg({
     node: autoReplaceSvgRoot
   });
 };
 
 
 
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../timers-browserify/main.js */ "../../node_modules/timers-browserify/main.js").setImmediate))
 
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!**********************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \**********************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \**************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBackspace, faBackward, faBalanceScale, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBinoculars, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookOpen, faBookReader, faBookmark, faBowlingBall, faBox, faBoxOpen, faBoxes, faBraille, faBrain, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCamera, faCameraRetro, faCampground, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCartArrowDown, faCartPlus, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMoon, faCloudSun, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCube, faCubes, faCut, faDatabase, faDeaf, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDungeon, faEdit, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFastBackward, faFastForward, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGlassMartini, faGlassMartiniAlt, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripVertical, faHSquare, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingUsd, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHands, faHandsHelping, faHandshake, faHanukiah, faHashtag, faHatWizard, faHaykal, faHdd, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHome, faHorse, faHospital, faHospitalAlt, faHospitalSymbol, faHotTub, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHryvnia, faICursor, faIdBadge, faIdCard, faIdCardAlt, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMousePointer, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleCarry, faPercent, faPercentage, faPhone, faPhoneSlash, faPhoneSquare, faPhoneVolume, faPiggyBank, faPills, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRandom, faReceipt, faRecycle, faRedo, faRedoAlt, faRegistered, faReply, faReplyAll, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSave, faSchool, faScrewdriver, faScroll, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSitemap, faSkull, faSkullCrossbones, faSlash, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmoking, faSmokingBan, faSnowflake, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaUp, faSortAmountDown, faSortAmountUp, faSortDown, faSortNumericDown, faSortNumericUp, faSortUp, faSpa, faSpaceShuttle, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStore, faStoreAlt, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToiletPaper, faToolbox, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrain, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVrCardboard, faWalking, faWallet, faWarehouse, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -4650,9 +5054,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!*******************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \*******************************************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \***********************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -5110,9 +5514,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss":
-/*!****************************************************************************************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/css-loader!/Users/mbond/dev/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss ***!
-  \****************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss ***!
+  \************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5121,7 +5525,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .input-port-border {\n  border-color: #00c0ff !important; }\n\n.srd-node--selected .output-port-border {\n  border-color: #00c0ff !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 10px;\n  transform: scale(1); }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: greenyellow !important; }\n\n.diagramBlock {\n  background: white;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 20px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 3; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 16px;\n    border-top-left-radius: 16px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    transform: scaleX(1.001);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 10px calc(100% - 10px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -8px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 12px; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-border {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          border: 4px solid black;\n          width: 4px;\n          height: 7px;\n          border-right: 0;\n          position: absolute;\n          border-bottom-left-radius: 10px;\n          border-top-left-radius: 10px;\n          transform: translateX(-2px) scale(1.2); }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 2px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 10px) 10px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 3px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 12px; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-border {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          border: 4px solid black;\n          width: 4px;\n          border-left: 0;\n          border-left: 0;\n          transform: translateX(9px) scale(1.2);\n          border-bottom-right-radius: 10px;\n          border-top-right-radius: 10px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 2px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 16px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
+exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .diagramBlock {\n  border-color: white !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important;\n  stroke: #ffffff !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 20px;\n  transform: scale(1);\n  width: 20px;\n  height: 20px; }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: #DDDDDD !important; }\n\n.diagramBlock {\n  background: gray;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 12px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%;\n  color: white; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n    .diagramBlock.input.Float {\n      background: #cb9e27; }\n    .diagramBlock.input.Vector2 {\n      background: #16bcb1; }\n    .diagramBlock.input.Vector3 {\n      background: #b786cb; }\n    .diagramBlock.input.Color3 {\n      background: #b786cb; }\n    .diagramBlock.input.Vector4 {\n      background: #be5126; }\n    .diagramBlock.input.Color4 {\n      background: #be5126; }\n    .diagramBlock.input.Matrix {\n      background: #591990; }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 3; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.gradient {\n    height: 70px; }\n    .diagramBlock.gradient .outputs, .diagramBlock.gradient .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.constant {\n    background: #646464 !important; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 7px;\n    border-top-left-radius: 7px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    transform: scaleX(1.001);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 12px calc(100% - 12px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -11px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 20px; }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 12px) 12px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 4px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 20px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px;\n    background: #323232;\n    color: white; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 7px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
 
 // exports
 
@@ -5129,9 +5533,9 @@ exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/log/log.scss":
-/*!********************************************************************************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/css-loader!/Users/mbond/dev/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/log/log.scss ***!
-  \********************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/log/log.scss ***!
+  \****************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5148,9 +5552,9 @@ exports.push([module.i, "#log-console {\n  background: #333333;\n  height: 120px
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss":
-/*!******************************************************************************************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/css-loader!/Users/mbond/dev/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss ***!
-  \******************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss ***!
+  \**************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5159,7 +5563,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow: hidden;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .filter {\n        display: flex;\n        align-items: stretch; }\n        #nodeList .panes .pane .filter input {\n          width: 100%;\n          margin: 10px 10px 5px 10px;\n          display: block;\n          border: none;\n          padding: 0;\n          border-bottom: solid 1px #337ab7;\n          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n          background-position: -1000px 0;\n          background-size: 1000px 100%;\n          background-repeat: no-repeat;\n          color: white; }\n        #nodeList .panes .pane .filter input:focus {\n          box-shadow: none;\n          outline: none;\n          background-position: 0 0; }\n      #nodeList .panes .pane .list-container {\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: calc(100% - 32px); }\n        #nodeList .panes .pane .list-container .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #nodeList .panes .pane .list-container .draggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          cursor: grab;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n          #nodeList .panes .pane .list-container .draggableLine:hover {\n            background: #337ab7;\n            color: white; }\n        #nodeList .panes .pane .list-container .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #nodeList .panes .pane .list-container .buttonLine button {\n            background: #222222;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #nodeList .panes .pane .list-container .buttonLine button:hover {\n            opacity: 1.0; }\n          #nodeList .panes .pane .list-container .buttonLine button:active {\n            background: #282828; }\n          #nodeList .panes .pane .list-container .buttonLine button:focus {\n            outline: 0px; }\n        #nodeList .panes .pane .list-container .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #nodeList .panes .pane .list-container .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
+exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow: hidden;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .filter {\n        display: flex;\n        align-items: stretch; }\n        #nodeList .panes .pane .filter input {\n          width: 100%;\n          margin: 10px 10px 5px 10px;\n          display: block;\n          border: none;\n          padding: 0;\n          border-bottom: solid 1px #337ab7;\n          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n          background-position: -1000px 0;\n          background-size: 1000px 100%;\n          background-repeat: no-repeat;\n          color: white; }\n        #nodeList .panes .pane .filter input:focus {\n          box-shadow: none;\n          outline: none;\n          background-position: 0 0; }\n        #nodeList .panes .pane .filter input::placeholder {\n          color: gray; }\n      #nodeList .panes .pane .list-container {\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: calc(100% - 32px); }\n        #nodeList .panes .pane .list-container .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #nodeList .panes .pane .list-container .draggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          cursor: grab;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n          #nodeList .panes .pane .list-container .draggableLine:hover {\n            background: #337ab7;\n            color: white; }\n        #nodeList .panes .pane .list-container .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #nodeList .panes .pane .list-container .buttonLine button {\n            background: #222222;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #nodeList .panes .pane .list-container .buttonLine button:hover {\n            opacity: 1.0; }\n          #nodeList .panes .pane .list-container .buttonLine button:active {\n            background: #282828; }\n          #nodeList .panes .pane .list-container .buttonLine button:focus {\n            outline: 0px; }\n        #nodeList .panes .pane .list-container .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #nodeList .panes .pane .list-container .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
 
 // exports
 
@@ -5167,9 +5571,9 @@ exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss":
-/*!************************************************************************************************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/css-loader!/Users/mbond/dev/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss ***!
-  \************************************************************************************************************************************************************************/
+/*!********************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss ***!
+  \********************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5178,7 +5582,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#propertyTab {\n  color: white;\n  background: #333333; }\n  #propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #propertyTab #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #propertyTab #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #propertyTab .sliderLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .sliderLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .sliderLine .slider {\n      grid-column: 2;\n      margin-right: 5px;\n      display: flex;\n      align-items: center; }\n      #propertyTab .sliderLine .slider .range {\n        -webkit-appearance: none;\n        width: 120px;\n        height: 6px;\n        background: #d3d3d3;\n        border-radius: 5px;\n        outline: none;\n        opacity: 0.7;\n        -webkit-transition: .2s;\n        transition: opacity .2s; }\n      #propertyTab .sliderLine .slider .range:hover {\n        opacity: 1; }\n      #propertyTab .sliderLine .slider .range::-webkit-slider-thumb {\n        -webkit-appearance: none;\n        appearance: none;\n        width: 14px;\n        height: 14px;\n        border-radius: 50%;\n        background: #337ab7;\n        cursor: pointer; }\n      #propertyTab .sliderLine .slider .range::-moz-range-thumb {\n        width: 14px;\n        height: 14px;\n        border-radius: 50%;\n        background: #337ab7;\n        cursor: pointer; }\n  #propertyTab .textInputLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .textInputLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #propertyTab .textInputLine .value input {\n        width: calc(100% - 5px); }\n  #propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #555555;\n        height: 30px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #propertyTab .floatLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .floatLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .floatLine .value {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .floatLine .value input {\n        width: 110px; }\n  #propertyTab .vector3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  #propertyTab .checkBoxLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #propertyTab .listLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #propertyTab .listLine .options select {\n        width: 115px; }\n  #propertyTab .color3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .color3Line .firstLine {\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      #propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        display: flex;\n        align-items: center; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"] {\n          -webkit-appearance: none;\n          border: 1px solid rgba(255, 255, 255, 0.5);\n          padding: 0;\n          width: 30px;\n          height: 20px; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n          padding: 0; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n          border: none; }\n        #propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .textLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #propertyTab .textLine .value.check {\n        color: green; }\n      #propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
+exports.push([module.i, "#propertyTab {\n  color: white;\n  background: #333333; }\n  #propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #propertyTab #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #propertyTab #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 6px;\n    background: #d3d3d3;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #propertyTab .range:hover {\n    opacity: 1; }\n  #propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  #propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  #propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #propertyTab .sliderLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .sliderLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .sliderLine .slider {\n      grid-column: 2;\n      margin-right: 5px;\n      display: flex;\n      align-items: center; }\n  #propertyTab .textInputLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .textInputLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #propertyTab .textInputLine .value input {\n        width: calc(100% - 5px); }\n  #propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #555555;\n        height: 30px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 40px auto 20px 5px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: 5px; }\n      #propertyTab .gradient-step .step-slider input {\n        width: unset; }\n    #propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n  #propertyTab .floatLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .floatLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .floatLine .value {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .floatLine .value input {\n        width: 110px; }\n  #propertyTab .vector3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  #propertyTab .checkBoxLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #propertyTab .listLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #propertyTab .listLine .options select {\n        width: 115px; }\n  #propertyTab .color3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .color3Line .firstLine {\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      #propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        display: flex;\n        align-items: center; }\n        #propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .textLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #propertyTab .textLine .value.check {\n        color: green; }\n      #propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
 
 // exports
 
@@ -5186,9 +5590,9 @@ exports.push([module.i, "#propertyTab {\n  color: white;\n  background: #333333;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./main.scss":
-/*!******************************************************************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/css-loader!/Users/mbond/dev/Babylon.js/node_modules/sass-loader/lib/loader.js!./main.scss ***!
-  \******************************************************************************************************************************************/
+/*!**************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./main.scss ***!
+  \**************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5197,7 +5601,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    .right-panel #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      .right-panel #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 
 // exports
 
@@ -5205,9 +5609,9 @@ exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-tem
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/storm-react-diagrams/dist/style.min.css":
-/*!********************************************************************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/css-loader!/Users/mbond/dev/Babylon.js/node_modules/storm-react-diagrams/dist/style.min.css ***!
-  \********************************************************************************************************************************************/
+/*!****************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/storm-react-diagrams/dist/style.min.css ***!
+  \****************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5224,9 +5628,9 @@ exports.push([module.i, ".srd-diagram{position:relative;flex-grow:1;display:flex
 /***/ }),
 
 /***/ "../../node_modules/css-loader/lib/css-base.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -5311,9 +5715,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/index.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/index.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/index.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5355,9 +5759,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/acyclic.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/acyclic.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/acyclic.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5434,9 +5838,9 @@ function undo(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/add-border-segments.js":
-/*!*********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/add-border-segments.js ***!
-  \*********************************************************************************/
+/*!*************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/add-border-segments.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5483,9 +5887,9 @@ function addBorderNode(g, prop, prefix, sg, sgNode, rank) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/coordinate-system.js":
-/*!*******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/coordinate-system.js ***!
-  \*******************************************************************************/
+/*!***********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/coordinate-system.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5567,9 +5971,9 @@ function swapXYOne(attrs) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/data/list.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/data/list.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/data/list.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -5634,9 +6038,9 @@ function filterOutLinks(k, v) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/debug.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/debug.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/debug.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5679,9 +6083,9 @@ function debugOrdering(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/graphlib.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/graphlib.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/graphlib.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5705,9 +6109,9 @@ module.exports = graphlib;
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/greedy-fas.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/greedy-fas.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/greedy-fas.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5834,9 +6238,9 @@ function assignBucket(buckets, zeroIdx, entry) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/layout.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/layout.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/layout.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6238,9 +6642,9 @@ function canonicalize(attrs) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/lodash.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/lodash.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/lodash.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6291,9 +6695,9 @@ module.exports = lodash;
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/nesting-graph.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/nesting-graph.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/nesting-graph.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6434,9 +6838,9 @@ function cleanup(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/normalize.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/normalize.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/normalize.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6536,9 +6940,9 @@ function undo(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/add-subgraph-constraints.js":
-/*!********************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/order/add-subgraph-constraints.js ***!
-  \********************************************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/add-subgraph-constraints.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6600,9 +7004,9 @@ function addSubgraphConstraints(g, cg, vs) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/barycenter.js":
-/*!******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/order/barycenter.js ***!
-  \******************************************************************************/
+/*!**********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/barycenter.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6639,9 +7043,9 @@ function barycenter(g, movable) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/build-layer-graph.js":
-/*!*************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/order/build-layer-graph.js ***!
-  \*************************************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/build-layer-graph.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6723,9 +7127,9 @@ function createRootNode(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/cross-count.js":
-/*!*******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/order/cross-count.js ***!
-  \*******************************************************************************/
+/*!***********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/cross-count.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6802,9 +7206,9 @@ function twoLayerCrossCount(g, northLayer, southLayer) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/index.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/order/index.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6893,9 +7297,9 @@ function assignOrder(g, layering) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/init-order.js":
-/*!******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/order/init-order.js ***!
-  \******************************************************************************/
+/*!**********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/init-order.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6943,9 +7347,9 @@ function initOrder(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/resolve-conflicts.js":
-/*!*************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/order/resolve-conflicts.js ***!
-  \*************************************************************************************/
+/*!*****************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/resolve-conflicts.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7077,9 +7481,9 @@ function mergeEntries(target, source) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/sort-subgraph.js":
-/*!*********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/order/sort-subgraph.js ***!
-  \*********************************************************************************/
+/*!*************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/sort-subgraph.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7164,9 +7568,9 @@ function mergeBarycenters(target, other) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/sort.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/order/sort.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/sort.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7232,9 +7636,9 @@ function compareWithBias(bias) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/parent-dummy-chains.js":
-/*!*********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/parent-dummy-chains.js ***!
-  \*********************************************************************************/
+/*!*************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/parent-dummy-chains.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7329,9 +7733,9 @@ function postorder(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/position/bk.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/position/bk.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/position/bk.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7760,9 +8164,9 @@ function width(g, v) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/position/index.js":
-/*!****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/position/index.js ***!
-  \****************************************************************************/
+/*!********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/position/index.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7802,9 +8206,9 @@ function positionY(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/feasible-tree.js":
-/*!********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/rank/feasible-tree.js ***!
-  \********************************************************************************/
+/*!************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/rank/feasible-tree.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7903,9 +8307,9 @@ function shiftRanks(t, g, delta) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/index.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/rank/index.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/rank/index.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7963,9 +8367,9 @@ function networkSimplexRanker(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/network-simplex.js":
-/*!**********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/rank/network-simplex.js ***!
-  \**********************************************************************************/
+/*!**************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/rank/network-simplex.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8209,9 +8613,9 @@ function isDescendant(tree, vLabel, rootLabel) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/util.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/rank/util.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/rank/util.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8284,9 +8688,9 @@ function slack(g, e) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/util.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/util.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/util.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8532,9 +8936,9 @@ function notime(name, fn) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/version.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/dagre/lib/version.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/version.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -8543,30 +8947,10 @@ module.exports = "0.8.4";
 
 /***/ }),
 
-<<<<<<< Updated upstream
-=======
-/***/ "../../node_modules/file-saver/dist/FileSaver.min.js":
-/*!*********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/file-saver/dist/FileSaver.min.js ***!
-  \*********************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global) {var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(a,b){if(true)!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (b),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));else {}})(this,function(){"use strict";function b(a,b){return"undefined"==typeof b?b={autoBom:!1}:"object"!=typeof b&&(console.warn("Deprecated: Expected third argument to be a object"),b={autoBom:!b}),b.autoBom&&/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a.type)?new Blob(["\uFEFF",a],{type:a.type}):a}function c(b,c,d){var e=new XMLHttpRequest;e.open("GET",b),e.responseType="blob",e.onload=function(){a(e.response,c,d)},e.onerror=function(){console.error("could not download file")},e.send()}function d(a){var b=new XMLHttpRequest;b.open("HEAD",a,!1);try{b.send()}catch(a){}return 200<=b.status&&299>=b.status}function e(a){try{a.dispatchEvent(new MouseEvent("click"))}catch(c){var b=document.createEvent("MouseEvents");b.initMouseEvent("click",!0,!0,window,0,0,0,80,20,!1,!1,!1,!1,0,null),a.dispatchEvent(b)}}var f="object"==typeof window&&window.window===window?window:"object"==typeof self&&self.self===self?self:"object"==typeof global&&global.global===global?global:void 0,a=f.saveAs||("object"!=typeof window||window!==f?function(){}:"download"in HTMLAnchorElement.prototype?function(b,g,h){var i=f.URL||f.webkitURL,j=document.createElement("a");g=g||b.name||"download",j.download=g,j.rel="noopener","string"==typeof b?(j.href=b,j.origin===location.origin?e(j):d(j.href)?c(b,g,h):e(j,j.target="_blank")):(j.href=i.createObjectURL(b),setTimeout(function(){i.revokeObjectURL(j.href)},4E4),setTimeout(function(){e(j)},0))}:"msSaveOrOpenBlob"in navigator?function(f,g,h){if(g=g||f.name||"download","string"!=typeof f)navigator.msSaveOrOpenBlob(b(f,h),g);else if(d(f))c(f,g,h);else{var i=document.createElement("a");i.href=f,i.target="_blank",setTimeout(function(){e(i)})}}:function(a,b,d,e){if(e=e||open("","_blank"),e&&(e.document.title=e.document.body.innerText="downloading..."),"string"==typeof a)return c(a,b,d);var g="application/octet-stream"===a.type,h=/constructor/i.test(f.HTMLElement)||f.safari,i=/CriOS\/[\d]+/.test(navigator.userAgent);if((i||g&&h)&&"object"==typeof FileReader){var j=new FileReader;j.onloadend=function(){var a=j.result;a=i?a:a.replace(/^data:[^;]*;/,"data:attachment/file;"),e?e.location.href=a:location=a,e=null},j.readAsDataURL(a)}else{var k=f.URL||f.webkitURL,l=k.createObjectURL(a);e?e.location=l:location.href=l,e=null,setTimeout(function(){k.revokeObjectURL(l)},4E4)}});f.saveAs=a.saveAs=a, true&&(module.exports=a)});
-
-//# sourceMappingURL=FileSaver.min.js.map
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
-
-/***/ }),
-
->>>>>>> Stashed changes
 /***/ "../../node_modules/graphlib/index.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/index.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/index.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8613,9 +8997,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/components.js":
-/*!*******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/components.js ***!
-  \*******************************************************************************/
+/*!***********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/components.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8651,9 +9035,9 @@ function components(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/dfs.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/dfs.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/dfs.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8704,9 +9088,9 @@ function doDfs(g, v, postorder, visited, navigation, acc) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/dijkstra-all.js":
-/*!*********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/dijkstra-all.js ***!
-  \*********************************************************************************/
+/*!*************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/dijkstra-all.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8725,9 +9109,9 @@ function dijkstraAll(g, weightFunc, edgeFunc) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/dijkstra.js":
-/*!*****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/dijkstra.js ***!
-  \*****************************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/dijkstra.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8790,9 +9174,9 @@ function runDijkstra(g, source, weightFn, edgeFn) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/find-cycles.js":
-/*!********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/find-cycles.js ***!
-  \********************************************************************************/
+/*!************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/find-cycles.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8811,9 +9195,9 @@ function findCycles(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/floyd-warshall.js":
-/*!***********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/floyd-warshall.js ***!
-  \***********************************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/floyd-warshall.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8872,9 +9256,9 @@ function runFloydWarshall(g, weightFn, edgeFn) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/index.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/index.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/index.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8896,9 +9280,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/is-acyclic.js":
-/*!*******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/is-acyclic.js ***!
-  \*******************************************************************************/
+/*!***********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/is-acyclic.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8922,9 +9306,9 @@ function isAcyclic(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/postorder.js":
-/*!******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/postorder.js ***!
-  \******************************************************************************/
+/*!**********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/postorder.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8940,9 +9324,9 @@ function postorder(g, vs) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/preorder.js":
-/*!*****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/preorder.js ***!
-  \*****************************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/preorder.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8958,9 +9342,9 @@ function preorder(g, vs) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/prim.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/prim.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/prim.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9021,9 +9405,9 @@ function prim(g, weightFunc) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/tarjan.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/tarjan.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/tarjan.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9079,9 +9463,9 @@ function tarjan(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/topsort.js":
-/*!****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/alg/topsort.js ***!
-  \****************************************************************************/
+/*!********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/topsort.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9124,9 +9508,9 @@ CycleException.prototype = new Error(); // must be an instance of Error to pass 
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/data/priority-queue.js":
-/*!************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/data/priority-queue.js ***!
-  \************************************************************************************/
+/*!****************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/data/priority-queue.js ***!
+  \****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9287,9 +9671,9 @@ PriorityQueue.prototype._swap = function(i, j) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/graph.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/graph.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/graph.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9831,9 +10215,9 @@ function edgeObjToId(isDirected, edgeObj) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/index.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/index.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/index.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9847,9 +10231,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/json.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/json.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/json.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9924,9 +10308,9 @@ function read(json) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/lodash.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/lodash.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/lodash.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9967,9 +10351,9 @@ module.exports = lodash;
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/version.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/graphlib/lib/version.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/version.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -9979,9 +10363,9 @@ module.exports = '2.1.7';
 /***/ }),
 
 /***/ "../../node_modules/lodash/_DataView.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_DataView.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_DataView.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9997,9 +10381,9 @@ module.exports = DataView;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Hash.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_Hash.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_Hash.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10040,9 +10424,9 @@ module.exports = Hash;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_ListCache.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_ListCache.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_ListCache.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10083,9 +10467,9 @@ module.exports = ListCache;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Map.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_Map.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_Map.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10101,9 +10485,9 @@ module.exports = Map;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_MapCache.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_MapCache.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_MapCache.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10144,9 +10528,9 @@ module.exports = MapCache;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Promise.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_Promise.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_Promise.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10162,9 +10546,9 @@ module.exports = Promise;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Set.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_Set.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_Set.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10180,9 +10564,9 @@ module.exports = Set;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_SetCache.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_SetCache.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_SetCache.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10218,9 +10602,9 @@ module.exports = SetCache;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Stack.js":
-/*!*****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_Stack.js ***!
-  \*****************************************************************/
+/*!*********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_Stack.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10256,9 +10640,9 @@ module.exports = Stack;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Symbol.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_Symbol.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_Symbol.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10273,9 +10657,9 @@ module.exports = Symbol;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Uint8Array.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_Uint8Array.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_Uint8Array.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10290,9 +10674,9 @@ module.exports = Uint8Array;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_WeakMap.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_WeakMap.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_WeakMap.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10308,9 +10692,9 @@ module.exports = WeakMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_apply.js":
-/*!*****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_apply.js ***!
-  \*****************************************************************/
+/*!*********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_apply.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10340,9 +10724,9 @@ module.exports = apply;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayEach.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_arrayEach.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayEach.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10373,9 +10757,9 @@ module.exports = arrayEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayFilter.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_arrayFilter.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayFilter.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10409,9 +10793,9 @@ module.exports = arrayFilter;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayIncludes.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_arrayIncludes.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayIncludes.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10437,9 +10821,9 @@ module.exports = arrayIncludes;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayIncludesWith.js":
-/*!*****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_arrayIncludesWith.js ***!
-  \*****************************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayIncludesWith.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10470,9 +10854,9 @@ module.exports = arrayIncludesWith;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayLikeKeys.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_arrayLikeKeys.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayLikeKeys.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10530,9 +10914,9 @@ module.exports = arrayLikeKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayMap.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_arrayMap.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayMap.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10562,9 +10946,9 @@ module.exports = arrayMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayPush.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_arrayPush.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayPush.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10593,9 +10977,9 @@ module.exports = arrayPush;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayReduce.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_arrayReduce.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayReduce.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10630,9 +11014,9 @@ module.exports = arrayReduce;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arraySome.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_arraySome.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_arraySome.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10664,9 +11048,9 @@ module.exports = arraySome;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_asciiSize.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_asciiSize.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_asciiSize.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10687,9 +11071,9 @@ module.exports = asciiSize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_assignMergeValue.js":
-/*!****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_assignMergeValue.js ***!
-  \****************************************************************************/
+/*!********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_assignMergeValue.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10718,9 +11102,9 @@ module.exports = assignMergeValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_assignValue.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_assignValue.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_assignValue.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10757,9 +11141,9 @@ module.exports = assignValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_assocIndexOf.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_assocIndexOf.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_assocIndexOf.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10789,9 +11173,9 @@ module.exports = assocIndexOf;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseAssign.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseAssign.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseAssign.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10817,9 +11201,9 @@ module.exports = baseAssign;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseAssignIn.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseAssignIn.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseAssignIn.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10845,9 +11229,9 @@ module.exports = baseAssignIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseAssignValue.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseAssignValue.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseAssignValue.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10881,9 +11265,9 @@ module.exports = baseAssignValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseClone.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseClone.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseClone.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11029,16 +11413,10 @@ function baseClone(value, bitmask, customizer, key, object, stack) {
     value.forEach(function(subValue) {
       result.add(baseClone(subValue, bitmask, customizer, subValue, value, stack));
     });
-
-    return result;
-  }
-
-  if (isMap(value)) {
+  } else if (isMap(value)) {
     value.forEach(function(subValue, key) {
       result.set(key, baseClone(subValue, bitmask, customizer, key, value, stack));
     });
-
-    return result;
   }
 
   var keysFunc = isFull
@@ -11063,9 +11441,9 @@ module.exports = baseClone;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseCreate.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseCreate.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseCreate.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11104,9 +11482,9 @@ module.exports = baseCreate;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseEach.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseEach.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseEach.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11129,9 +11507,9 @@ module.exports = baseEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseExtremum.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseExtremum.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseExtremum.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11172,9 +11550,9 @@ module.exports = baseExtremum;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFilter.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseFilter.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseFilter.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11204,9 +11582,9 @@ module.exports = baseFilter;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFindIndex.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseFindIndex.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseFindIndex.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11239,9 +11617,9 @@ module.exports = baseFindIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFlatten.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseFlatten.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseFlatten.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11288,9 +11666,9 @@ module.exports = baseFlatten;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFor.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseFor.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseFor.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11315,9 +11693,9 @@ module.exports = baseFor;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseForOwn.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseForOwn.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseForOwn.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11342,9 +11720,9 @@ module.exports = baseForOwn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGet.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseGet.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseGet.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11377,9 +11755,9 @@ module.exports = baseGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGetAllKeys.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseGetAllKeys.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseGetAllKeys.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11408,9 +11786,9 @@ module.exports = baseGetAllKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGetTag.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseGetTag.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseGetTag.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11447,9 +11825,9 @@ module.exports = baseGetTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGt.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseGt.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseGt.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11472,9 +11850,9 @@ module.exports = baseGt;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseHas.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseHas.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseHas.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11502,9 +11880,9 @@ module.exports = baseHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseHasIn.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseHasIn.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseHasIn.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11526,9 +11904,9 @@ module.exports = baseHasIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIndexOf.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIndexOf.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIndexOf.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11557,9 +11935,9 @@ module.exports = baseIndexOf;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsArguments.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIsArguments.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsArguments.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11586,9 +11964,9 @@ module.exports = baseIsArguments;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsEqual.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIsEqual.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsEqual.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11625,9 +12003,9 @@ module.exports = baseIsEqual;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsEqualDeep.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIsEqualDeep.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsEqualDeep.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11719,9 +12097,9 @@ module.exports = baseIsEqualDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsMap.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIsMap.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsMap.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11748,9 +12126,9 @@ module.exports = baseIsMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsMatch.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIsMatch.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsMatch.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11821,9 +12199,9 @@ module.exports = baseIsMatch;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsNaN.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIsNaN.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsNaN.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11844,9 +12222,9 @@ module.exports = baseIsNaN;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsNative.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIsNative.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsNative.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11902,9 +12280,9 @@ module.exports = baseIsNative;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsSet.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIsSet.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsSet.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11931,9 +12309,9 @@ module.exports = baseIsSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsTypedArray.js":
-/*!****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIsTypedArray.js ***!
-  \****************************************************************************/
+/*!********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsTypedArray.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12002,9 +12380,9 @@ module.exports = baseIsTypedArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIteratee.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseIteratee.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIteratee.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12044,9 +12422,9 @@ module.exports = baseIteratee;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseKeys.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseKeys.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseKeys.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12085,9 +12463,9 @@ module.exports = baseKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseKeysIn.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseKeysIn.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseKeysIn.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12129,9 +12507,9 @@ module.exports = baseKeysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseLt.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseLt.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseLt.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12154,9 +12532,9 @@ module.exports = baseLt;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMap.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseMap.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseMap.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12187,9 +12565,9 @@ module.exports = baseMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMatches.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseMatches.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseMatches.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12220,9 +12598,9 @@ module.exports = baseMatches;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMatchesProperty.js":
-/*!*******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseMatchesProperty.js ***!
-  \*******************************************************************************/
+/*!***********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseMatchesProperty.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12264,9 +12642,9 @@ module.exports = baseMatchesProperty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMerge.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseMerge.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseMerge.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12294,8 +12672,8 @@ function baseMerge(object, source, srcIndex, customizer, stack) {
     return;
   }
   baseFor(source, function(srcValue, key) {
+    stack || (stack = new Stack);
     if (isObject(srcValue)) {
-      stack || (stack = new Stack);
       baseMergeDeep(object, source, key, srcIndex, baseMerge, customizer, stack);
     }
     else {
@@ -12317,9 +12695,9 @@ module.exports = baseMerge;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMergeDeep.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseMergeDeep.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseMergeDeep.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12422,9 +12800,9 @@ module.exports = baseMergeDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseOrderBy.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseOrderBy.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseOrderBy.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12467,9 +12845,9 @@ module.exports = baseOrderBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_basePick.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_basePick.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_basePick.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12497,9 +12875,9 @@ module.exports = basePick;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_basePickBy.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_basePickBy.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_basePickBy.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12538,9 +12916,9 @@ module.exports = basePickBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseProperty.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseProperty.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseProperty.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12563,9 +12941,9 @@ module.exports = baseProperty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_basePropertyDeep.js":
-/*!****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_basePropertyDeep.js ***!
-  \****************************************************************************/
+/*!********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_basePropertyDeep.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12590,9 +12968,9 @@ module.exports = basePropertyDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseRange.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseRange.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseRange.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12629,9 +13007,9 @@ module.exports = baseRange;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseReduce.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseReduce.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseReduce.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12663,9 +13041,9 @@ module.exports = baseReduce;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseRest.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseRest.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseRest.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12691,9 +13069,9 @@ module.exports = baseRest;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseSet.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseSet.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseSet.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12749,9 +13127,9 @@ module.exports = baseSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseSetToString.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseSetToString.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseSetToString.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12782,9 +13160,9 @@ module.exports = baseSetToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseSortBy.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseSortBy.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseSortBy.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12814,9 +13192,9 @@ module.exports = baseSortBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseTimes.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseTimes.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseTimes.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12845,9 +13223,9 @@ module.exports = baseTimes;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseToString.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseToString.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseToString.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12893,9 +13271,9 @@ module.exports = baseToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseUnary.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseUnary.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseUnary.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12918,9 +13296,9 @@ module.exports = baseUnary;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseUniq.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseUniq.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseUniq.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13001,9 +13379,9 @@ module.exports = baseUniq;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseValues.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseValues.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseValues.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13031,9 +13409,9 @@ module.exports = baseValues;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseZipObject.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_baseZipObject.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseZipObject.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -13065,9 +13443,9 @@ module.exports = baseZipObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cacheHas.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_cacheHas.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_cacheHas.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -13089,9 +13467,9 @@ module.exports = cacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_castFunction.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_castFunction.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_castFunction.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13114,9 +13492,9 @@ module.exports = castFunction;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_castPath.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_castPath.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_castPath.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13146,9 +13524,9 @@ module.exports = castPath;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneArrayBuffer.js":
-/*!****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_cloneArrayBuffer.js ***!
-  \****************************************************************************/
+/*!********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneArrayBuffer.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13173,9 +13551,9 @@ module.exports = cloneArrayBuffer;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneBuffer.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_cloneBuffer.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneBuffer.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13220,9 +13598,9 @@ module.exports = cloneBuffer;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneDataView.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_cloneDataView.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneDataView.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13247,9 +13625,9 @@ module.exports = cloneDataView;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneRegExp.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_cloneRegExp.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneRegExp.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -13275,9 +13653,9 @@ module.exports = cloneRegExp;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneSymbol.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_cloneSymbol.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneSymbol.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13304,9 +13682,9 @@ module.exports = cloneSymbol;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneTypedArray.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_cloneTypedArray.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneTypedArray.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13331,9 +13709,9 @@ module.exports = cloneTypedArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_compareAscending.js":
-/*!****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_compareAscending.js ***!
-  \****************************************************************************/
+/*!********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_compareAscending.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13383,9 +13761,9 @@ module.exports = compareAscending;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_compareMultiple.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_compareMultiple.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_compareMultiple.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13438,9 +13816,9 @@ module.exports = compareMultiple;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copyArray.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_copyArray.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_copyArray.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -13469,9 +13847,9 @@ module.exports = copyArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copyObject.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_copyObject.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_copyObject.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13520,9 +13898,9 @@ module.exports = copyObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copySymbols.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_copySymbols.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_copySymbols.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13547,9 +13925,9 @@ module.exports = copySymbols;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copySymbolsIn.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_copySymbolsIn.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_copySymbolsIn.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13574,9 +13952,9 @@ module.exports = copySymbolsIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_coreJsData.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_coreJsData.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_coreJsData.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13591,9 +13969,9 @@ module.exports = coreJsData;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createAssigner.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_createAssigner.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_createAssigner.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13639,9 +14017,9 @@ module.exports = createAssigner;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createBaseEach.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_createBaseEach.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_createBaseEach.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13682,9 +14060,9 @@ module.exports = createBaseEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createBaseFor.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_createBaseFor.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_createBaseFor.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -13718,9 +14096,9 @@ module.exports = createBaseFor;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createFind.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_createFind.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_createFind.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13754,9 +14132,9 @@ module.exports = createFind;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createRange.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_createRange.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_createRange.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13795,9 +14173,9 @@ module.exports = createRange;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createSet.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_createSet.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_createSet.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13825,9 +14203,9 @@ module.exports = createSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_defineProperty.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_defineProperty.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_defineProperty.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13847,9 +14225,9 @@ module.exports = defineProperty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_equalArrays.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_equalArrays.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_equalArrays.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13941,9 +14319,9 @@ module.exports = equalArrays;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_equalByTag.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_equalByTag.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_equalByTag.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14064,9 +14442,9 @@ module.exports = equalByTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_equalObjects.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_equalObjects.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_equalObjects.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14164,9 +14542,9 @@ module.exports = equalObjects;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_flatRest.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_flatRest.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_flatRest.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14191,9 +14569,9 @@ module.exports = flatRest;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_freeGlobal.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_freeGlobal.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_freeGlobal.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14207,9 +14585,9 @@ module.exports = freeGlobal;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getAllKeys.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getAllKeys.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getAllKeys.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14234,9 +14612,9 @@ module.exports = getAllKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getAllKeysIn.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getAllKeysIn.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getAllKeysIn.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14262,9 +14640,9 @@ module.exports = getAllKeysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getMapData.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getMapData.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getMapData.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14291,9 +14669,9 @@ module.exports = getMapData;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getMatchData.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getMatchData.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getMatchData.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14326,9 +14704,9 @@ module.exports = getMatchData;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getNative.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getNative.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getNative.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14354,9 +14732,9 @@ module.exports = getNative;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getPrototype.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getPrototype.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getPrototype.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14371,9 +14749,9 @@ module.exports = getPrototype;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getRawTag.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getRawTag.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getRawTag.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14428,9 +14806,9 @@ module.exports = getRawTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getSymbols.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getSymbols.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getSymbols.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14469,9 +14847,9 @@ module.exports = getSymbols;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getSymbolsIn.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getSymbolsIn.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getSymbolsIn.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14505,9 +14883,9 @@ module.exports = getSymbolsIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getTag.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getTag.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getTag.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14574,9 +14952,9 @@ module.exports = getTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getValue.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_getValue.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_getValue.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -14598,9 +14976,9 @@ module.exports = getValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hasPath.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_hasPath.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_hasPath.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14648,9 +15026,9 @@ module.exports = hasPath;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hasUnicode.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_hasUnicode.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_hasUnicode.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -14685,9 +15063,9 @@ module.exports = hasUnicode;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashClear.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_hashClear.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_hashClear.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14711,9 +15089,9 @@ module.exports = hashClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashDelete.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_hashDelete.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_hashDelete.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -14739,9 +15117,9 @@ module.exports = hashDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashGet.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_hashGet.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_hashGet.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14780,9 +15158,9 @@ module.exports = hashGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashHas.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_hashHas.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_hashHas.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14814,9 +15192,9 @@ module.exports = hashHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashSet.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_hashSet.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_hashSet.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14848,9 +15226,9 @@ module.exports = hashSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_initCloneArray.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_initCloneArray.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_initCloneArray.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -14885,9 +15263,9 @@ module.exports = initCloneArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_initCloneByTag.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_initCloneByTag.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_initCloneByTag.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14973,9 +15351,9 @@ module.exports = initCloneByTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_initCloneObject.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_initCloneObject.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_initCloneObject.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15002,9 +15380,9 @@ module.exports = initCloneObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isFlattenable.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_isFlattenable.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_isFlattenable.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15033,9 +15411,9 @@ module.exports = isFlattenable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isIndex.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_isIndex.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_isIndex.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15069,9 +15447,9 @@ module.exports = isIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isIterateeCall.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_isIterateeCall.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_isIterateeCall.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15110,9 +15488,9 @@ module.exports = isIterateeCall;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isKey.js":
-/*!*****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_isKey.js ***!
-  \*****************************************************************/
+/*!*********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_isKey.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15150,9 +15528,9 @@ module.exports = isKey;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isKeyable.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_isKeyable.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_isKeyable.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15176,9 +15554,9 @@ module.exports = isKeyable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isMasked.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_isMasked.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_isMasked.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15207,9 +15585,9 @@ module.exports = isMasked;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isPrototype.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_isPrototype.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_isPrototype.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15236,9 +15614,9 @@ module.exports = isPrototype;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isStrictComparable.js":
-/*!******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_isStrictComparable.js ***!
-  \******************************************************************************/
+/*!**********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_isStrictComparable.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15262,9 +15640,9 @@ module.exports = isStrictComparable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheClear.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_listCacheClear.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_listCacheClear.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15286,9 +15664,9 @@ module.exports = listCacheClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheDelete.js":
-/*!***************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_listCacheDelete.js ***!
-  \***************************************************************************/
+/*!*******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_listCacheDelete.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15332,9 +15710,9 @@ module.exports = listCacheDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheGet.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_listCacheGet.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_listCacheGet.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15362,9 +15740,9 @@ module.exports = listCacheGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheHas.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_listCacheHas.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_listCacheHas.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15389,9 +15767,9 @@ module.exports = listCacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheSet.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_listCacheSet.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_listCacheSet.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15426,9 +15804,9 @@ module.exports = listCacheSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheClear.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_mapCacheClear.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapCacheClear.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15458,9 +15836,9 @@ module.exports = mapCacheClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheDelete.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_mapCacheDelete.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapCacheDelete.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15487,9 +15865,9 @@ module.exports = mapCacheDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheGet.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_mapCacheGet.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapCacheGet.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15514,9 +15892,9 @@ module.exports = mapCacheGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheHas.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_mapCacheHas.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapCacheHas.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15541,9 +15919,9 @@ module.exports = mapCacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheSet.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_mapCacheSet.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapCacheSet.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15574,9 +15952,9 @@ module.exports = mapCacheSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapToArray.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_mapToArray.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapToArray.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15603,9 +15981,9 @@ module.exports = mapToArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_matchesStrictComparable.js":
-/*!***********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_matchesStrictComparable.js ***!
-  \***********************************************************************************/
+/*!***************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_matchesStrictComparable.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15634,9 +16012,9 @@ module.exports = matchesStrictComparable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_memoizeCapped.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_memoizeCapped.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_memoizeCapped.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15671,9 +16049,9 @@ module.exports = memoizeCapped;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nativeCreate.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_nativeCreate.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_nativeCreate.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15688,9 +16066,9 @@ module.exports = nativeCreate;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nativeKeys.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_nativeKeys.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_nativeKeys.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15705,9 +16083,9 @@ module.exports = nativeKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nativeKeysIn.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_nativeKeysIn.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_nativeKeysIn.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15736,9 +16114,9 @@ module.exports = nativeKeysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nodeUtil.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_nodeUtil.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_nodeUtil.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15778,9 +16156,9 @@ module.exports = nodeUtil;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_objectToString.js":
-/*!**************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_objectToString.js ***!
-  \**************************************************************************/
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_objectToString.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15811,9 +16189,9 @@ module.exports = objectToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_overArg.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_overArg.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_overArg.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15837,9 +16215,9 @@ module.exports = overArg;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_overRest.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_overRest.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_overRest.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15884,9 +16262,9 @@ module.exports = overRest;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_root.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_root.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_root.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15904,14 +16282,14 @@ module.exports = root;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_safeGet.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_safeGet.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_safeGet.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
 /**
- * Gets the value at `key`, unless `key` is "__proto__".
+ * Gets the value at `key`, unless `key` is "__proto__" or "constructor".
  *
  * @private
  * @param {Object} object The object to query.
@@ -15919,6 +16297,10 @@ module.exports = root;
  * @returns {*} Returns the property value.
  */
 function safeGet(object, key) {
+  if (key === 'constructor' && typeof object[key] === 'function') {
+    return;
+  }
+
   if (key == '__proto__') {
     return;
   }
@@ -15932,9 +16314,9 @@ module.exports = safeGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setCacheAdd.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_setCacheAdd.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_setCacheAdd.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15962,9 +16344,9 @@ module.exports = setCacheAdd;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setCacheHas.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_setCacheHas.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_setCacheHas.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15987,9 +16369,9 @@ module.exports = setCacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setToArray.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_setToArray.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_setToArray.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16016,9 +16398,9 @@ module.exports = setToArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setToString.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_setToString.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_setToString.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16041,9 +16423,9 @@ module.exports = setToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_shortOut.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_shortOut.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_shortOut.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16089,9 +16471,9 @@ module.exports = shortOut;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackClear.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_stackClear.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_stackClear.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16115,9 +16497,9 @@ module.exports = stackClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackDelete.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_stackDelete.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_stackDelete.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16144,9 +16526,9 @@ module.exports = stackDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackGet.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_stackGet.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_stackGet.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16169,9 +16551,9 @@ module.exports = stackGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackHas.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_stackHas.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_stackHas.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16194,9 +16576,9 @@ module.exports = stackHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackSet.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_stackSet.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_stackSet.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16239,9 +16621,9 @@ module.exports = stackSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_strictIndexOf.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_strictIndexOf.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_strictIndexOf.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16273,9 +16655,9 @@ module.exports = strictIndexOf;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stringSize.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_stringSize.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_stringSize.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16302,9 +16684,9 @@ module.exports = stringSize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stringToPath.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_stringToPath.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_stringToPath.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16340,9 +16722,9 @@ module.exports = stringToPath;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_toKey.js":
-/*!*****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_toKey.js ***!
-  \*****************************************************************/
+/*!*********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_toKey.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16372,9 +16754,9 @@ module.exports = toKey;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_toSource.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_toSource.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_toSource.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16409,9 +16791,9 @@ module.exports = toSource;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_unicodeSize.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/_unicodeSize.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/_unicodeSize.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16464,9 +16846,9 @@ module.exports = unicodeSize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/clone.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/clone.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/clone.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16511,9 +16893,9 @@ module.exports = clone;
 /***/ }),
 
 /***/ "../../node_modules/lodash/cloneDeep.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/cloneDeep.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/cloneDeep.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16551,9 +16933,9 @@ module.exports = cloneDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/constant.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/constant.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/constant.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16588,9 +16970,9 @@ module.exports = constant;
 /***/ }),
 
 /***/ "../../node_modules/lodash/defaults.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/defaults.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/defaults.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16663,9 +17045,9 @@ module.exports = defaults;
 /***/ }),
 
 /***/ "../../node_modules/lodash/each.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/each.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/each.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16675,9 +17057,9 @@ module.exports = __webpack_require__(/*! ./forEach */ "../../node_modules/lodash
 /***/ }),
 
 /***/ "../../node_modules/lodash/eq.js":
-/*!*************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/eq.js ***!
-  \*************************************************************/
+/*!*****************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/eq.js ***!
+  \*****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16723,9 +17105,9 @@ module.exports = eq;
 /***/ }),
 
 /***/ "../../node_modules/lodash/filter.js":
-/*!*****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/filter.js ***!
-  \*****************************************************************/
+/*!*********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/filter.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16782,9 +17164,9 @@ module.exports = filter;
 /***/ }),
 
 /***/ "../../node_modules/lodash/find.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/find.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/find.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16835,9 +17217,9 @@ module.exports = find;
 /***/ }),
 
 /***/ "../../node_modules/lodash/findIndex.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/findIndex.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/findIndex.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16901,9 +17283,9 @@ module.exports = findIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/flatten.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/flatten.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/flatten.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16934,9 +17316,9 @@ module.exports = flatten;
 /***/ }),
 
 /***/ "../../node_modules/lodash/forEach.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/forEach.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/forEach.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16986,9 +17368,9 @@ module.exports = forEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/forIn.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/forIn.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/forIn.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17036,9 +17418,9 @@ module.exports = forIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/get.js":
-/*!**************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/get.js ***!
-  \**************************************************************/
+/*!******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/get.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17080,9 +17462,9 @@ module.exports = get;
 /***/ }),
 
 /***/ "../../node_modules/lodash/has.js":
-/*!**************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/has.js ***!
-  \**************************************************************/
+/*!******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/has.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17126,9 +17508,9 @@ module.exports = has;
 /***/ }),
 
 /***/ "../../node_modules/lodash/hasIn.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/hasIn.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/hasIn.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17171,9 +17553,9 @@ module.exports = hasIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/identity.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/identity.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/identity.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17203,9 +17585,9 @@ module.exports = identity;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArguments.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isArguments.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isArguments.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17250,9 +17632,9 @@ module.exports = isArguments;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArray.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isArray.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isArray.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17287,9 +17669,9 @@ module.exports = isArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArrayLike.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isArrayLike.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isArrayLike.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17331,9 +17713,9 @@ module.exports = isArrayLike;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArrayLikeObject.js":
-/*!****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isArrayLikeObject.js ***!
-  \****************************************************************************/
+/*!********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isArrayLikeObject.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17375,9 +17757,9 @@ module.exports = isArrayLikeObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isBuffer.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isBuffer.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isBuffer.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17425,9 +17807,9 @@ module.exports = isBuffer;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isEmpty.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isEmpty.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isEmpty.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17513,9 +17895,9 @@ module.exports = isEmpty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isFunction.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isFunction.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isFunction.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17561,9 +17943,9 @@ module.exports = isFunction;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isLength.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isLength.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isLength.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17607,9 +17989,9 @@ module.exports = isLength;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isMap.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isMap.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isMap.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17645,9 +18027,9 @@ module.exports = isMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isObject.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isObject.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isObject.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17687,9 +18069,9 @@ module.exports = isObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isObjectLike.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isObjectLike.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isObjectLike.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17727,9 +18109,9 @@ module.exports = isObjectLike;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isPlainObject.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isPlainObject.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isPlainObject.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17800,9 +18182,9 @@ module.exports = isPlainObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isSet.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isSet.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isSet.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17838,9 +18220,9 @@ module.exports = isSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isString.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isString.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isString.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17879,9 +18261,9 @@ module.exports = isString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isSymbol.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isSymbol.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isSymbol.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17919,9 +18301,9 @@ module.exports = isSymbol;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isTypedArray.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isTypedArray.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isTypedArray.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17957,9 +18339,9 @@ module.exports = isTypedArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isUndefined.js":
-/*!**********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/isUndefined.js ***!
-  \**********************************************************************/
+/*!**************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/isUndefined.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17990,9 +18372,9 @@ module.exports = isUndefined;
 /***/ }),
 
 /***/ "../../node_modules/lodash/keys.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/keys.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/keys.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18038,9 +18420,9 @@ module.exports = keys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/keysIn.js":
-/*!*****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/keysIn.js ***!
-  \*****************************************************************/
+/*!*********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/keysIn.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18081,9 +18463,9 @@ module.exports = keysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/last.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/last.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/last.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18112,16 +18494,16 @@ module.exports = last;
 /***/ }),
 
 /***/ "../../node_modules/lodash/lodash.js":
-/*!*****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/lodash.js ***!
-  \*****************************************************************/
+/*!*********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/lodash.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, module) {var __WEBPACK_AMD_DEFINE_RESULT__;/**
  * @license
  * Lodash <https://lodash.com/>
- * Copyright JS Foundation and other contributors <https://js.foundation/>
+ * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
  * Released under MIT license <https://lodash.com/license>
  * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
  * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -18132,7 +18514,7 @@ module.exports = last;
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.17.11';
+  var VERSION = '4.17.14';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
@@ -20791,16 +21173,10 @@ module.exports = last;
         value.forEach(function(subValue) {
           result.add(baseClone(subValue, bitmask, customizer, subValue, value, stack));
         });
-
-        return result;
-      }
-
-      if (isMap(value)) {
+      } else if (isMap(value)) {
         value.forEach(function(subValue, key) {
           result.set(key, baseClone(subValue, bitmask, customizer, key, value, stack));
         });
-
-        return result;
       }
 
       var keysFunc = isFull
@@ -21724,8 +22100,8 @@ module.exports = last;
         return;
       }
       baseFor(source, function(srcValue, key) {
+        stack || (stack = new Stack);
         if (isObject(srcValue)) {
-          stack || (stack = new Stack);
           baseMergeDeep(object, source, key, srcIndex, baseMerge, customizer, stack);
         }
         else {
@@ -23542,7 +23918,7 @@ module.exports = last;
       return function(number, precision) {
         number = toNumber(number);
         precision = precision == null ? 0 : nativeMin(toInteger(precision), 292);
-        if (precision) {
+        if (precision && nativeIsFinite(number)) {
           // Shift with exponential notation to avoid floating-point issues.
           // See [MDN](https://mdn.io/round#Examples) for more details.
           var pair = (toString(number) + 'e').split('e'),
@@ -24725,7 +25101,7 @@ module.exports = last;
     }
 
     /**
-     * Gets the value at `key`, unless `key` is "__proto__".
+     * Gets the value at `key`, unless `key` is "__proto__" or "constructor".
      *
      * @private
      * @param {Object} object The object to query.
@@ -24733,6 +25109,10 @@ module.exports = last;
      * @returns {*} Returns the property value.
      */
     function safeGet(object, key) {
+      if (key === 'constructor' && typeof object[key] === 'function') {
+        return;
+      }
+
       if (key == '__proto__') {
         return;
       }
@@ -28533,6 +28913,7 @@ module.exports = last;
           }
           if (maxing) {
             // Handle invocations in a tight loop.
+            clearTimeout(timerId);
             timerId = setTimeout(timerExpired, wait);
             return invokeFunc(lastCallTime);
           }
@@ -32919,9 +33300,12 @@ module.exports = last;
       , 'g');
 
       // Use a sourceURL for easier debugging.
+      // The sourceURL gets injected into the source that's eval-ed, so be careful
+      // with lookup (in case of e.g. prototype pollution), and strip newlines if any.
+      // A newline wouldn't be a valid sourceURL anyway, and it'd enable code injection.
       var sourceURL = '//# sourceURL=' +
-        ('sourceURL' in options
-          ? options.sourceURL
+        (hasOwnProperty.call(options, 'sourceURL')
+          ? (options.sourceURL + '').replace(/[\r\n]/g, ' ')
           : ('lodash.templateSources[' + (++templateCounter) + ']')
         ) + '\n';
 
@@ -32954,7 +33338,9 @@ module.exports = last;
 
       // If `variable` is not specified wrap a with-statement around the generated
       // code to add the data object to the top of the scope chain.
-      var variable = options.variable;
+      // Like with sourceURL, we take care to not check the option's prototype,
+      // as this configuration is a code injection vector.
+      var variable = hasOwnProperty.call(options, 'variable') && options.variable;
       if (!variable) {
         source = 'with (obj) {\n' + source + '\n}\n';
       }
@@ -35159,10 +35545,11 @@ module.exports = last;
     baseForOwn(LazyWrapper.prototype, function(func, methodName) {
       var lodashFunc = lodash[methodName];
       if (lodashFunc) {
-        var key = (lodashFunc.name + ''),
-            names = realNames[key] || (realNames[key] = []);
-
-        names.push({ 'name': methodName, 'func': lodashFunc });
+        var key = lodashFunc.name + '';
+        if (!hasOwnProperty.call(realNames, key)) {
+          realNames[key] = [];
+        }
+        realNames[key].push({ 'name': methodName, 'func': lodashFunc });
       }
     });
 
@@ -35223,9 +35610,9 @@ module.exports = last;
 /***/ }),
 
 /***/ "../../node_modules/lodash/map.js":
-/*!**************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/map.js ***!
-  \**************************************************************/
+/*!******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/map.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35287,9 +35674,9 @@ module.exports = map;
 /***/ }),
 
 /***/ "../../node_modules/lodash/mapValues.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/mapValues.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/mapValues.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35341,9 +35728,9 @@ module.exports = mapValues;
 /***/ }),
 
 /***/ "../../node_modules/lodash/max.js":
-/*!**************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/max.js ***!
-  \**************************************************************/
+/*!******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/max.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35381,9 +35768,9 @@ module.exports = max;
 /***/ }),
 
 /***/ "../../node_modules/lodash/memoize.js":
-/*!******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/memoize.js ***!
-  \******************************************************************/
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/memoize.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35465,9 +35852,9 @@ module.exports = memoize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/merge.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/merge.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/merge.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35515,9 +35902,9 @@ module.exports = merge;
 /***/ }),
 
 /***/ "../../node_modules/lodash/min.js":
-/*!**************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/min.js ***!
-  \**************************************************************/
+/*!******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/min.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35555,9 +35942,9 @@ module.exports = min;
 /***/ }),
 
 /***/ "../../node_modules/lodash/minBy.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/minBy.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/minBy.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35600,9 +35987,9 @@ module.exports = minBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/noop.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/noop.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/noop.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -35628,9 +36015,9 @@ module.exports = noop;
 /***/ }),
 
 /***/ "../../node_modules/lodash/now.js":
-/*!**************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/now.js ***!
-  \**************************************************************/
+/*!******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/now.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35662,9 +36049,9 @@ module.exports = now;
 /***/ }),
 
 /***/ "../../node_modules/lodash/pick.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/pick.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/pick.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35698,9 +36085,9 @@ module.exports = pick;
 /***/ }),
 
 /***/ "../../node_modules/lodash/property.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/property.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/property.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35741,9 +36128,9 @@ module.exports = property;
 /***/ }),
 
 /***/ "../../node_modules/lodash/range.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/range.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/range.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35798,9 +36185,9 @@ module.exports = range;
 /***/ }),
 
 /***/ "../../node_modules/lodash/reduce.js":
-/*!*****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/reduce.js ***!
-  \*****************************************************************/
+/*!*********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/reduce.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35860,9 +36247,9 @@ module.exports = reduce;
 /***/ }),
 
 /***/ "../../node_modules/lodash/size.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/size.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/size.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35917,9 +36304,9 @@ module.exports = size;
 /***/ }),
 
 /***/ "../../node_modules/lodash/sortBy.js":
-/*!*****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/sortBy.js ***!
-  \*****************************************************************/
+/*!*********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/sortBy.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35976,9 +36363,9 @@ module.exports = sortBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/stubArray.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/stubArray.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/stubArray.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -36010,9 +36397,9 @@ module.exports = stubArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/stubFalse.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/stubFalse.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/stubFalse.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -36039,9 +36426,9 @@ module.exports = stubFalse;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toFinite.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/toFinite.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/toFinite.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36092,9 +36479,9 @@ module.exports = toFinite;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toInteger.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/toInteger.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/toInteger.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36139,9 +36526,9 @@ module.exports = toInteger;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toNumber.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/toNumber.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/toNumber.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36216,9 +36603,9 @@ module.exports = toNumber;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toPlainObject.js":
-/*!************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/toPlainObject.js ***!
-  \************************************************************************/
+/*!****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/toPlainObject.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36259,9 +36646,9 @@ module.exports = toPlainObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toString.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/toString.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/toString.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36298,9 +36685,9 @@ module.exports = toString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/transform.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/transform.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/transform.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36374,9 +36761,9 @@ module.exports = transform;
 /***/ }),
 
 /***/ "../../node_modules/lodash/union.js":
-/*!****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/union.js ***!
-  \****************************************************************/
+/*!********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/union.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36411,9 +36798,9 @@ module.exports = union;
 /***/ }),
 
 /***/ "../../node_modules/lodash/uniqueId.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/uniqueId.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/uniqueId.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36450,9 +36837,9 @@ module.exports = uniqueId;
 /***/ }),
 
 /***/ "../../node_modules/lodash/values.js":
-/*!*****************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/values.js ***!
-  \*****************************************************************/
+/*!*********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/values.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36495,9 +36882,9 @@ module.exports = values;
 /***/ }),
 
 /***/ "../../node_modules/lodash/zipObject.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/lodash/zipObject.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/lodash/zipObject.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36530,9 +36917,9 @@ module.exports = zipObject;
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!***********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/object-assign/index.js ***!
-  \***********************************************************************/
+/*!***************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36631,10 +37018,205 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 /***/ }),
 
+/***/ "../../node_modules/process/browser.js":
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/process/browser.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!*****************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \*****************************************************************************/
+/*!*********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36653,6 +37235,7 @@ var printWarning = function() {};
 if (true) {
   var ReactPropTypesSecret = __webpack_require__(/*! ./lib/ReactPropTypesSecret */ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js");
   var loggedTypeFailures = {};
+  var has = Function.call.bind(Object.prototype.hasOwnProperty);
 
   printWarning = function(text) {
     var message = 'Warning: ' + text;
@@ -36682,7 +37265,7 @@ if (true) {
 function checkPropTypes(typeSpecs, values, location, componentName, getStack) {
   if (true) {
     for (var typeSpecName in typeSpecs) {
-      if (typeSpecs.hasOwnProperty(typeSpecName)) {
+      if (has(typeSpecs, typeSpecName)) {
         var error;
         // Prop type validation may throw. In case they do, we don't want to
         // fail the render phase where it didn't fail before. So we log it.
@@ -36710,8 +37293,7 @@ function checkPropTypes(typeSpecs, values, location, componentName, getStack) {
             'You may have forgotten to pass an argument to the type checker ' +
             'creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and ' +
             'shape all require an argument).'
-          )
-
+          );
         }
         if (error instanceof Error && !(error.message in loggedTypeFailures)) {
           // Only monitor this failure once because there tends to be a lot of the
@@ -36729,15 +37311,26 @@ function checkPropTypes(typeSpecs, values, location, componentName, getStack) {
   }
 }
 
+/**
+ * Resets warning cache when testing.
+ *
+ * @private
+ */
+checkPropTypes.resetWarningCache = function() {
+  if (true) {
+    loggedTypeFailures = {};
+  }
+}
+
 module.exports = checkPropTypes;
 
 
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!**************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \**************************************************************************************/
+/*!******************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36751,11 +37344,13 @@ module.exports = checkPropTypes;
 
 
 
+var ReactIs = __webpack_require__(/*! react-is */ "../../node_modules/react-is/index.js");
 var assign = __webpack_require__(/*! object-assign */ "../../node_modules/object-assign/index.js");
 
 var ReactPropTypesSecret = __webpack_require__(/*! ./lib/ReactPropTypesSecret */ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js");
 var checkPropTypes = __webpack_require__(/*! ./checkPropTypes */ "../../node_modules/prop-types/checkPropTypes.js");
 
+var has = Function.call.bind(Object.prototype.hasOwnProperty);
 var printWarning = function() {};
 
 if (true) {
@@ -36866,6 +37461,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
     any: createAnyTypeChecker(),
     arrayOf: createArrayOfTypeChecker,
     element: createElementTypeChecker(),
+    elementType: createElementTypeTypeChecker(),
     instanceOf: createInstanceTypeChecker,
     node: createNodeChecker(),
     objectOf: createObjectOfTypeChecker,
@@ -37019,6 +37615,18 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
     return createChainableTypeChecker(validate);
   }
 
+  function createElementTypeTypeChecker() {
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      if (!ReactIs.isValidElementType(propValue)) {
+        var propType = getPropType(propValue);
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement type.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
   function createInstanceTypeChecker(expectedClass) {
     function validate(props, propName, componentName, location, propFullName) {
       if (!(props[propName] instanceof expectedClass)) {
@@ -37033,7 +37641,16 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 
   function createEnumTypeChecker(expectedValues) {
     if (!Array.isArray(expectedValues)) {
-       true ? printWarning('Invalid argument supplied to oneOf, expected an instance of array.') : undefined;
+      if (true) {
+        if (arguments.length > 1) {
+          printWarning(
+            'Invalid arguments supplied to oneOf, expected an array, got ' + arguments.length + ' arguments. ' +
+            'A common mistake is to write oneOf(x, y, z) instead of oneOf([x, y, z]).'
+          );
+        } else {
+          printWarning('Invalid argument supplied to oneOf, expected an array.');
+        }
+      }
       return emptyFunctionThatReturnsNull;
     }
 
@@ -37045,8 +37662,14 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
         }
       }
 
-      var valuesString = JSON.stringify(expectedValues);
-      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of value `' + propValue + '` ' + ('supplied to `' + componentName + '`, expected one of ' + valuesString + '.'));
+      var valuesString = JSON.stringify(expectedValues, function replacer(key, value) {
+        var type = getPreciseType(value);
+        if (type === 'symbol') {
+          return String(value);
+        }
+        return value;
+      });
+      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of value `' + String(propValue) + '` ' + ('supplied to `' + componentName + '`, expected one of ' + valuesString + '.'));
     }
     return createChainableTypeChecker(validate);
   }
@@ -37062,7 +37685,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
         return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an object.'));
       }
       for (var key in propValue) {
-        if (propValue.hasOwnProperty(key)) {
+        if (has(propValue, key)) {
           var error = typeChecker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret);
           if (error instanceof Error) {
             return error;
@@ -37219,6 +37842,11 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
       return true;
     }
 
+    // falsy value can't be a Symbol
+    if (!propValue) {
+      return false;
+    }
+
     // 19.4.3.5 Symbol.prototype[@@toStringTag] === 'Symbol'
     if (propValue['@@toStringTag'] === 'Symbol') {
       return true;
@@ -37293,6 +37921,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
   }
 
   ReactPropTypes.checkPropTypes = checkPropTypes;
+  ReactPropTypes.resetWarningCache = checkPropTypes.resetWarningCache;
   ReactPropTypes.PropTypes = ReactPropTypes;
 
   return ReactPropTypes;
@@ -37302,9 +37931,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/prop-types/index.js ***!
-  \********************************************************************/
+/*!************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37316,30 +37945,21 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
  */
 
 if (true) {
-  var REACT_ELEMENT_TYPE = (typeof Symbol === 'function' &&
-    Symbol.for &&
-    Symbol.for('react.element')) ||
-    0xeac7;
-
-  var isValidElement = function(object) {
-    return typeof object === 'object' &&
-      object !== null &&
-      object.$$typeof === REACT_ELEMENT_TYPE;
-  };
+  var ReactIs = __webpack_require__(/*! react-is */ "../../node_modules/react-is/index.js");
 
   // By explicitly using `prop-types` you are opting into new development behavior.
   // http://fb.me/prop-types-in-prod
   var throwOnDirectAccess = true;
-  module.exports = __webpack_require__(/*! ./factoryWithTypeCheckers */ "../../node_modules/prop-types/factoryWithTypeCheckers.js")(isValidElement, throwOnDirectAccess);
+  module.exports = __webpack_require__(/*! ./factoryWithTypeCheckers */ "../../node_modules/prop-types/factoryWithTypeCheckers.js")(ReactIs.isElement, throwOnDirectAccess);
 } else {}
 
 
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!***************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \***************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37361,9 +37981,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!***************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \***************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -62588,9 +63208,9 @@ module.exports = reactDom;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/react-dom/index.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -62632,10 +63252,266 @@ if (false) {} else {
 
 /***/ }),
 
+/***/ "../../node_modules/react-is/cjs/react-is.development.js":
+/*!*****************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \*****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/** @license React v16.8.6
+ * react-is.development.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+
+
+
+
+if (true) {
+  (function() {
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+// The Symbol used to tag the ReactElement-like types. If there is no native Symbol
+// nor polyfill, then a plain number is used for performance.
+var hasSymbol = typeof Symbol === 'function' && Symbol.for;
+
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
+var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
+var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
+var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
+var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
+var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
+var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace;
+var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
+var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
+var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
+var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
+var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
+var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
+
+function isValidElementType(type) {
+  return typeof type === 'string' || typeof type === 'function' ||
+  // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
+  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE);
+}
+
+/**
+ * Forked from fbjs/warning:
+ * https://github.com/facebook/fbjs/blob/e66ba20ad5be433eb54423f2b097d829324d9de6/packages/fbjs/src/__forks__/warning.js
+ *
+ * Only change is we use console.warn instead of console.error,
+ * and do nothing when 'console' is not supported.
+ * This really simplifies the code.
+ * ---
+ * Similar to invariant but only logs a warning if the condition is not met.
+ * This can be used to log issues in development environments in critical
+ * paths. Removing the logging code for production environments will keep the
+ * same logic and follow the same code paths.
+ */
+
+var lowPriorityWarning = function () {};
+
+{
+  var printWarning = function (format) {
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    var argIndex = 0;
+    var message = 'Warning: ' + format.replace(/%s/g, function () {
+      return args[argIndex++];
+    });
+    if (typeof console !== 'undefined') {
+      console.warn(message);
+    }
+    try {
+      // --- Welcome to debugging React ---
+      // This error was thrown as a convenience so that you can use this stack
+      // to find the callsite that caused this warning to fire.
+      throw new Error(message);
+    } catch (x) {}
+  };
+
+  lowPriorityWarning = function (condition, format) {
+    if (format === undefined) {
+      throw new Error('`lowPriorityWarning(condition, format, ...args)` requires a warning ' + 'message argument');
+    }
+    if (!condition) {
+      for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+        args[_key2 - 2] = arguments[_key2];
+      }
+
+      printWarning.apply(undefined, [format].concat(args));
+    }
+  };
+}
+
+var lowPriorityWarning$1 = lowPriorityWarning;
+
+function typeOf(object) {
+  if (typeof object === 'object' && object !== null) {
+    var $$typeof = object.$$typeof;
+    switch ($$typeof) {
+      case REACT_ELEMENT_TYPE:
+        var type = object.type;
+
+        switch (type) {
+          case REACT_ASYNC_MODE_TYPE:
+          case REACT_CONCURRENT_MODE_TYPE:
+          case REACT_FRAGMENT_TYPE:
+          case REACT_PROFILER_TYPE:
+          case REACT_STRICT_MODE_TYPE:
+          case REACT_SUSPENSE_TYPE:
+            return type;
+          default:
+            var $$typeofType = type && type.$$typeof;
+
+            switch ($$typeofType) {
+              case REACT_CONTEXT_TYPE:
+              case REACT_FORWARD_REF_TYPE:
+              case REACT_PROVIDER_TYPE:
+                return $$typeofType;
+              default:
+                return $$typeof;
+            }
+        }
+      case REACT_LAZY_TYPE:
+      case REACT_MEMO_TYPE:
+      case REACT_PORTAL_TYPE:
+        return $$typeof;
+    }
+  }
+
+  return undefined;
+}
+
+// AsyncMode is deprecated along with isAsyncMode
+var AsyncMode = REACT_ASYNC_MODE_TYPE;
+var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
+var ContextConsumer = REACT_CONTEXT_TYPE;
+var ContextProvider = REACT_PROVIDER_TYPE;
+var Element = REACT_ELEMENT_TYPE;
+var ForwardRef = REACT_FORWARD_REF_TYPE;
+var Fragment = REACT_FRAGMENT_TYPE;
+var Lazy = REACT_LAZY_TYPE;
+var Memo = REACT_MEMO_TYPE;
+var Portal = REACT_PORTAL_TYPE;
+var Profiler = REACT_PROFILER_TYPE;
+var StrictMode = REACT_STRICT_MODE_TYPE;
+var Suspense = REACT_SUSPENSE_TYPE;
+
+var hasWarnedAboutDeprecatedIsAsyncMode = false;
+
+// AsyncMode should be deprecated
+function isAsyncMode(object) {
+  {
+    if (!hasWarnedAboutDeprecatedIsAsyncMode) {
+      hasWarnedAboutDeprecatedIsAsyncMode = true;
+      lowPriorityWarning$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
+    }
+  }
+  return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
+}
+function isConcurrentMode(object) {
+  return typeOf(object) === REACT_CONCURRENT_MODE_TYPE;
+}
+function isContextConsumer(object) {
+  return typeOf(object) === REACT_CONTEXT_TYPE;
+}
+function isContextProvider(object) {
+  return typeOf(object) === REACT_PROVIDER_TYPE;
+}
+function isElement(object) {
+  return typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
+}
+function isForwardRef(object) {
+  return typeOf(object) === REACT_FORWARD_REF_TYPE;
+}
+function isFragment(object) {
+  return typeOf(object) === REACT_FRAGMENT_TYPE;
+}
+function isLazy(object) {
+  return typeOf(object) === REACT_LAZY_TYPE;
+}
+function isMemo(object) {
+  return typeOf(object) === REACT_MEMO_TYPE;
+}
+function isPortal(object) {
+  return typeOf(object) === REACT_PORTAL_TYPE;
+}
+function isProfiler(object) {
+  return typeOf(object) === REACT_PROFILER_TYPE;
+}
+function isStrictMode(object) {
+  return typeOf(object) === REACT_STRICT_MODE_TYPE;
+}
+function isSuspense(object) {
+  return typeOf(object) === REACT_SUSPENSE_TYPE;
+}
+
+exports.typeOf = typeOf;
+exports.AsyncMode = AsyncMode;
+exports.ConcurrentMode = ConcurrentMode;
+exports.ContextConsumer = ContextConsumer;
+exports.ContextProvider = ContextProvider;
+exports.Element = Element;
+exports.ForwardRef = ForwardRef;
+exports.Fragment = Fragment;
+exports.Lazy = Lazy;
+exports.Memo = Memo;
+exports.Portal = Portal;
+exports.Profiler = Profiler;
+exports.StrictMode = StrictMode;
+exports.Suspense = Suspense;
+exports.isValidElementType = isValidElementType;
+exports.isAsyncMode = isAsyncMode;
+exports.isConcurrentMode = isConcurrentMode;
+exports.isContextConsumer = isContextConsumer;
+exports.isContextProvider = isContextProvider;
+exports.isElement = isElement;
+exports.isForwardRef = isForwardRef;
+exports.isFragment = isFragment;
+exports.isLazy = isLazy;
+exports.isMemo = isMemo;
+exports.isPortal = isPortal;
+exports.isProfiler = isProfiler;
+exports.isStrictMode = isStrictMode;
+exports.isSuspense = isSuspense;
+  })();
+}
+
+
+/***/ }),
+
+/***/ "../../node_modules/react-is/index.js":
+/*!**********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react-is/index.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+if (false) {} else {
+  module.exports = __webpack_require__(/*! ./cjs/react-is.development.js */ "../../node_modules/react-is/cjs/react-is.development.js");
+}
+
+
+/***/ }),
+
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!*******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \*******************************************************************************/
+/*!***********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -64880,9 +65756,9 @@ module.exports = react;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!***************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/react/index.js ***!
-  \***************************************************************/
+/*!*******************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/react/index.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -64897,9 +65773,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!***********************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \***********************************************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -65375,9 +66251,9 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!***************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \***************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -66288,9 +67164,9 @@ exports.unstable_getFirstCallbackNode = unstable_getFirstCallbackNode;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/scheduler/index.js ***!
-  \*******************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -66305,9 +67181,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*********************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*********************************************************************/
+/*!*************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -66321,10 +67197,208 @@ if (false) {} else {
 
 /***/ }),
 
+/***/ "../../node_modules/setimmediate/setImmediate.js":
+/*!*********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \*********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
+    "use strict";
+
+    if (global.setImmediate) {
+        return;
+    }
+
+    var nextHandle = 1; // Spec says greater than zero
+    var tasksByHandle = {};
+    var currentlyRunningATask = false;
+    var doc = global.document;
+    var registerImmediate;
+
+    function setImmediate(callback) {
+      // Callback can either be a function or a string
+      if (typeof callback !== "function") {
+        callback = new Function("" + callback);
+      }
+      // Copy function arguments
+      var args = new Array(arguments.length - 1);
+      for (var i = 0; i < args.length; i++) {
+          args[i] = arguments[i + 1];
+      }
+      // Store and register the task
+      var task = { callback: callback, args: args };
+      tasksByHandle[nextHandle] = task;
+      registerImmediate(nextHandle);
+      return nextHandle++;
+    }
+
+    function clearImmediate(handle) {
+        delete tasksByHandle[handle];
+    }
+
+    function run(task) {
+        var callback = task.callback;
+        var args = task.args;
+        switch (args.length) {
+        case 0:
+            callback();
+            break;
+        case 1:
+            callback(args[0]);
+            break;
+        case 2:
+            callback(args[0], args[1]);
+            break;
+        case 3:
+            callback(args[0], args[1], args[2]);
+            break;
+        default:
+            callback.apply(undefined, args);
+            break;
+        }
+    }
+
+    function runIfPresent(handle) {
+        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+        // So if we're currently running a task, we'll need to delay this invocation.
+        if (currentlyRunningATask) {
+            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+            // "too much recursion" error.
+            setTimeout(runIfPresent, 0, handle);
+        } else {
+            var task = tasksByHandle[handle];
+            if (task) {
+                currentlyRunningATask = true;
+                try {
+                    run(task);
+                } finally {
+                    clearImmediate(handle);
+                    currentlyRunningATask = false;
+                }
+            }
+        }
+    }
+
+    function installNextTickImplementation() {
+        registerImmediate = function(handle) {
+            process.nextTick(function () { runIfPresent(handle); });
+        };
+    }
+
+    function canUsePostMessage() {
+        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+        // where `global.postMessage` means something completely different and can't be used for this purpose.
+        if (global.postMessage && !global.importScripts) {
+            var postMessageIsAsynchronous = true;
+            var oldOnMessage = global.onmessage;
+            global.onmessage = function() {
+                postMessageIsAsynchronous = false;
+            };
+            global.postMessage("", "*");
+            global.onmessage = oldOnMessage;
+            return postMessageIsAsynchronous;
+        }
+    }
+
+    function installPostMessageImplementation() {
+        // Installs an event handler on `global` for the `message` event: see
+        // * https://developer.mozilla.org/en/DOM/window.postMessage
+        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+        var messagePrefix = "setImmediate$" + Math.random() + "$";
+        var onGlobalMessage = function(event) {
+            if (event.source === global &&
+                typeof event.data === "string" &&
+                event.data.indexOf(messagePrefix) === 0) {
+                runIfPresent(+event.data.slice(messagePrefix.length));
+            }
+        };
+
+        if (global.addEventListener) {
+            global.addEventListener("message", onGlobalMessage, false);
+        } else {
+            global.attachEvent("onmessage", onGlobalMessage);
+        }
+
+        registerImmediate = function(handle) {
+            global.postMessage(messagePrefix + handle, "*");
+        };
+    }
+
+    function installMessageChannelImplementation() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = function(event) {
+            var handle = event.data;
+            runIfPresent(handle);
+        };
+
+        registerImmediate = function(handle) {
+            channel.port2.postMessage(handle);
+        };
+    }
+
+    function installReadyStateChangeImplementation() {
+        var html = doc.documentElement;
+        registerImmediate = function(handle) {
+            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+            var script = doc.createElement("script");
+            script.onreadystatechange = function () {
+                runIfPresent(handle);
+                script.onreadystatechange = null;
+                html.removeChild(script);
+                script = null;
+            };
+            html.appendChild(script);
+        };
+    }
+
+    function installSetTimeoutImplementation() {
+        registerImmediate = function(handle) {
+            setTimeout(runIfPresent, 0, handle);
+        };
+    }
+
+    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+    // Don't get fooled by e.g. browserify environments.
+    if ({}.toString.call(global.process) === "[object process]") {
+        // For Node.js before 0.9
+        installNextTickImplementation();
+
+    } else if (canUsePostMessage()) {
+        // For non-IE10 modern browsers
+        installPostMessageImplementation();
+
+    } else if (global.MessageChannel) {
+        // For web workers, where supported
+        installMessageChannelImplementation();
+
+    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+        // For IE 6–8
+        installReadyStateChangeImplementation();
+
+    } else {
+        // For older browsers
+        installSetTimeoutImplementation();
+    }
+
+    attachTo.setImmediate = setImmediate;
+    attachTo.clearImmediate = clearImmediate;
+}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../process/browser.js */ "../../node_modules/process/browser.js")))
+
+/***/ }),
+
 /***/ "../../node_modules/storm-react-diagrams/dist/main.js":
-/*!**********************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/storm-react-diagrams/dist/main.js ***!
-  \**********************************************************************************/
+/*!**************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/storm-react-diagrams/dist/main.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -66336,9 +67410,9 @@ DiagramEngine.prototype.getNodeFactories=function(){return this.nodeFactories};D
 /***/ }),
 
 /***/ "../../node_modules/storm-react-diagrams/dist/style.min.css":
-/*!****************************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/storm-react-diagrams/dist/style.min.css ***!
-  \****************************************************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/storm-react-diagrams/dist/style.min.css ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -66366,9 +67440,9 @@ if(false) {}
 /***/ }),
 
 /***/ "../../node_modules/style-loader/lib/addStyles.js":
-/*!******************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
-  \******************************************************************************/
+/*!**********************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -66757,9 +67831,9 @@ function updateLink (link, options, obj) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/lib/urls.js":
-/*!*************************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/style-loader/lib/urls.js ***!
-  \*************************************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/style-loader/lib/urls.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -66856,11 +67930,86 @@ module.exports = function (css) {
 
 /***/ }),
 
+/***/ "../../node_modules/timers-browserify/main.js":
+/*!******************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
+            (typeof self !== "undefined" && self) ||
+            window;
+var apply = Function.prototype.apply;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, scope, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, scope, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) {
+  if (timeout) {
+    timeout.close();
+  }
+};
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(scope, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// setimmediate attaches itself to the global object
+__webpack_require__(/*! setimmediate */ "../../node_modules/setimmediate/setImmediate.js");
+// On some exotic environments, it's not clear which object `setimmediate` was
+// able to install onto.  Search each possibility in the same order as the
+// `setimmediate` library.
+exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
+                       (typeof global !== "undefined" && global.setImmediate) ||
+                       (this && this.setImmediate);
+exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
+                         (typeof global !== "undefined" && global.clearImmediate) ||
+                         (this && this.clearImmediate);
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*******************************************************************!*\
-  !*** /Users/mbond/dev/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*******************************************************************/
-/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -66877,6 +68026,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__values", function() { return __values; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spread", function() { return __spread; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spreadArrays", function() { return __spreadArrays; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__await", function() { return __await; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncGenerator", function() { return __asyncGenerator; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncDelegator", function() { return __asyncDelegator; });
@@ -66929,8 +68079,10 @@ function __rest(s, e) {
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
         t[p] = s[p];
     if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
-            t[p[i]] = s[p[i]];
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
     return t;
 }
 
@@ -67023,6 +68175,14 @@ function __spread() {
         ar = ar.concat(__read(arguments[i]));
     return ar;
 }
+
+function __spreadArrays() {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 
 function __await(v) {
     return this instanceof __await ? (this.v = v, this) : new __await(v);
@@ -67148,9 +68308,19 @@ module.exports = function(module) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BlockTools", function() { return BlockTools; });
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__);
-<<<<<<< Updated upstream
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/discardBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__);
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -67197,207 +68367,329 @@ __webpack_require__.r(__webpack_exports__);
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
-    BlockTools.GetBlockFromString = function (data, scene) {
+    BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
             case "BonesBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["BonesBlock"]("Bones");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["BonesBlock"]("Bones");
             case "InstancesBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InstancesBlock"]("Instances");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InstancesBlock"]("Instances");
             case "MorphTargetsBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MorphTargetsBlock"]("MorphTargets");
-            case "AlphaTestBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["AlphaTestBlock"]("AlphaTest");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["MorphTargetsBlock"]("MorphTargets");
+            case "DiscardBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DiscardBlock"]("Discard");
             case "ImageProcessingBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ImageProcessingBlock"]("ImageProcessing");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ImageProcessingBlock"]("ImageProcessing");
             case "ColorMergerBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ColorMergerBlock"]("ColorMerger");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ColorMergerBlock"]("ColorMerger");
             case "VectorMergerBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["VectorMergerBlock"]("VectorMerger");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["VectorMergerBlock"]("VectorMerger");
             case "ColorSplitterBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ColorSplitterBlock"]("ColorSplitter");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ColorSplitterBlock"]("ColorSplitter");
             case "VectorSplitterBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["VectorSplitterBlock"]("VectorSplitter");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["VectorSplitterBlock"]("VectorSplitter");
             case "TextureBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"]("Texture");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"]("Texture");
             case "ReflectionTextureBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectionTextureBlock"]("Texture");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectionTextureBlock"]("Reflection texture");
             case "LightBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LightBlock"]("Lights");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["LightBlock"]("Lights");
             case "FogBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["FogBlock"]("Fog");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["FogBlock"]("Fog");
             case "VertexOutputBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["VertexOutputBlock"]("VertexOutput");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["VertexOutputBlock"]("VertexOutput");
             case "FragmentOutputBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["FragmentOutputBlock"]("FragmentOutput");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["FragmentOutputBlock"]("FragmentOutput");
             case "AddBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["AddBlock"]("Add");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["AddBlock"]("Add");
             case "ClampBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ClampBlock"]("Clamp");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ClampBlock"]("Clamp");
             case "ScaleBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ScaleBlock"]("Scale");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ScaleBlock"]("Scale");
             case "CrossBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["CrossBlock"]("Cross");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["CrossBlock"]("Cross");
             case "DotBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["DotBlock"]("Dot");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DotBlock"]("Dot");
+            case "PowBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["PowBlock"]("Pow");
             case "MultiplyBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MultiplyBlock"]("Multiply");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["MultiplyBlock"]("Multiply");
             case "TransformBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TransformBlock"]("Transform");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TransformBlock"]("Transform");
             case "TrigonometryBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Trigonometry");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Trigonometry");
             case "RemapBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["RemapBlock"]("Remap");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RemapBlock"]("Remap");
             case "NormalizeBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NormalizeBlock"]("Normalize");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NormalizeBlock"]("Normalize");
             case "FresnelBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["FresnelBlock"]("Fresnel");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["FresnelBlock"]("Fresnel");
             case "LerpBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LerpBlock"]("Lerp");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["LerpBlock"]("Lerp");
+            case "NLerpBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NLerpBlock"]("NLerp");
             case "DivideBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["DivideBlock"]("Divide");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DivideBlock"]("Divide");
             case "SubtractBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["SubtractBlock"]("Subtract");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SubtractBlock"]("Subtract");
             case "StepBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["StepBlock"]("Step");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["StepBlock"]("Step");
+            case "SmoothStepBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SmoothStepBlock"]("Smooth step");
             case "OneMinusBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["OneMinusBlock"]("One minus");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["OneMinusBlock"]("One minus");
+            case "ReciprocalBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReciprocalBlock"]("Reciprocal");
             case "ViewDirectionBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ViewDirectionBlock"]("View direction");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ViewDirectionBlock"]("View direction");
             case "LightInformationBlock":
-                var lightInformationBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LightInformationBlock"]("Light information");
+                var lightInformationBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["LightInformationBlock"]("Light information");
                 lightInformationBlock.light = scene.lights.length ? scene.lights[0] : null;
                 return lightInformationBlock;
             case "MaxBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MaxBlock"]("Max");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["MaxBlock"]("Max");
             case "MinBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MinBlock"]("Min");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["MinBlock"]("Min");
             case "LengthBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LengthBlock"]("Length");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["LengthBlock"]("Length");
             case "DistanceBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["DistanceBlock"]("Distance");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DistanceBlock"]("Distance");
             case "NegateBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NegateBlock"]("Negate");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NegateBlock"]("Negate");
             case "PerturbNormalBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["PerturbNormalBlock"]("Perturb normal");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["PerturbNormalBlock"]("Perturb normal");
+            case "RandomNumberBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RandomNumberBlock"]("Random number");
+            case "ReplaceColorBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReplaceColorBlock"]("Replace color");
+            case "PosterizeBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["PosterizeBlock"]("Posterize");
+            case "ArcTan2Block":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ArcTan2Block"]("ArcTan2");
+            case "GradientBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["GradientBlock"]("Gradient");
+            case "FrontFacingBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["FrontFacingBlock"]("Front facing");
             case "CosBlock": {
-                var cosBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Cos");
-                cosBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Cos;
+                var cosBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Cos");
+                cosBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Cos;
                 return cosBlock;
             }
             case "SinBlock": {
-                var sinBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Sin");
-                sinBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Sin;
+                var sinBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Sin");
+                sinBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Sin;
                 return sinBlock;
             }
             case "AbsBlock": {
-                var absBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Abs");
-                absBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Abs;
+                var absBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Abs");
+                absBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Abs;
                 return absBlock;
             }
+            case "SqrtBlock": {
+                var sqrtBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Sqrt");
+                sqrtBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Sqrt;
+                return sqrtBlock;
+            }
+            case "ArcCosBlock": {
+                var acosBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("ArcCos");
+                acosBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].ArcCos;
+                return acosBlock;
+            }
+            case "ArcSinBlock": {
+                var asinBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("ArcSin");
+                asinBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].ArcSin;
+                return asinBlock;
+            }
+            case "TanBlock": {
+                var tanBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Tan");
+                tanBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Tan;
+                return tanBlock;
+            }
+            case "ArcTanBlock": {
+                var atanBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("ArcTan");
+                atanBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].ArcTan;
+                return atanBlock;
+            }
+            case "FractBlock": {
+                var fractBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Fract");
+                fractBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Fract;
+                return fractBlock;
+            }
+            case "SignBlock": {
+                var signBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Sign");
+                signBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Sign;
+                return signBlock;
+            }
+            case "LogBlock": {
+                var logBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Log");
+                logBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Log;
+                return logBlock;
+            }
             case "ExpBlock": {
-                var expBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Exp");
-                expBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Exp;
+                var expBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Exp");
+                expBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Exp;
                 return expBlock;
             }
             case "Exp2Block": {
-                var exp2Block = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Exp2");
-                exp2Block.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Exp2;
+                var exp2Block = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Exp2");
+                exp2Block.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Exp2;
                 return exp2Block;
             }
+            case "DegreesToRadiansBlock": {
+                var degreesToRadiansBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Degrees to radians");
+                degreesToRadiansBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Radians;
+                return degreesToRadiansBlock;
+            }
+            case "RadiansToDegreesBlock": {
+                var radiansToDegreesBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Radians to degrees");
+                radiansToDegreesBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Degrees;
+                return radiansToDegreesBlock;
+            }
             case "RoundBlock": {
-                var roundBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Round");
-                roundBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Round;
+                var roundBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Round");
+                roundBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Round;
                 return roundBlock;
             }
             case "CeilingBlock": {
-                var ceilingBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Ceiling");
-                ceilingBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Ceiling;
+                var ceilingBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Ceiling");
+                ceilingBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Ceiling;
                 return ceilingBlock;
             }
             case "FloorBlock": {
-                var floorBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Floor");
-                floorBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Floor;
+                var floorBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Floor");
+                floorBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Floor;
                 return floorBlock;
             }
+            case "SawToothWaveBlock": {
+                var sawToothWaveBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlock"]("SawTooth wave");
+                sawToothWaveBlock.kind = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlockKind"].SawTooth;
+                return sawToothWaveBlock;
+            }
+            case "SquareWaveBlock": {
+                var squareWaveBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlock"]("Square wave");
+                squareWaveBlock.kind = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlockKind"].Square;
+                return squareWaveBlock;
+            }
+            case "TriangleWaveBlock": {
+                var triangleWaveBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlock"]("Triangle wave");
+                triangleWaveBlock.kind = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlockKind"].Triangle;
+                return triangleWaveBlock;
+            }
             case "WorldMatrixBlock": {
-                var worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
-                worldMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World);
+                var worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
+                worldMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World);
                 return worldMatrixBlock;
             }
             case "WorldViewMatrixBlock": {
-                var worldViewMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World x View");
-                worldViewMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].WorldView);
+                var worldViewMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World x View");
+                worldViewMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].WorldView);
                 return worldViewMatrixBlock;
             }
             case "WorldViewProjectionMatrixBlock": {
-                var worldViewProjectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World x View x Projection");
-                worldViewProjectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].WorldViewProjection);
+                var worldViewProjectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World x View x Projection");
+                worldViewProjectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].WorldViewProjection);
                 return worldViewProjectionMatrixBlock;
             }
             case "ViewMatrixBlock": {
-                var viewMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("View");
-                viewMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].View);
+                var viewMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("View");
+                viewMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].View);
                 return viewMatrixBlock;
             }
             case "ViewProjectionMatrixBlock": {
-                var viewProjectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("View x Projection");
-                viewProjectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].ViewProjection);
+                var viewProjectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("View x Projection");
+                viewProjectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].ViewProjection);
                 return viewProjectionMatrixBlock;
             }
             case "ProjectionMatrixBlock": {
-                var projectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Projection");
-                projectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].Projection);
+                var projectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Projection");
+                projectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].Projection);
                 return projectionMatrixBlock;
             }
             case "CameraPositionBlock": {
-                var cameraPosition = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Camera position");
-                cameraPosition.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].CameraPosition);
+                var cameraPosition = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Camera position");
+                cameraPosition.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].CameraPosition);
                 return cameraPosition;
             }
             case "FogColorBlock": {
-                var FogColor = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Fog color");
-                FogColor.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].FogColor);
+                var FogColor = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Fog color");
+                FogColor.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].FogColor);
                 return FogColor;
             }
             case "PositionBlock": {
-                var meshPosition = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("position");
+                var meshPosition = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("position");
                 meshPosition.setAsAttribute("position");
                 return meshPosition;
             }
             case "UVBlock": {
-                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv");
+                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv");
                 meshUV.setAsAttribute("uv");
                 return meshUV;
             }
             case "ColorBlock": {
-                var meshColor = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("color");
+                var meshColor = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("color");
                 meshColor.setAsAttribute("color");
                 return meshColor;
             }
             case "NormalBlock": {
-                var meshNormal = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("normal");
+                var meshNormal = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("normal");
                 meshNormal.setAsAttribute("normal");
                 return meshNormal;
             }
             case "TangentBlock": {
-                var meshTangent = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("tangent");
+                var meshTangent = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("tangent");
                 meshTangent.setAsAttribute("tangent");
                 return meshTangent;
             }
             case "MatrixIndicesBlock": {
-                var meshMatrixIndices = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("matricesIndices");
+                var meshMatrixIndices = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("matricesIndices");
                 meshMatrixIndices.setAsAttribute("matricesIndices");
                 return meshMatrixIndices;
             }
             case "MatrixWeightsBlock": {
-                var meshMatrixWeights = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("matricesWeights");
+                var meshMatrixWeights = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("matricesWeights");
                 meshMatrixWeights.setAsAttribute("matricesWeights");
                 return meshMatrixWeights;
             }
             case "TimeBlock": {
-                var timeBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Time", undefined, babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float);
-                timeBlock.animationType = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["AnimatedInputBlockTypes"].Time;
+                var timeBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Time", undefined, babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float);
+                timeBlock.animationType = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["AnimatedInputBlockTypes"].Time;
                 return timeBlock;
+            }
+            case "DeltaTimeBlock": {
+                var deltaTimeBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Delta time");
+                deltaTimeBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].DeltaTime);
+                return deltaTimeBlock;
+            }
+            case "WorldPositionBlock": {
+                var worldPositionBlock = nodeMaterial.getInputBlockByPredicate(function (b) { return b.isAttribute && b.name === "position"; });
+                if (!worldPositionBlock) {
+                    worldPositionBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("position");
+                    worldPositionBlock.setAsAttribute("position");
+                }
+                var worldMatrixBlock = nodeMaterial.getInputBlockByPredicate(function (b) { return b.isSystemValue && b.systemValue === babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World; });
+                if (!worldMatrixBlock) {
+                    worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
+                    worldMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World);
+                }
+                var transformBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TransformBlock"]("World position");
+                worldPositionBlock.connectTo(transformBlock);
+                worldMatrixBlock.connectTo(transformBlock);
+                return transformBlock;
+            }
+            case "WorldNormalBlock": {
+                var worldNormalBlock = nodeMaterial.getInputBlockByPredicate(function (b) { return b.isAttribute && b.name === "normal"; });
+                if (!worldNormalBlock) {
+                    worldNormalBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("normal");
+                    worldNormalBlock.setAsAttribute("normal");
+                }
+                var worldMatrixBlock = nodeMaterial.getInputBlockByPredicate(function (b) { return b.isSystemValue && b.systemValue === babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World; });
+                if (!worldMatrixBlock) {
+                    worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
+                    worldMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World);
+                }
+                var transformBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TransformBlock"]("World normal");
+                worldNormalBlock.connectTo(transformBlock);
+                worldMatrixBlock.connectTo(transformBlock);
+                return transformBlock;
             }
         }
         return null;
@@ -67405,21 +68697,21 @@ var BlockTools = /** @class */ (function () {
     BlockTools.GetColorFromConnectionNodeType = function (type) {
         var color = "Red";
         switch (type) {
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float:
-                color = "#ca9e27";
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float:
+                color = "#cb9e27";
                 break;
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                 color = "#16bcb1";
                 break;
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3:
                 color = "#b786cb";
                 break;
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4:
                 color = "#be5126";
                 break;
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Matrix:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Matrix:
                 color = "#591990";
                 break;
         }
@@ -67428,37 +68720,37 @@ var BlockTools = /** @class */ (function () {
     BlockTools.GetConnectionNodeTypeFromString = function (type) {
         switch (type) {
             case "Float":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float;
+                return babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float;
             case "Vector2":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2;
+                return babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2;
             case "Vector3":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3;
+                return babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3;
             case "Vector4":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4;
+                return babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4;
             case "Matrix":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Matrix;
+                return babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Matrix;
             case "Color3":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3;
+                return babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3;
             case "Color4":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4;
+                return babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4;
         }
-        return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].AutoDetect;
+        return babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].AutoDetect;
     };
     BlockTools.GetStringFromConnectionNodeType = function (type) {
         switch (type) {
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float:
                 return "Float";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                 return "Vector2";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                 return "Vector3";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4:
                 return "Vector4";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3:
                 return "Color3";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4:
                 return "Color4";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Matrix:
+            case babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Matrix:
                 return "Matrix";
         }
         return "";
@@ -67466,312 +68758,6 @@ var BlockTools = /** @class */ (function () {
     return BlockTools;
 }());
 
-=======
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var BlockTools = /** @class */ (function () {
-    function BlockTools() {
-    }
-    BlockTools.GetBlockFromString = function (data) {
-        switch (data) {
-            case "BonesBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["BonesBlock"]("Bones");
-            case "InstancesBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InstancesBlock"]("Instances");
-            case "MorphTargetsBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MorphTargetsBlock"]("MorphTargets");
-            case "AlphaTestBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["AlphaTestBlock"]("AlphaTest");
-            case "ImageProcessingBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ImageProcessingBlock"]("ImageProcessing");
-            case "ColorMergerBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ColorMergerBlock"]("ColorMerger");
-            case "VectorMergerBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["VectorMergerBlock"]("VectorMerger");
-            case "ColorSplitterBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ColorSplitterBlock"]("ColorSplitter");
-            case "VectorSplitterBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["VectorSplitterBlock"]("VectorSplitter");
-            case "TextureBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"]("Texture");
-            case "ReflectionTextureBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectionTextureBlock"]("Texture");
-            case "LightBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LightBlock"]("Lights");
-            case "FogBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["FogBlock"]("Fog");
-            case "VertexOutputBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["VertexOutputBlock"]("VertexOutput");
-            case "FragmentOutputBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["FragmentOutputBlock"]("FragmentOutput");
-            case "AddBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["AddBlock"]("Add");
-            case "ClampBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ClampBlock"]("Clamp");
-            case "ScaleBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ScaleBlock"]("Scale");
-            case "CrossBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["CrossBlock"]("Cross");
-            case "DotBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["DotBlock"]("Dot");
-            case "MultiplyBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MultiplyBlock"]("Multiply");
-            case "TransformBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TransformBlock"]("Transform");
-            case "TrigonometryBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Trigonometry");
-            case "RemapBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["RemapBlock"]("Remap");
-            case "NormalizeBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NormalizeBlock"]("Normalize");
-            case "FresnelBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["FresnelBlock"]("Fresnel");
-            case "LerpBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LerpBlock"]("Lerp");
-            case "DivideBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["DivideBlock"]("Divide");
-            case "SubtractBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["SubtractBlock"]("Subtract");
-            case "StepBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["StepBlock"]("Step");
-            case "OneMinusBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["OneMinusBlock"]("One minus");
-            case "ViewDirectionBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ViewDirectionBlock"]("View direction");
-            case "LightInformationBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LightInformationBlock"]("Light information");
-            case "MaxBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MaxBlock"]("Max");
-            case "MinBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MinBlock"]("Min");
-            case "PerturbNormalBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["PerturbNormalBlock"]("Perturb normal");
-            case "CosBlock": {
-                var cosBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Cos");
-                cosBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Cos;
-                return cosBlock;
-            }
-            case "SinBlock": {
-                var sinBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Sin");
-                sinBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Sin;
-                return sinBlock;
-            }
-            case "AbsBlock": {
-                var absBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Abs");
-                absBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Abs;
-                return absBlock;
-            }
-            case "ExpBlock": {
-                var expBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Exp");
-                expBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Exp;
-                return expBlock;
-            }
-            case "Exp2Block": {
-                var exp2Block = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Exp2");
-                exp2Block.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Exp2;
-                return exp2Block;
-            }
-            case "RoundBlock": {
-                var roundBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Round");
-                roundBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Round;
-                return roundBlock;
-            }
-            case "CeilingBlock": {
-                var ceilingBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Ceiling");
-                ceilingBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Ceiling;
-                return ceilingBlock;
-            }
-            case "FloorBlock": {
-                var floorBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Floor");
-                floorBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Floor;
-                return floorBlock;
-            }
-            case "WorldMatrixBlock": {
-                var worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
-                worldMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World);
-                return worldMatrixBlock;
-            }
-            case "WorldViewMatrixBlock": {
-                var worldViewMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World x View");
-                worldViewMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].WorldView);
-                return worldViewMatrixBlock;
-            }
-            case "WorldViewProjectionMatrixBlock": {
-                var worldViewProjectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World x View x Projection");
-                worldViewProjectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].WorldViewProjection);
-                return worldViewProjectionMatrixBlock;
-            }
-            case "ViewMatrixBlock": {
-                var viewMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("View");
-                viewMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].View);
-                return viewMatrixBlock;
-            }
-            case "ViewProjectionMatrixBlock": {
-                var viewProjectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("View x Projection");
-                viewProjectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].ViewProjection);
-                return viewProjectionMatrixBlock;
-            }
-            case "ProjectionMatrixBlock": {
-                var projectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Projection");
-                projectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].Projection);
-                return projectionMatrixBlock;
-            }
-            case "CameraPositionBlock": {
-                var cameraPosition = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Camera position");
-                cameraPosition.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].CameraPosition);
-                return cameraPosition;
-            }
-            case "FogColorBlock": {
-                var FogColor = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Fog color");
-                FogColor.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].FogColor);
-                return FogColor;
-            }
-            case "PositionBlock": {
-                var meshPosition = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("position");
-                meshPosition.setAsAttribute("position");
-                return meshPosition;
-            }
-            case "UVBlock": {
-                var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv");
-                meshUV.setAsAttribute("uv");
-                return meshUV;
-            }
-            case "ColorBlock": {
-                var meshColor = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("color");
-                meshColor.setAsAttribute("color");
-                return meshColor;
-            }
-            case "NormalBlock": {
-                var meshNormal = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("normal");
-                meshNormal.setAsAttribute("normal");
-                return meshNormal;
-            }
-            case "TangentBlock": {
-                var meshTangent = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("tangent");
-                meshTangent.setAsAttribute("tangent");
-                return meshTangent;
-            }
-            case "MatrixIndicesBlock": {
-                var meshMatrixIndices = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("matricesIndices");
-                meshMatrixIndices.setAsAttribute("matricesIndices");
-                return meshMatrixIndices;
-            }
-            case "MatrixWeightsBlock": {
-                var meshMatrixWeights = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("matricesWeights");
-                meshMatrixWeights.setAsAttribute("matricesWeights");
-                return meshMatrixWeights;
-            }
-            case "TimeBlock": {
-                var timeBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Time", undefined, babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float);
-                timeBlock.animationType = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["AnimatedInputBlockTypes"].Time;
-                return timeBlock;
-            }
-        }
-        return null;
-    };
-    BlockTools.GetColorFromConnectionNodeType = function (type) {
-        var color = "Red";
-        switch (type) {
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float:
-                color = "#ca9e27";
-                break;
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2:
-                color = "#16bcb1";
-                break;
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                color = "#b786cb";
-                break;
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4:
-                color = "#be5126";
-                break;
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Matrix:
-                color = "#591990";
-                break;
-        }
-        return color;
-    };
-    BlockTools.GetConnectionNodeTypeFromString = function (type) {
-        switch (type) {
-            case "Float":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float;
-            case "Vector2":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2;
-            case "Vector3":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3;
-            case "Vector4":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4;
-            case "Matrix":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Matrix;
-            case "Color3":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3;
-            case "Color4":
-                return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4;
-        }
-        return babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].AutoDetect;
-    };
-    BlockTools.GetStringFromConnectionNodeType = function (type) {
-        switch (type) {
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float:
-                return "Float";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2:
-                return "Vector2";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-                return "Vector3";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-                return "Vector4";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                return "Color3";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4:
-                return "Color4";
-            case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Matrix:
-                return "Matrix";
-        }
-        return "";
-    };
-    return BlockTools;
-}());
-
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -67799,7 +68785,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeFactory, _super);
     function ClampNodeFactory(globalState) {
         var _this = _super.call(this, "clamp") || this;
         _this._globalState = globalState;
@@ -67838,7 +68824,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -67886,7 +68872,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampPropertyTabComponentProps, _super);
     function ClampPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -67930,7 +68916,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeWidget, _super);
     function ClampNodeWidget(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
@@ -67988,7 +68974,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var DefaultNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -68103,7 +69089,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var GenericNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -68164,7 +69150,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var GenericNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -68242,7 +69228,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var GenericNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -68281,6 +69267,283 @@ var GenericNodeWidget = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/diagram/gradient/gradientNodeFactory.tsx":
+/*!*************************************************************!*\
+  !*** ./components/diagram/gradient/gradientNodeFactory.tsx ***!
+  \*************************************************************/
+/*! exports provided: GradientNodeFactory */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientNodeFactory", function() { return GradientNodeFactory; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _gradientNodeWidget__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./gradientNodeWidget */ "./components/diagram/gradient/gradientNodeWidget.tsx");
+/* harmony import */ var _gradientNodeModel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradientNodeModel */ "./components/diagram/gradient/gradientNodeModel.tsx");
+
+
+
+
+
+var GradientNodeFactory = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeFactory, _super);
+    function GradientNodeFactory(globalState) {
+        var _this = _super.call(this, "gradient") || this;
+        _this._globalState = globalState;
+        return _this;
+    }
+    GradientNodeFactory.prototype.generateReactWidget = function (diagramEngine, node) {
+        return react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_gradientNodeWidget__WEBPACK_IMPORTED_MODULE_3__["GradientNodeWidget"], { node: node, globalState: this._globalState });
+    };
+    GradientNodeFactory.prototype.getNewInstance = function () {
+        return new _gradientNodeModel__WEBPACK_IMPORTED_MODULE_4__["GradientNodeModel"]();
+    };
+    return GradientNodeFactory;
+}(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["AbstractNodeFactory"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/gradient/gradientNodeModel.tsx":
+/*!***********************************************************!*\
+  !*** ./components/diagram/gradient/gradientNodeModel.tsx ***!
+  \***********************************************************/
+/*! exports provided: GradientNodeModel */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientNodeModel", function() { return GradientNodeModel; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
+/* harmony import */ var _gradientNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./gradientNodePropertyComponent */ "./components/diagram/gradient/gradientNodePropertyComponent.tsx");
+
+
+
+
+var GradientNodeModel = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeModel, _super);
+    /**
+     * Constructs the node model
+     */
+    function GradientNodeModel() {
+        return _super.call(this, "gradient") || this;
+    }
+    Object.defineProperty(GradientNodeModel.prototype, "gradientBlock", {
+        get: function () {
+            return this.block;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    GradientNodeModel.prototype.renderProperties = function (globalState) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gradientNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__["GradientPropertyTabComponentProps"], { globalState: globalState, gradientNode: this }));
+    };
+    return GradientNodeModel;
+}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/gradient/gradientNodePropertyComponent.tsx":
+/*!***********************************************************************!*\
+  !*** ./components/diagram/gradient/gradientNodePropertyComponent.tsx ***!
+  \***********************************************************************/
+/*! exports provided: GradientPropertyTabComponentProps */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientPropertyTabComponentProps", function() { return GradientPropertyTabComponentProps; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _gradientStepComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./gradientStepComponent */ "./components/diagram/gradient/gradientStepComponent.tsx");
+/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+
+
+
+
+
+
+
+
+
+var GradientPropertyTabComponentProps = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientPropertyTabComponentProps, _super);
+    function GradientPropertyTabComponentProps(props) {
+        return _super.call(this, props) || this;
+    }
+    GradientPropertyTabComponentProps.prototype.forceRebuild = function () {
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+    };
+    GradientPropertyTabComponentProps.prototype.deleteStep = function (step) {
+        var gradientBlock = this.props.gradientNode.gradientBlock;
+        var index = gradientBlock.colorSteps.indexOf(step);
+        if (index > -1) {
+            gradientBlock.colorSteps.splice(index, 1);
+            this.forceRebuild();
+            this.forceUpdate();
+        }
+    };
+    GradientPropertyTabComponentProps.prototype.addNewStep = function () {
+        var gradientBlock = this.props.gradientNode.gradientBlock;
+        var newStep = new babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__["GradientBlockColorStep"](1.0, babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__["Color3"].White());
+        gradientBlock.colorSteps.push(newStep);
+        this.forceRebuild();
+        this.forceUpdate();
+    };
+    GradientPropertyTabComponentProps.prototype.render = function () {
+        var _this = this;
+        var gradientBlock = this.props.gradientNode.gradientBlock;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: gradientBlock, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: gradientBlock.getClassName() })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "STEPS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Add new step", onClick: function () { return _this.addNewStep(); } }),
+                gradientBlock.colorSteps.map(function (c, i) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gradientStepComponent__WEBPACK_IMPORTED_MODULE_6__["GradientStepComponent"], { globalState: _this.props.globalState, onUpdateStep: function () { return _this.forceRebuild(); }, key: c.step, lineIndex: i, step: c, onDelete: function () { return _this.deleteStep(c); } }));
+                }))));
+    };
+    return GradientPropertyTabComponentProps;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/gradient/gradientNodeWidget.tsx":
+/*!************************************************************!*\
+  !*** ./components/diagram/gradient/gradientNodeWidget.tsx ***!
+  \************************************************************/
+/*! exports provided: GradientNodeWidget */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientNodeWidget", function() { return GradientNodeWidget; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
+
+
+
+var GradientNodeWidget = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeWidget, _super);
+    function GradientNodeWidget(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {};
+        if (_this.props.node) {
+            _this.props.node.addListener({
+                selectionChanged: function () {
+                    var selected = _this.props.node.selected;
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? _this.props.node : null);
+                }
+            });
+        }
+        return _this;
+    }
+    GradientNodeWidget.prototype.renderValue = function (value) {
+        if (value) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value-text" }, value));
+        }
+        return null;
+    };
+    GradientNodeWidget.prototype.render = function () {
+        var inputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateInputPorts(this.props.node, undefined, true);
+        var outputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateOutputPorts(this.props.node, true);
+        var gradientBlock = this.props.node.block;
+        var gradients = gradientBlock.colorSteps.map(function (c) { return "rgb(" + c.color.r * 255 + ", " + c.color.g * 255 + ", " + c.color.b * 255 + ") " + c.step * 100 + "%"; });
+        var style = {
+            background: gradients.length ? "linear-gradient(90deg, " + gradients.join(", ") + ")" : 'black'
+        };
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock gradient", style: style },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, gradientBlock.name),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" })));
+    };
+    return GradientNodeWidget;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/gradient/gradientStepComponent.tsx":
+/*!***************************************************************!*\
+  !*** ./components/diagram/gradient/gradientStepComponent.tsx ***!
+  \***************************************************************/
+/*! exports provided: GradientStepComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientStepComponent", function() { return GradientStepComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var GradientStepComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientStepComponent, _super);
+    function GradientStepComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { gradient: props.step.step };
+        return _this;
+    }
+    GradientStepComponent.prototype.updateColor = function (color) {
+        this.props.step.color = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__["Color3"].FromHexString(color);
+        this.props.onUpdateStep();
+        this.forceUpdate();
+    };
+    GradientStepComponent.prototype.updateStep = function (gradient) {
+        this.props.step.step = gradient;
+        this.setState({ gradient: gradient });
+        this.props.onUpdateStep();
+    };
+    GradientStepComponent.prototype.render = function () {
+        var _this = this;
+        var step = this.props.step;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-step" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step" }, "#" + this.props.lineIndex),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: step.color.toHexString(), onChange: function (evt) { return _this.updateColor(evt.target.value); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-value" }, step.step.toFixed(2)),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-slider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: 0.01, min: 0, max: 1.0, value: step.step, onChange: function (evt) { return _this.updateStep(parseFloat(evt.target.value)); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-delete", onClick: function () { return _this.props.onDelete(); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faTrash"] }))));
+    };
+    return GradientStepComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/diagram/input/inputNodeFactory.tsx":
 /*!*******************************************************!*\
   !*** ./components/diagram/input/inputNodeFactory.tsx ***!
@@ -68307,7 +69570,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var InputNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -68362,7 +69625,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var InputNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -68401,8 +69664,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../propertyTab/properties/vector2PropertyTabComponent */ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx");
 /* harmony import */ var _propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../propertyTab/properties/vector3PropertyTabComponent */ "./components/propertyTab/properties/vector3PropertyTabComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
 /* harmony import */ var _propertyTab_properties_color3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../propertyTab/properties/color3PropertyTabComponent */ "./components/propertyTab/properties/color3PropertyTabComponent.tsx");
@@ -68435,7 +69698,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var InputPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputPropertyTabComponentProps, _super);
     function InputPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -68443,7 +69706,7 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
         var _this = this;
         var inputBlock = this.props.inputNode.inputBlock;
         switch (inputBlock.type) {
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Float: {
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Float: {
                 var cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__["FloatLineComponent"], { label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
@@ -68455,20 +69718,20 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                     cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
                     !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_16__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: 0.1, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_16__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: (inputBlock.max - inputBlock.min) / 100.0, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
                                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             } })));
             }
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color3:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color4:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color3:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color4:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_color3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_7__["Color3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["Vector3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector4:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Matrix:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Matrix:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_14__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
         }
         return null;
@@ -68484,41 +69747,44 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
         var attributeOptions = [];
         var animationOptions = [];
         switch (inputBlock.type) {
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Float:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Float:
                 animationOptions = [
-                    { label: "None", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None },
-                    { label: "Time", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].Time },
+                    { label: "None", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None },
+                    { label: "Time", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].Time },
                 ];
-                break;
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Matrix:
                 systemValuesOptions = [
-                    { label: "World", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].World },
-                    { label: "World x View", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].WorldView },
-                    { label: "World x ViewxProjection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].WorldViewProjection },
-                    { label: "View", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].View },
-                    { label: "View x Projection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].ViewProjection },
-                    { label: "Projection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].Projection }
+                    { label: "Delta time", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].DeltaTime }
                 ];
                 break;
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color3:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Matrix:
                 systemValuesOptions = [
-                    { label: "Fog color", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].FogColor }
+                    { label: "World", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].World },
+                    { label: "World x View", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].WorldView },
+                    { label: "World x ViewxProjection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].WorldViewProjection },
+                    { label: "View", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].View },
+                    { label: "View x Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].ViewProjection },
+                    { label: "Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].Projection }
                 ];
                 break;
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color4:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color3:
+                systemValuesOptions = [
+                    { label: "Fog color", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].FogColor }
+                ];
+                break;
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color4:
                 attributeOptions = [
                     { label: "color", value: "color" }
                 ];
                 break;
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                 attributeOptions = [
                     { label: "uv", value: "uv" },
                     { label: "uv2", value: "uv2" },
                 ];
                 break;
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                 systemValuesOptions = [
-                    { label: "Camera position", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].CameraPosition }
+                    { label: "Camera position", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].CameraPosition }
                 ];
                 attributeOptions = [
                     { label: "position", value: "position" },
@@ -68526,7 +69792,7 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                     { label: "tangent", value: "tangent" },
                 ];
                 break;
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector4:
                 attributeOptions = [
                     { label: "matricesIndices", value: "matricesIndices" },
                     { label: "matricesWeights", value: "matricesWeights" }
@@ -68548,8 +69814,13 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_11__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: inputBlock, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "Type", value: _stringTools__WEBPACK_IMPORTED_MODULE_10__["StringTools"].GetBaseType(inputBlock.type) })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__["LineContainerComponent"], { title: "PROPERTIES" },
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Visible in the Inspector", target: inputBlock, propertyName: "visibleInInspector" }),
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "IsConstant", target: inputBlock, propertyName: "isConstant", onValueChanged: function () {
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
                         if (block.isAttribute) {
                             return 1;
@@ -68586,7 +69857,7 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                             _this.forceUpdate();
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         } }),
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
                     this.renderValue(this.props.globalState),
                 inputBlock.isUniform && inputBlock.isSystemValue &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "System value", options: systemValuesOptions, target: inputBlock, propertyName: "systemValue", onSelect: function (value) {
@@ -68615,8 +69886,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialSystemValues */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialSystemValues */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
 
@@ -68630,7 +69901,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var InputNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -68667,29 +69938,32 @@ var InputNodeWidget = /** @class */ (function (_super) {
             }
             else if (inputBlock.isSystemValue) {
                 switch (inputBlock.systemValue) {
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].World:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].World:
                         value = "World";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].WorldView:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].WorldView:
                         value = "World x View";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].WorldViewProjection:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].WorldViewProjection:
                         value = "World x View x Projection";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].View:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].View:
                         value = "View";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].ViewProjection:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].ViewProjection:
                         value = "View x Projection";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].Projection:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].Projection:
                         value = "Projection";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].CameraPosition:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].CameraPosition:
                         value = "Camera position";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].FogColor:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].FogColor:
                         value = "Fog color";
+                        break;
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].DeltaTime:
+                        value = "Delta time";
                         break;
                 }
             }
@@ -68698,28 +69972,28 @@ var InputNodeWidget = /** @class */ (function (_super) {
                     return null;
                 }
                 switch (inputBlock.type) {
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Float:
-                        if (inputBlock.animationType !== babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["AnimatedInputBlockTypes"].None) {
-                            value = babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["AnimatedInputBlockTypes"][inputBlock.animationType];
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Float:
+                        if (inputBlock.animationType !== babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["AnimatedInputBlockTypes"].None) {
+                            value = babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["AnimatedInputBlockTypes"][inputBlock.animationType];
                         }
                         else {
                             value = inputBlock.value.toFixed(2);
                         }
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                         var vec2Value = inputBlock.value;
                         value = "(" + vec2Value.x.toFixed(2) + ", " + vec2Value.y.toFixed(2) + ")";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                         var vec3Value = inputBlock.value;
                         value = "(" + vec3Value.x.toFixed(2) + ", " + vec3Value.y.toFixed(2) + ", " + vec3Value.z.toFixed(2) + ")";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector4:
                         var vec4Value = inputBlock.value;
                         value = "(" + vec4Value.x.toFixed(2) + ", " + vec4Value.y.toFixed(2) + ", " + vec4Value.z.toFixed(2) + ", " + vec4Value.w.toFixed(2) + ")";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color4: {
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3:
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color4: {
                         color = inputBlock.value.toHexString();
                         break;
                     }
@@ -68729,7 +70003,7 @@ var InputNodeWidget = /** @class */ (function (_super) {
         else {
             name = "Not connected input";
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (inputBlock && inputBlock.isAttribute ? " attribute" : ""), style: {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (inputBlock ? " " + babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][inputBlock.type] : "") + (inputBlock && inputBlock.isConstant ? " constant" : ""), style: {
                 background: color
             } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, name),
@@ -68769,7 +70043,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var LightNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeFactory, _super);
     /**
      * Constructs a LightNodeFactory
      */
@@ -68824,7 +70098,7 @@ __webpack_require__.r(__webpack_exports__);
  * Light node model which stores information about a node editor block
  */
 var LightNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -68879,7 +70153,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var LightNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -68937,7 +70211,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightPropertyTabComponent, _super);
     function LightPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -68997,7 +70271,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var LightInformationNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeFactory, _super);
     /**
      * Constructs a LightNodeFactory
      */
@@ -69049,7 +70323,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightInformationNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69104,7 +70378,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var LightInformationNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -69162,7 +70436,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightInformationPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationPropertyTabComponent, _super);
     function LightInformationPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -69213,7 +70487,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AdvancedLinkFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AdvancedLinkFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AdvancedLinkFactory, _super);
     function AdvancedLinkFactory() {
         var _this = _super.call(this) || this;
         _this.type = "advanced";
@@ -69252,7 +70526,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AdvancedLinkModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AdvancedLinkModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AdvancedLinkModel, _super);
     function AdvancedLinkModel() {
         return _super.call(this, "advanced") || this;
     }
@@ -69284,7 +70558,7 @@ __webpack_require__.r(__webpack_exports__);
  * Port model
  */
 var DefaultPortModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultPortModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultPortModel, _super);
     function DefaultPortModel(name, type) {
         if (type === void 0) { type = "input"; }
         var _this = _super.call(this, name, "generic") || this;
@@ -69365,7 +70639,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DefaultPortWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultPortWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultPortWidget, _super);
     function DefaultPortWidget(props) {
         var _this = _super.call(this, "srd-port", props) || this;
         _this.state = {
@@ -69378,7 +70652,7 @@ var DefaultPortWidget = /** @class */ (function (_super) {
     };
     DefaultPortWidget.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({ style: this.props.style }, this.getProps(), { onMouseEnter: function () {
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ style: this.props.style }, this.getProps(), { onMouseEnter: function () {
                 _this.setState({ selected: true });
             }, onMouseLeave: function () {
                 _this.setState({ selected: false });
@@ -69403,8 +70677,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PortHelper", function() { return PortHelper; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _port_defaultPortWidget__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./port/defaultPortWidget */ "./components/diagram/port/defaultPortWidget.tsx");
 /* harmony import */ var _blockTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../blockTools */ "./blockTools.ts");
 
@@ -69416,19 +70690,19 @@ var PortHelper = /** @class */ (function () {
     }
     PortHelper._GetPortTypeIndicator = function (connection) {
         switch (connection.type) {
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Float:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Int:
-                return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("img", { src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABESURBVDhPY/z//z8DJYAJSpMNRg3Ab4APEL+GYhAbK8AXjSCNIhAmwxsgFoUwUQFNvZAJxCCbQRjExgpGU+LAG8DAAAA+ghAthzG18wAAAABJRU5ErkJggg==" });
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Vector2:
-                return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("img", { src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABHSURBVDhPY/z//z8DJYAJSpMN8BngA8SvoRjExgrweQGkUQTCZHgDxKIQJiqgqRcygRhkMwiD2FjB4I4FosBoNA6DaGRgAABqpx09dHGG2QAAAABJRU5ErkJggg==" });
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("img", { src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABHSURBVDhPY/z//z8DJYAJSmMDPkD8GopBbKwAnwtAGkUgTIY3QCwKYaICfC4gCuAzIBOIQTaDMIiNFYwG4mgggsCQD0QGBgD0QypNGzDYqQAAAABJRU5ErkJggg==" });
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Color4:
-                return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("img", { src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABRSURBVDhPY/z//z8DJYAJSpMN0A3wAeLXUAxiwwAucQYGkBeQ8GsghgEQm5A45V6AmwTFIUAMsgGEQWxC4gyDLxZIBqPpAAiQTQPiIZcOGBgAyCDrTTmX3gcAAAAASUVORK5CYII=" });
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Matrix:
-                return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("img", { src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAABuSURBVDhPY/z//z8DJYAJSpMN0A3wAeLXUAxiwwAucQZ0L4AUiECYOMEbIBaFMGnghUwoDQKhQMwIxSA2DCCrwfACCMAEQBqRAVZxqnuBZEB1A9DjHgZwsQdpOgDZAMLo6QAmTjAdkAQo9AIDAwD62SHFU/Hk8QAAAABJRU5ErkJggg==" });
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Float:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Int:
+                return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("img", { src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IxPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjEwLjUiIGN5PSIxMC41IiByPSI3LjUiLz48L2c+PC9zdmc+" });
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+                return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("img", { src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IyPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0zLDEwLjVhNy41Miw3LjUyLDAsMCwwLDYuNSw3LjQzVjMuMDdBNy41Miw3LjUyLDAsMCwwLDMsMTAuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xMS41LDMuMDdWMTcuOTNhNy41LDcuNSwwLDAsMCwwLTE0Ljg2WiIvPjwvZz48L3N2Zz4=" });
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Color3:
+                return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("img", { src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IzPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0zLjU3LDEzLjMxLDkuNSw5Ljg5VjNBNy41MSw3LjUxLDAsMCwwLDMsMTAuNDYsNy4zMiw3LjMyLDAsMCwwLDMuNTcsMTMuMzFaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTYuNDMsMTUsMTAuNSwxMS42Miw0LjU3LDE1YTcuNDgsNy40OCwwLDAsMCwxMS44NiwwWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE4LDEwLjQ2QTcuNTEsNy41MSwwLDAsMCwxMS41LDNWOS44OWw1LjkzLDMuNDJBNy4zMiw3LjMyLDAsMCwwLDE4LDEwLjQ2WiIvPjwvZz48L3N2Zz4=" });
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Color4:
+                return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("img", { src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3I0PC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xMS41LDExLjV2Ni40M2E3LjUxLDcuNTEsMCwwLDAsNi40My02LjQzWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN1Y5LjVoNi40M0E3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSwxNy45M1YxMS41SDMuMDdBNy41MSw3LjUxLDAsMCwwLDkuNSwxNy45M1oiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVIOS41WiIvPjwvZz48L3N2Zz4=" });
+            case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__["NodeMaterialBlockConnectionPointTypes"].Matrix:
+                return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("img", { src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5NYXRyaXg8L3RpdGxlPjxnIGlkPSJMYXllcl81IiBkYXRhLW5hbWU9IkxheWVyIDUiPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsNi4xMVY5LjVoMy4zOUE0LjUxLDQuNTEsMCwwLDAsMTEuNSw2LjExWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMTQuODlhNC41MSw0LjUxLDAsMCwwLDMuMzktMy4zOUgxMS41WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN3YyQTUuNTQsNS41NCwwLDAsMSwxNS45Miw5LjVoMkE3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE1LjkyLDExLjVhNS41NCw1LjU0LDAsMCwxLTQuNDIsNC40MnYyYTcuNTEsNy41MSwwLDAsMCw2LjQzLTYuNDNaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNS4wOCwxMS41aC0yQTcuNTEsNy41MSwwLDAsMCw5LjUsMTcuOTN2LTJBNS41NCw1LjU0LDAsMCwxLDUuMDgsMTEuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVoMkE1LjU0LDUuNTQsMCwwLDEsOS41LDUuMDhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNOS41LDExLjVINi4xMUE0LjUxLDQuNTEsMCwwLDAsOS41LDE0Ljg5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSw2LjExQTQuNTEsNC41MSwwLDAsMCw2LjExLDkuNUg5LjVaIi8+PC9nPjwvc3ZnPg==" });
         }
         return null;
     };
@@ -69447,11 +70721,10 @@ var PortHelper = /** @class */ (function () {
             if (port.position === "output") {
                 var typeIndicator = this._GetPortTypeIndicator(port.connection);
                 var style = this._GetPortStyle(port.connection.type);
-                outputPorts.push(react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { key: key, className: "output-port" },
+                outputPorts.push(react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { key: key, title: port.name, className: "output-port" },
                     !ignoreLabel &&
                         react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "output-port-label" }, port.connection.name),
                     react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "output-port-plug" },
-                        react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "output-port-border" }),
                         react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_port_defaultPortWidget__WEBPACK_IMPORTED_MODULE_2__["DefaultPortWidget"], { key: key, name: port.name, node: node, style: style }),
                         react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "output-port-type" }, typeIndicator))));
             }
@@ -69470,9 +70743,8 @@ var PortHelper = /** @class */ (function () {
                 var typeIndicator = this._GetPortTypeIndicator(port.connection);
                 var style = this._GetPortStyle(port.connection.type);
                 if (!includeOnly || includeOnly.indexOf(port.name) !== -1) {
-                    inputPorts.push(react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { key: key, className: "input-port" },
+                    inputPorts.push(react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { key: key, title: port.name, className: "input-port" },
                         react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "input-port-plug" },
-                            react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "input-port-border" }),
                             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_port_defaultPortWidget__WEBPACK_IMPORTED_MODULE_2__["DefaultPortWidget"], { key: key, name: port.name, node: node, style: style }),
                             react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "input-port-type" }, typeIndicator)),
                         !ignoreLabel &&
@@ -69484,6 +70756,180 @@ var PortHelper = /** @class */ (function () {
     };
     return PortHelper;
 }());
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/reflectionTexture/reflectionTextureNodeFactory.tsx":
+/*!*******************************************************************************!*\
+  !*** ./components/diagram/reflectionTexture/reflectionTextureNodeFactory.tsx ***!
+  \*******************************************************************************/
+/*! exports provided: ReflectionTextureNodeFactory */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReflectionTextureNodeFactory", function() { return ReflectionTextureNodeFactory; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+/* harmony import */ var _reflectionTextureNodeWidget__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./reflectionTextureNodeWidget */ "./components/diagram/reflectionTexture/reflectionTextureNodeWidget.tsx");
+
+
+
+
+
+/**
+ * Node factory which creates editor nodes
+ */
+var ReflectionTextureNodeFactory = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeFactory, _super);
+    /**
+     * Constructs a TextureNodeFactory
+     */
+    function ReflectionTextureNodeFactory(globalState) {
+        var _this = _super.call(this, "reflectiontexture") || this;
+        _this._globalState = globalState;
+        return _this;
+    }
+    /**
+     * Generates a node widget
+     * @param diagramEngine diagram engine
+     * @param node node to generate
+     * @returns node widget jsx
+     */
+    ReflectionTextureNodeFactory.prototype.generateReactWidget = function (diagramEngine, node) {
+        return react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_reflectionTextureNodeWidget__WEBPACK_IMPORTED_MODULE_4__["ReflectionTextureNodeWidget"], { node: node, globalState: this._globalState });
+    };
+    /**
+     * Gets a new instance of a node model
+     * @returns texture node model
+     */
+    ReflectionTextureNodeFactory.prototype.getNewInstance = function () {
+        return new _reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureNodeModel"]();
+    };
+    return ReflectionTextureNodeFactory;
+}(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["AbstractNodeFactory"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx":
+/*!*****************************************************************************!*\
+  !*** ./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx ***!
+  \*****************************************************************************/
+/*! exports provided: ReflectionTextureNodeModel */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReflectionTextureNodeModel", function() { return ReflectionTextureNodeModel; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
+/* harmony import */ var _texture_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../texture/texturePropertyTabComponent */ "./components/diagram/texture/texturePropertyTabComponent.tsx");
+
+
+
+
+/**
+ * Texture node model which stores information about a node editor block
+ */
+var ReflectionTextureNodeModel = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeModel, _super);
+    /**
+     * Constructs the node model
+     */
+    function ReflectionTextureNodeModel() {
+        return _super.call(this, "reflectiontexture") || this;
+    }
+    Object.defineProperty(ReflectionTextureNodeModel.prototype, "texture", {
+        /**
+         * Texture for the node if it exists
+         */
+        get: function () {
+            return this._block.texture;
+        },
+        set: function (value) {
+            this._block.texture = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ReflectionTextureNodeModel.prototype.renderProperties = function (globalState) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_texture_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["TexturePropertyTabComponent"], { globalState: globalState, node: this }));
+    };
+    ReflectionTextureNodeModel.prototype.prepare = function (options, nodes, model, graphEditor) {
+        this._block = options.nodeMaterialBlock;
+        _super.prototype.prepare.call(this, options, nodes, model, graphEditor);
+    };
+    return ReflectionTextureNodeModel;
+}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/reflectionTexture/reflectionTextureNodeWidget.tsx":
+/*!******************************************************************************!*\
+  !*** ./components/diagram/reflectionTexture/reflectionTextureNodeWidget.tsx ***!
+  \******************************************************************************/
+/*! exports provided: ReflectionTextureNodeWidget */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReflectionTextureNodeWidget", function() { return ReflectionTextureNodeWidget; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/textureLineComponent */ "./sharedComponents/textureLineComponent.tsx");
+/* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
+
+
+
+
+/**
+ * Used to display a node block for the node editor
+ */
+var ReflectionTextureNodeWidget = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeWidget, _super);
+    /**
+     * Creates a GenericNodeWidget
+     * @param props
+     */
+    function ReflectionTextureNodeWidget(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {};
+        if (_this.props.node) {
+            _this.props.node.addListener({
+                selectionChanged: function () {
+                    var selected = _this.props.node.selected;
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? _this.props.node : null);
+                }
+            });
+        }
+        return _this;
+    }
+    ReflectionTextureNodeWidget.prototype.render = function () {
+        // Input/Output ports
+        var outputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_3__["PortHelper"].GenerateOutputPorts(this.props.node, false);
+        var inputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_3__["PortHelper"].GenerateInputPorts(this.props.node);
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock texture-block" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, this.props.node.block.name),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
+            this.props.node && this.props.node.texture &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextureLineComponent"], { ref: "textureView", width: 140, height: 140, texture: this.props.node.texture, hideChannelSelect: true })));
+    };
+    return ReflectionTextureNodeWidget;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
 
@@ -69515,7 +70961,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var RemapNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -69570,7 +71016,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var RemapNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69618,7 +71064,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var RemapPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapPropertyTabComponentProps, _super);
     function RemapPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -69665,7 +71111,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var RemapNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -69746,7 +71192,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var TextureNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeFactory, _super);
     /**
      * Constructs a TextureNodeFactory
      */
@@ -69801,7 +71247,7 @@ __webpack_require__.r(__webpack_exports__);
  * Texture node model which stores information about a node editor block
  */
 var TextureNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69858,7 +71304,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var TextureNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -69916,6 +71362,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
 /* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+/* harmony import */ var _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../reflectionTexture/reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+
+
+
+
 
 
 
@@ -69928,16 +71381,58 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TexturePropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TexturePropertyTabComponent, _super);
     function TexturePropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         var texture = _this.props.node.texture;
-        _this.state = { isEmbedded: !texture || texture.name.substring(0, 4) !== "http" };
+        _this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube };
         return _this;
     }
-    TexturePropertyTabComponent.prototype.updateAftertextureLoad = function () {
+    TexturePropertyTabComponent.prototype.UNSAFE_componentWillUpdate = function (nextProps, nextState) {
+        if (nextProps.node !== this.props.node) {
+            var texture = nextProps.node.texture;
+            nextState.isEmbedded = !texture || texture.name.substring(0, 4) === "data";
+            nextState.loadAsCubeTexture = texture && texture.isCube;
+        }
+    };
+    TexturePropertyTabComponent.prototype._generateRandomForCache = function () {
+        return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function (c) {
+            var r = Math.random() * 10 | 0;
+            return r.toString();
+        });
+    };
+    TexturePropertyTabComponent.prototype.updateAfterTextureLoad = function () {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        this.forceUpdate();
+    };
+    TexturePropertyTabComponent.prototype.removeTexture = function () {
+        var texture = this.props.node.texture;
+        if (texture) {
+            texture.dispose();
+            texture = null;
+            this.props.node.texture = null;
+        }
+        this.updateAfterTextureLoad();
+    };
+    TexturePropertyTabComponent.prototype._prepareTexture = function () {
+        var texture = this.props.node.texture;
+        if (texture && texture.isCube !== this.state.loadAsCubeTexture) {
+            texture.dispose();
+            texture = null;
+        }
+        if (!texture) {
+            if (!this.state.loadAsCubeTexture) {
+                this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_11__["ReflectionTextureNodeModel"]);
+                texture = this.props.node.texture;
+                texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE;
+            }
+            else {
+                this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["CubeTexture"]("", this.props.globalState.nodeMaterial.getScene());
+                texture = this.props.node.texture;
+                texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE;
+            }
+        }
     };
     /**
      * Replaces the texture of the node
@@ -69948,105 +71443,153 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         if (!this.props.node) {
             return;
         }
+        this._prepareTexture();
         var texture = this.props.node.texture;
-        if (!texture) {
-            this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, false);
-            texture = this.props.node.texture;
-        }
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ReadFile(file, function (data) {
             var blob = new Blob([data], { type: "octet/stream" });
             var reader = new FileReader();
             reader.readAsDataURL(blob);
             reader.onloadend = function () {
                 var base64data = reader.result;
-                if (texture.isCube) {
-                    var extension = undefined;
-                    if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                        extension = ".dds";
-                    }
-                    else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                        extension = ".env";
-                    }
-                    texture.updateURL(base64data, extension, function () { return _this.updateAftertextureLoad(); });
+                var extension = undefined;
+                if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                    extension = ".dds";
                 }
-                else {
-                    texture.updateURL(base64data, null, function () { return _this.updateAftertextureLoad(); });
+                else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                    extension = ".env";
                 }
+                texture.updateURL(base64data, extension, function () { return _this.updateAfterTextureLoad(); });
             };
         }, undefined, true);
     };
     TexturePropertyTabComponent.prototype.replaceTextureWithUrl = function (url) {
         var _this = this;
+        this._prepareTexture();
         var texture = this.props.node.texture;
-        if (!texture) {
-            this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](url, this.props.globalState.nodeMaterial.getScene(), false, false, undefined, function () {
-                _this.updateAftertextureLoad();
-            });
-            return;
+        if (texture.isCube || this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_11__["ReflectionTextureNodeModel"]) {
+            var extension = undefined;
+            if (url.toLowerCase().indexOf(".dds") > 0) {
+                extension = ".dds";
+            }
+            else if (url.toLowerCase().indexOf(".env") > 0) {
+                extension = ".env";
+            }
+            texture.updateURL(url, extension, function () { return _this.updateAfterTextureLoad(); });
         }
-        texture.updateURL(url, null, function () { return _this.updateAftertextureLoad(); });
+        else {
+            texture.updateURL(url, null, function () { return _this.updateAfterTextureLoad(); });
+        }
     };
     TexturePropertyTabComponent.prototype.render = function () {
         var _this = this;
         var url = "";
         var texture = this.props.node.texture;
-        if (texture && texture.name && texture.name.substring(0, 4) === "http") {
+        if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
+        url = url.replace(/\?nocache=\d+/, "");
+        var isInReflectionMode = this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_11__["ReflectionTextureNodeModel"];
+        var reflectionModeOptions = [
+            {
+                label: "Cubic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE
+            },
+            {
+                label: "Equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE
+            },
+            {
+                label: "Explicit", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EXPLICIT_MODE
+            },
+            {
+                label: "Fixed equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MODE
+            },
+            {
+                label: "Fixed mirrored equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MIRRORED_MODE
+            },
+            {
+                label: "Planar", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PLANAR_MODE
+            },
+            {
+                label: "Projection", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PROJECTION_MODE
+            },
+            {
+                label: "Skybox", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SKYBOX_MODE
+            },
+            {
+                label: "Spherical", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SPHERICAL_MODE
+            },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "GENERAL" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: "Texture" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: this.props.node.block.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.node.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "PROPERTIES" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.node.block }),
-                texture &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.node.block, onValueChanged: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                    } }),
+                texture && isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__["OptionsLineComponent"], { label: "Reflection mode", options: reflectionModeOptions, target: texture, propertyName: "coordinatesMode", onSelect: function (value) {
+                            texture.coordinatesMode = value;
+                            _this.forceUpdate();
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
+                texture && !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
                             texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
+                texture && !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
                             texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
+                texture && !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Offset U", target: texture, propertyName: "vOffset", onChange: function () {
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
+                texture && !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
+                texture && !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
+                texture && !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rotation U", target: texture, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
+                texture && !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rotation V", target: texture, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
+                texture && !isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rotation W", target: texture, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "SOURCE" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Embed texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
                         _this.setState({ isEmbedded: value });
                         _this.props.node.texture = null;
-                        _this.updateAftertextureLoad();
+                        _this.updateAfterTextureLoad();
                     } }),
+                isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Load as cube texture", isSelected: function () { return _this.state.loadAsCubeTexture; }, onSelect: function (value) { return _this.setState({ loadAsCubeTexture: value }); } }),
                 this.state.isEmbedded &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
                 !this.state.isEmbedded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
+                !this.state.isEmbedded && url &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } }))));
     };
     return TexturePropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -70081,7 +71624,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var TrigonometryNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -70136,7 +71679,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var TrigonometryNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -70187,7 +71730,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TrigonometryPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryPropertyTabComponentProps, _super);
     function TrigonometryPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -70202,8 +71745,20 @@ var TrigonometryPropertyTabComponentProps = /** @class */ (function (_super) {
             { label: "Exp2", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Exp2 },
             { label: "Round", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Round },
             { label: "Ceiling", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Ceiling },
-            { label: "Floor", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Floor }
+            { label: "Floor", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Floor },
+            { label: "ArcCos", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].ArcCos },
+            { label: "ArcSin", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].ArcSin },
+            { label: "ArcTan", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].ArcTan },
+            { label: "Tan", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Tan },
+            { label: "Log", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Log },
+            { label: "Fract", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Fract },
+            { label: "Sign", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Sign },
+            { label: "Radians to degrees", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Degrees },
+            { label: "Degrees to radians", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Radians }
         ];
+        operationOptions.sort(function (a, b) {
+            return a.label.localeCompare(b.label);
+        });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: trigonometryBlock, onChange: function () {
@@ -70247,7 +71802,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var TrigonometryNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70342,7 +71897,7 @@ var LogEntry = /** @class */ (function () {
 }());
 
 var LogComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LogComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LogComponent, _super);
     function LogComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { logs: [] };
@@ -70364,8 +71919,12 @@ var LogComponent = /** @class */ (function (_super) {
         logConsole.scrollTop = logConsole.scrollHeight;
     };
     LogComponent.prototype.render = function () {
+        var today = new Date();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "log-console", ref: "log-console" }, this.state.logs.map(function (l, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" + (l.isError ? " error" : "") }, l.message));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" + (l.isError ? " error" : "") }, h + ":" + m + ":" + s + ": " + l.message));
         })));
     };
     return LogComponent;
@@ -70420,14 +71979,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/draggableLineComponent */ "./sharedComponents/draggableLineComponent.tsx");
-<<<<<<< Updated upstream
 
 
 
 
 __webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
 var NodeListComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeListComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NodeListComponent, _super);
     function NodeListComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { filter: "" };
@@ -70441,17 +71999,18 @@ var NodeListComponent = /** @class */ (function (_super) {
         // Block types used to create the menu from
         var allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock"],
+            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock", "RandomNumberBlock", "ReciprocalBlock"],
+            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "TimeBlock"],
-            Interpolation: ["LerpBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FrontFacingBlock"],
+            Interpolation: ["LerpBlock", "SmoothStepBlock", "NLerpBlock"],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
-            Mesh_Attributes: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock"],
-            Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "AlphaTestBlock"],
+            Mesh_Attributes: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock"],
+            Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ReflectionTextureBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
-            Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block"],
+            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
+            Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
             Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
         };
         // Create node menu
@@ -70476,63 +72035,6 @@ var NodeListComponent = /** @class */ (function (_super) {
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
-=======
-
-
-
-
-__webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
-var NodeListComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeListComponent, _super);
-    function NodeListComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this.state = { filter: "" };
-        return _this;
-    }
-    NodeListComponent.prototype.filterContent = function (filter) {
-        this.setState({ filter: filter });
-    };
-    NodeListComponent.prototype.render = function () {
-        var _this = this;
-        // Block types used to create the menu from
-        var allBlocks = {
-            Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock"],
-            Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "TimeBlock"],
-            Interpolation: ["LerpBlock"],
-            Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
-            Mesh_Attributes: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock"],
-            Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "AlphaTestBlock"],
-            Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
-            Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ReflectionTextureBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
-            Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block"],
-            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
-        };
-        // Create node menu
-        var blockMenu = [];
-        for (var key in allBlocks) {
-            var blockList = allBlocks[key].filter(function (b) { return !_this.state.filter || b.toLowerCase().indexOf(_this.state.filter.toLowerCase()) !== -1; })
-                .sort(function (a, b) { return a.localeCompare(b); })
-                .map(function (block, i) {
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block });
-            });
-            if (blockList.length) {
-                blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key.replace("_", " "), closed: false }, blockList));
-            }
-        }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "nodeList" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "panes" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "filter" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onChange: function (evt) { return _this.filterContent(evt.target.value); } })),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "list-container" }, blockMenu)))));
-    };
-    return NodeListComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -70562,9 +72064,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PreviewAreaComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PreviewAreaComponent, _super);
-    function PreviewAreaComponent() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PreviewAreaComponent, _super);
+    function PreviewAreaComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { isLoading: true };
+        _this.props.globalState.onIsLoadingChanged.add(function (state) { return _this.setState({ isLoading: state }); });
+        return _this;
     }
     PreviewAreaComponent.prototype.changeAnimation = function () {
         this.props.globalState.rotatePreview = !this.props.globalState.rotatePreview;
@@ -70579,18 +72084,56 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
         this.props.globalState.backgroundColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__["Color4"].FromColor3(newColor, 1.0);
         this.props.globalState.onPreviewBackgroundChanged.notifyObservers();
     };
+    PreviewAreaComponent.prototype.changeBackFaceCulling = function (value) {
+        this.props.globalState.backFaceCulling = value;
+        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreBoolean("BackFaceCulling", value);
+        this.props.globalState.onBackFaceCullingChanged.notifyObservers();
+        this.forceUpdate();
+    };
+    PreviewAreaComponent.prototype.changeDepthPrePass = function (value) {
+        this.props.globalState.depthPrePass = value;
+        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreBoolean("DepthPrePass", value);
+        this.props.globalState.onDepthPrePassChanged.notifyObservers();
+        this.forceUpdate();
+    };
     PreviewAreaComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview", style: { height: this.props.width + "px" } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "waitPanel" + (this.state.isLoading ? "" : " hidden") }, "Please wait, loading...")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeAnimation(); }, className: "button" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: this.props.globalState.rotatePreview ? _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faStop"] : _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlay"] })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button align" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Background color", className: "button align" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "color-picker", id: "color-picker-label" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPalette"] })),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "color-picker", id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } })))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "color-picker", id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render without back face culling", onClick: function () { return _this.changeBackFaceCulling(!_this.props.globalState.backFaceCulling); }, className: "button" + (!this.props.globalState.backFaceCulling ? " selected" : "") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCheckDouble"] })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render with depth pre-pass", onClick: function () { return _this.changeDepthPrePass(!_this.props.globalState.depthPrePass); }, className: "button" + (this.props.globalState.depthPrePass ? " selected" : "") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faClone"] })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off hemispheric light", onClick: function () {
+                        _this.props.globalState.hemisphericLight = !_this.props.globalState.hemisphericLight;
+                        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreBoolean("HemisphericLight", _this.props.globalState.hemisphericLight);
+                        _this.props.globalState.onLightUpdated.notifyObservers();
+                        _this.forceUpdate();
+                    }, className: "button" + (this.props.globalState.hemisphericLight ? " selected" : "") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faSun"] })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #0", onClick: function () {
+                        _this.props.globalState.directionalLight0 = !_this.props.globalState.directionalLight0;
+                        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreBoolean("DirectionalLight0", _this.props.globalState.directionalLight0);
+                        _this.props.globalState.onLightUpdated.notifyObservers();
+                        _this.forceUpdate();
+                    }, className: "button" + (this.props.globalState.directionalLight0 ? " selected" : "") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLocationArrow"] })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #1", onClick: function () {
+                        _this.props.globalState.directionalLight1 = !_this.props.globalState.directionalLight1;
+                        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreBoolean("DirectionalLight1", _this.props.globalState.directionalLight1);
+                        _this.props.globalState.onLightUpdated.notifyObservers();
+                        _this.forceUpdate();
+                    }, className: "button" + (this.props.globalState.directionalLight1 ? " selected" : "") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLocationArrow"] })))));
     };
     return PreviewAreaComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -70612,7 +72155,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
-<<<<<<< Updated upstream
+/* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
+
+
+
+
+
 
 
 
@@ -70635,6 +72183,9 @@ var PreviewManager = /** @class */ (function () {
         this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add(function () {
             _this._refreshPreviewMesh();
         });
+        this._onLightUpdatedObserver = globalState.onLightUpdated.add(function () {
+            _this._prepareLights();
+        });
         this._onUpdateRequiredObserver = globalState.onUpdateRequiredObservable.add(function () {
             var serializationObject = _this._nodeMaterial.serialize();
             _this._updatePreview(serializationObject);
@@ -70645,6 +72196,12 @@ var PreviewManager = /** @class */ (function () {
         this._onAnimationCommandActivatedObserver = globalState.onAnimationCommandActivated.add(function () {
             _this._handleAnimations();
         });
+        this._onBackFaceCullingChangedObserver = globalState.onBackFaceCullingChanged.add(function () {
+            _this._material.backFaceCulling = _this._globalState.backFaceCulling;
+        });
+        this._onDepthPrePassChangedObserver = globalState.onDepthPrePassChanged.add(function () {
+            _this._material.needDepthPrePass = _this._globalState.depthPrePass;
+        });
         this._engine = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
         this._scene = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
         this._camera = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ArcRotateCamera"]("Camera", 0, 0.8, 4, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._scene);
@@ -70653,13 +72210,45 @@ var PreviewManager = /** @class */ (function () {
         this._camera.wheelPrecision = 20;
         this._camera.minZ = 0.1;
         this._camera.attachControl(targetCanvas, false);
+        this._lightParent = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["TransformNode"]("LightParent", this._scene);
         this._refreshPreviewMesh();
         this._engine.runRenderLoop(function () {
             _this._engine.resize();
             _this._scene.render();
         });
-        var serializationObject = this._nodeMaterial.serialize();
-        this._updatePreview(serializationObject);
+        //     let cameraLastRotation = 0;
+        var lastOffsetX = undefined;
+        //   const lightRotationParallaxSpeed = 0.5;        
+        var lightRotationSpeed = 0.01;
+        this._scene.onPointerObservable.add(function (evt) {
+            if (_this._globalState.controlCamera) {
+                return;
+            }
+            if (evt.type === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
+                lastOffsetX = undefined;
+                return;
+            }
+            if (evt.event.buttons !== 1) {
+                return;
+            }
+            if (lastOffsetX === undefined) {
+                lastOffsetX = evt.event.offsetX;
+            }
+            var rotateLighting = (lastOffsetX - evt.event.offsetX) * lightRotationSpeed;
+            _this._lightParent.rotation.y += rotateLighting;
+            lastOffsetX = evt.event.offsetX;
+        });
+        // this._scene.registerBeforeRender(() => {
+        //     if (this._camera.alpha === cameraLastRotation) {
+        //         return;
+        //     }
+        //     if (!this._globalState.controlCamera) {
+        //         return;
+        //     }
+        //     var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed; 
+        //     this._lightParent.rotate(Vector3.Up(), rotateLighting);
+        //     cameraLastRotation = this._camera.alpha;
+        // });
     }
     PreviewManager.prototype._handleAnimations = function () {
         this._scene.stopAllAnimations();
@@ -70667,7 +72256,7 @@ var PreviewManager = /** @class */ (function () {
             for (var _i = 0, _a = this._scene.rootNodes; _i < _a.length; _i++) {
                 var root = _a[_i];
                 var transformNode = root;
-                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh") {
+                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh" || transformNode.getClassName() === "GroundMesh") {
                     if (transformNode.rotationQuaternion) {
                         transformNode.rotation = transformNode.rotationQuaternion.toEulerAngles();
                         transformNode.rotationQuaternion = null;
@@ -70677,16 +72266,34 @@ var PreviewManager = /** @class */ (function () {
             }
         }
     };
+    PreviewManager.prototype._prepareLights = function () {
+        // Remove current lights
+        var currentLights = this._scene.lights.slice(0);
+        for (var _i = 0, currentLights_1 = currentLights; _i < currentLights_1.length; _i++) {
+            var light = currentLights_1[_i];
+            light.dispose();
+        }
+        // Create new lights based on settings
+        if (this._globalState.hemisphericLight) {
+            new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("Hemispheric light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
+        }
+        if (this._globalState.directionalLight0) {
+            var dir0 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #0", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
+            dir0.intensity = 0.9;
+            dir0.diffuse = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.specular = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.parent = this._lightParent;
+        }
+        if (this._globalState.directionalLight1) {
+            var dir1 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #1", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-0.9519937437504213, -0.24389315636999764, -0.1849974057546125), this._scene);
+            dir1.intensity = 1.2;
+            dir1.specular = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.diffuse = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.parent = this._lightParent;
+        }
+    };
     PreviewManager.prototype._prepareMeshes = function () {
-        // Material
-        for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
-            var mesh = _a[_i];
-            mesh.material = this._material;
-        }
-        // Light
-        if (!this._scene.lights.length) {
-            this._light = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
-        }
+        this._prepareLights();
         // Framing
         this._camera.useFramingBehavior = true;
         var framingBehavior = this._camera.getBehaviorByName("Framing");
@@ -70704,6 +72311,9 @@ var PreviewManager = /** @class */ (function () {
         this._camera.pinchDeltaPercentage = 0.01;
         // Animations
         this._handleAnimations();
+        // Material        
+        var serializationObject = this._nodeMaterial.serialize();
+        this._updatePreview(serializationObject);
     };
     PreviewManager.prototype._refreshPreviewMesh = function () {
         var _this = this;
@@ -70721,9 +72331,16 @@ var PreviewManager = /** @class */ (function () {
                 var light = lights_1[_b];
                 light.dispose();
             }
+            this._engine.releaseEffects();
+            babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].ShowLoadingScreen = false;
+            this._globalState.onIsLoadingChanged.notifyObservers(true);
             switch (this._globalState.previewMeshType) {
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
-                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateBox("dummy-box", 2, this._scene));
+                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(function () {
+                        var _a;
+                        (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
+                        _this._prepareMeshes();
+                    });
                     break;
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Sphere:
                     this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy-sphere", 32, 2, this._scene));
@@ -70732,8 +72349,12 @@ var PreviewManager = /** @class */ (function () {
                     this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
                     break;
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Cylinder:
-                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene));
-                    break;
+                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(function () {
+                        var _a;
+                        (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
+                        _this._prepareMeshes();
+                    });
+                    return;
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Plane:
                     this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateGround("dummy-plane", 2, 2, 128, this._scene));
                     break;
@@ -70762,6 +72383,8 @@ var PreviewManager = /** @class */ (function () {
         var _this = this;
         try {
             var tempMaterial_1 = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].Parse(serializationObject, this._scene);
+            tempMaterial_1.backFaceCulling = this._globalState.backFaceCulling;
+            tempMaterial_1.needDepthPrePass = this._globalState.depthPrePass;
             if (this._meshes.length) {
                 var tasks = this._meshes.map(function (m) { return _this._forceCompilationAsync(tempMaterial_1, m); });
                 Promise.all(tasks).then(function () {
@@ -70773,6 +72396,10 @@ var PreviewManager = /** @class */ (function () {
                         _this._material.dispose();
                     }
                     _this._material = tempMaterial_1;
+                    _this._globalState.onIsLoadingChanged.notifyObservers(false);
+                }).catch(function (reason) {
+                    _this._globalState.onLogRequiredObservable.notifyObservers(new _log_logComponent__WEBPACK_IMPORTED_MODULE_2__["LogEntry"]("Shader compilation error:\r\n" + reason, true));
+                    _this._globalState.onIsLoadingChanged.notifyObservers(false);
                 });
             }
             else {
@@ -70789,6 +72416,9 @@ var PreviewManager = /** @class */ (function () {
         this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
+        this._globalState.onBackFaceCullingChanged.remove(this._onBackFaceCullingChangedObserver);
+        this._globalState.onDepthPrePassChanged.remove(this._onDepthPrePassChangedObserver);
+        this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
         if (this._material) {
             this._material.dispose();
         }
@@ -70796,9 +72426,6 @@ var PreviewManager = /** @class */ (function () {
         for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
             var mesh = _a[_i];
             mesh.dispose();
-        }
-        if (this._light) {
-            this._light.dispose();
         }
         this._scene.dispose();
         this._engine.dispose();
@@ -70806,165 +72433,6 @@ var PreviewManager = /** @class */ (function () {
     return PreviewManager;
 }());
 
-=======
-
-
-
-
-
-
-
-
-
-
-var PreviewManager = /** @class */ (function () {
-    function PreviewManager(targetCanvas, globalState) {
-        var _this = this;
-        this._nodeMaterial = globalState.nodeMaterial;
-        this._globalState = globalState;
-        this._onBuildObserver = this._nodeMaterial.onBuildObservable.add(function (nodeMaterial) {
-            var serializationObject = nodeMaterial.serialize();
-            _this._updatePreview(serializationObject);
-        });
-        this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add(function () {
-            _this._refreshPreviewMesh();
-        });
-        this._onUpdateRequiredObserver = globalState.onUpdateRequiredObservable.add(function () {
-            var serializationObject = _this._nodeMaterial.serialize();
-            _this._updatePreview(serializationObject);
-        });
-        this._onPreviewBackgroundChangedObserver = globalState.onPreviewBackgroundChanged.add(function () {
-            _this._scene.clearColor = _this._globalState.backgroundColor;
-        });
-        this._onAnimationCommandActivatedObserver = globalState.onAnimationCommandActivated.add(function () {
-            _this._handleAnimations();
-        });
-        this._engine = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
-        this._scene = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
-        this._camera = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ArcRotateCamera"]("Camera", 0, 0.8, 4, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._scene);
-        this._light = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
-        this._camera.lowerRadiusLimit = 3;
-        this._camera.upperRadiusLimit = 10;
-        this._camera.wheelPrecision = 20;
-        this._camera.attachControl(targetCanvas, false);
-        this._refreshPreviewMesh();
-        this._engine.runRenderLoop(function () {
-            _this._engine.resize();
-            _this._scene.render();
-        });
-        var serializationObject = this._nodeMaterial.serialize();
-        this._updatePreview(serializationObject);
-    }
-    PreviewManager.prototype._handleAnimations = function () {
-        this._scene.stopAllAnimations();
-        if (this._globalState.rotatePreview) {
-            for (var _i = 0, _a = this._scene.rootNodes; _i < _a.length; _i++) {
-                var root = _a[_i];
-                var transformNode = root;
-                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh") {
-                    if (transformNode.rotationQuaternion) {
-                        transformNode.rotation = transformNode.rotationQuaternion.toEulerAngles();
-                        transformNode.rotationQuaternion = null;
-                    }
-                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Animation"].CreateAndStartAnimation("turnTable", root, "rotation.y", 60, 1200, transformNode.rotation.y, transformNode.rotation.y + 2 * Math.PI, 1);
-                }
-            }
-        }
-    };
-    PreviewManager.prototype._prepareMeshes = function () {
-        // Material
-        for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
-            var mesh = _a[_i];
-            mesh.material = this._material;
-        }
-        // Framing
-        this._camera.useFramingBehavior = true;
-        var framingBehavior = this._camera.getBehaviorByName("Framing");
-        framingBehavior.framingTime = 0;
-        framingBehavior.elevationReturnTime = -1;
-        if (this._scene.meshes.length) {
-            var worldExtends = this._scene.getWorldExtends();
-            this._camera.lowerRadiusLimit = null;
-            this._camera.upperRadiusLimit = null;
-            framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-        }
-        this._camera.pinchPrecision = 200 / this._camera.radius;
-        this._camera.upperRadiusLimit = 5 * this._camera.radius;
-        this._camera.wheelDeltaPercentage = 0.01;
-        this._camera.pinchDeltaPercentage = 0.01;
-        // Animations
-        this._handleAnimations();
-    };
-    PreviewManager.prototype._refreshPreviewMesh = function () {
-        var _this = this;
-        if (this._currentType !== this._globalState.previewMeshType) {
-            this._currentType = this._globalState.previewMeshType;
-            if (this._meshes && this._meshes.length) {
-                for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
-                    var mesh = _a[_i];
-                    mesh.dispose();
-                }
-            }
-            this._meshes = [];
-            switch (this._globalState.previewMeshType) {
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
-                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateBox("dummy-box", 2, this._scene));
-                    break;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Sphere:
-                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy-sphere", 32, 2, this._scene));
-                    break;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Torus:
-                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
-                    break;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Cylinder:
-                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene));
-                    break;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Plane:
-                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateGround("dummy-plane", 2, 2, 128, this._scene));
-                    break;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Custom:
-                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(function () {
-                        var _a;
-                        (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
-                        _this._prepareMeshes();
-                    });
-                    return;
-            }
-            this._prepareMeshes();
-        }
-    };
-    PreviewManager.prototype._updatePreview = function (serializationObject) {
-        if (this._material) {
-            this._material.dispose();
-        }
-        this._material = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].Parse(serializationObject, this._scene);
-        this._material.build();
-        for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
-            var mesh = _a[_i];
-            mesh.material = this._material;
-        }
-    };
-    PreviewManager.prototype.dispose = function () {
-        this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
-        this._globalState.onPreviewCommandActivated.remove(this._onPreviewCommandActivatedObserver);
-        this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
-        this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
-        this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
-        if (this._material) {
-            this._material.dispose();
-        }
-        this._camera.dispose();
-        for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
-            var mesh = _a[_i];
-            mesh.dispose();
-        }
-        this._light.dispose();
-        this._engine.dispose();
-    };
-    return PreviewManager;
-}());
-
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -70986,7 +72454,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
-<<<<<<< Updated upstream
 
 
 
@@ -70994,7 +72461,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PreviewMeshControlComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PreviewMeshControlComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PreviewMeshControlComponent, _super);
     function PreviewMeshControlComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -71021,19 +72488,19 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
     PreviewMeshControlComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box ? " selected" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a cube", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box ? " selected" : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCube"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere ? " selected" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a sphere", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere ? " selected" : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCircle"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Torus); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Torus ? " selected" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a torus", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Torus); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Torus ? " selected" : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faRing"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder ? " selected" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a cylinder", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder ? " selected" : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faHockeyPuck"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane ? " selected" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a plane", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane ? " selected" : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faSquareFull"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].ShaderBall); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].ShaderBall ? " selected" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a shader ball", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].ShaderBall); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].ShaderBall ? " selected" : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faDotCircle"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button align" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button align", title: "Preview with a custom mesh" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-picker", id: "file-picker-label" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlus"] })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "file-picker", id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" }))));
@@ -71041,60 +72508,6 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
     return PreviewMeshControlComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
-=======
-
-
-
-
-
-
-var PreviewMeshControlComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PreviewMeshControlComponent, _super);
-    function PreviewMeshControlComponent() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    PreviewMeshControlComponent.prototype.changeMeshType = function (newOne) {
-        if (this.props.globalState.previewMeshType === newOne) {
-            return;
-        }
-        this.props.globalState.previewMeshType = newOne;
-        this.props.globalState.onPreviewCommandActivated.notifyObservers();
-        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreNumber("PreviewMeshType", newOne);
-        this.forceUpdate();
-    };
-    PreviewMeshControlComponent.prototype.useCustomMesh = function (evt) {
-        var files = evt.target.files;
-        if (files && files.length) {
-            var file = files[0];
-            this.props.globalState.previewMeshFile = file;
-            this.props.globalState.previewMeshType = _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom;
-            this.props.globalState.onPreviewCommandActivated.notifyObservers();
-            this.forceUpdate();
-        }
-        document.getElementById("file-picker").value = "";
-    };
-    PreviewMeshControlComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCube"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCircle"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Torus); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Torus ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faRing"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faHockeyPuck"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faSquareFull"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button align" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-picker", id: "file-picker-label" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlus"] })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "file-picker", id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" }))));
-    };
-    return PreviewMeshControlComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -71109,7 +72522,6 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewMeshType", function() { return PreviewMeshType; });
-<<<<<<< Updated upstream
 var PreviewMeshType;
 (function (PreviewMeshType) {
     PreviewMeshType[PreviewMeshType["Sphere"] = 0] = "Sphere";
@@ -71120,17 +72532,6 @@ var PreviewMeshType;
     PreviewMeshType[PreviewMeshType["ShaderBall"] = 5] = "ShaderBall";
     PreviewMeshType[PreviewMeshType["Custom"] = 6] = "Custom";
 })(PreviewMeshType || (PreviewMeshType = {}));
-=======
-var PreviewMeshType;
-(function (PreviewMeshType) {
-    PreviewMeshType[PreviewMeshType["Sphere"] = 0] = "Sphere";
-    PreviewMeshType[PreviewMeshType["Box"] = 1] = "Box";
-    PreviewMeshType[PreviewMeshType["Torus"] = 2] = "Torus";
-    PreviewMeshType[PreviewMeshType["Cylinder"] = 3] = "Cylinder";
-    PreviewMeshType[PreviewMeshType["Plane"] = 4] = "Plane";
-    PreviewMeshType[PreviewMeshType["Custom"] = 5] = "Custom";
-})(PreviewMeshType || (PreviewMeshType = {}));
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -71153,7 +72554,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Color3PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Color3PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3PropertyTabComponent, _super);
     function Color3PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -71188,7 +72589,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FloatPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatPropertyTabComponent, _super);
     function FloatPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -71219,12 +72620,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_matrixLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/matrixLineComponent */ "./sharedComponents/matrixLineComponent.tsx");
-<<<<<<< Updated upstream
 
 
 
 var MatrixPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MatrixPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MatrixPropertyTabComponent, _super);
     function MatrixPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -71239,25 +72639,6 @@ var MatrixPropertyTabComponent = /** @class */ (function (_super) {
     return MatrixPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
-=======
-
-
-
-var MatrixPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MatrixPropertyTabComponent, _super);
-    function MatrixPropertyTabComponent() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    MatrixPropertyTabComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_matrixLineComponent__WEBPACK_IMPORTED_MODULE_2__["MatrixLineComponent"], { label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
-                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-            } }));
-    };
-    return MatrixPropertyTabComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -71280,7 +72661,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector2PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector2PropertyTabComponent, _super);
     function Vector2PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -71315,7 +72696,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector3PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector3PropertyTabComponent, _super);
     function Vector3PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -71350,7 +72731,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector4PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector4PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector4PropertyTabComponent, _super);
     function Vector4PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -71417,7 +72798,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../serializationTools */ "./serializationTools.ts");
-<<<<<<< Updated upstream
 /* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
 
@@ -71432,7 +72812,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/propertyTab.scss");
 var PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { currentNode: null };
@@ -71513,95 +72893,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     return PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
-=======
-
-
-
-
-
-
-
-
-__webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/propertyTab.scss");
-var PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PropertyTabComponent, _super);
-    function PropertyTabComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this.state = { currentNode: null };
-        return _this;
-    }
-    PropertyTabComponent.prototype.componentDidMount = function () {
-        var _this = this;
-        this.props.globalState.onSelectionChangedObservable.add(function (block) {
-            _this.setState({ currentNode: block });
-        });
-    };
-    PropertyTabComponent.prototype.load = function (file) {
-        var _this = this;
-        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Tools"].ReadFile(file, function (data) {
-            var decoder = new TextDecoder("utf-8");
-            _serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Deserialize(JSON.parse(decoder.decode(data)), _this.props.globalState);
-        }, undefined, true);
-    };
-    PropertyTabComponent.prototype.save = function () {
-        var json = _serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
-        _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
-    };
-    PropertyTabComponent.prototype.customSave = function () {
-        var _this = this;
-        this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Saving your material to Babylon.js snippet server...", isError: false });
-        this.props.globalState.customSave.action(_serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(function () {
-            _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Material saved successfully", isError: false });
-        }).catch(function (err) {
-            _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: err, isError: true });
-        });
-    };
-    PropertyTabComponent.prototype.render = function () {
-        var _this = this;
-        if (this.state.currentNode) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "NODE MATERIAL EDITOR")),
-                this.state.currentNode.renderProperties(this.props.globalState)));
-        }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "NODE MATERIAL EDITOR")),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
-                            _this.props.globalState.nodeMaterial.setToDefault();
-                            _this.props.globalState.onResetRequiredObservable.notifyObservers(null);
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "UI" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Zoom to fit", onClick: function () {
-                            _this.props.globalState.onZoomToFitRequiredObservable.notifyObservers();
-                        } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reorganize", onClick: function () {
-                            _this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
-                        } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FILE" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.load(file); }, accept: ".json" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save", onClick: function () {
-                            _this.save();
-                        } }),
-                    this.props.globalState.customSave &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, onClick: function () {
-                                _this.customSave();
-                            } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Generate code", onClick: function () {
-                            _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.generateCode(), "code.txt");
-                        } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export shaders", onClick: function () {
-                            _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
-                        } })))));
-    };
-    return PropertyTabComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -71718,11 +73009,21 @@ var GlobalState = /** @class */ (function () {
         this.onReOrganizedRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onErrorMessageDialogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onIsLoadingChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPreviewCommandActivated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onLightUpdated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPreviewBackgroundChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onBackFaceCullingChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onDepthPrePassChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onAnimationCommandActivated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.blockKeyboardEvents = false;
         this.previewMeshType = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box);
+        this.backFaceCulling = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("BackFaceCulling", true);
+        this.depthPrePass = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DepthPrePass", false);
+        this.hemisphericLight = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("HemisphericLight", true);
+        this.directionalLight0 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight0", false);
+        this.directionalLight1 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight1", false);
+        this.controlCamera = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorR", 0.37);
         var g = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorG", 0.37);
         var b = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorB", 0.37);
@@ -71782,7 +73083,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_diagram_lightInformation_lightInformationNodeFactory__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./components/diagram/lightInformation/lightInformationNodeFactory */ "./components/diagram/lightInformation/lightInformationNodeFactory.tsx");
 /* harmony import */ var _components_diagram_lightInformation_lightInformationNodeModel__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./components/diagram/lightInformation/lightInformationNodeModel */ "./components/diagram/lightInformation/lightInformationNodeModel.tsx");
 /* harmony import */ var _components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./components/preview/previewAreaComponent */ "./components/preview/previewAreaComponent.tsx");
-<<<<<<< Updated upstream
+/* harmony import */ var _components_diagram_gradient_gradientNodeModel__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./components/diagram/gradient/gradientNodeModel */ "./components/diagram/gradient/gradientNodeModel.tsx");
+/* harmony import */ var _components_diagram_gradient_gradientNodeFactory__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/diagram/gradient/gradientNodeFactory */ "./components/diagram/gradient/gradientNodeFactory.tsx");
+/* harmony import */ var _components_diagram_reflectionTexture_reflectionTextureNodeFactory__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./components/diagram/reflectionTexture/reflectionTextureNodeFactory */ "./components/diagram/reflectionTexture/reflectionTextureNodeFactory.tsx");
+/* harmony import */ var _components_diagram_reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./components/diagram/reflectionTexture/reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+
+
+
+
+
+
 
 
 
@@ -71833,7 +73143,7 @@ var NodeCreationOptions = /** @class */ (function () {
 }());
 
 var GraphEditor = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GraphEditor, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphEditor, _super);
     function GraphEditor(props) {
         var _this = _super.call(this, props) || this;
         _this.NodeWidth = 100;
@@ -71857,12 +73167,13 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._engine.registerNodeFactory(new _components_diagram_trigonometry_trigonometryNodeFactory__WEBPACK_IMPORTED_MODULE_26__["TrigonometryNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_clamp_clampNodeFactory__WEBPACK_IMPORTED_MODULE_28__["ClampNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_lightInformation_lightInformationNodeFactory__WEBPACK_IMPORTED_MODULE_30__["LightInformationNodeFactory"](_this.props.globalState));
+        _this._engine.registerNodeFactory(new _components_diagram_gradient_gradientNodeFactory__WEBPACK_IMPORTED_MODULE_34__["GradientNodeFactory"](_this.props.globalState));
+        _this._engine.registerNodeFactory(new _components_diagram_reflectionTexture_reflectionTextureNodeFactory__WEBPACK_IMPORTED_MODULE_35__["ReflectionTextureNodeFactory"](_this.props.globalState));
         _this._engine.registerLinkFactory(new _components_diagram_link_advancedLinkFactory__WEBPACK_IMPORTED_MODULE_20__["AdvancedLinkFactory"]());
         _this.props.globalState.onRebuildRequiredObservable.add(function () {
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial();
             }
-            _this.forceUpdate();
         });
         _this.props.globalState.onResetRequiredObservable.add(function (locations) {
             _this.build(false, locations);
@@ -71871,7 +73182,7 @@ var GraphEditor = /** @class */ (function (_super) {
             }
         });
         _this.props.globalState.onUpdateRequiredObservable.add(function () {
-            _this.forceUpdate();
+            _this._engine.repaintCanvas();
         });
         _this.props.globalState.onZoomToFitRequiredObservable.add(function () {
             _this.zoomToFit();
@@ -71953,6 +73264,9 @@ var GraphEditor = /** @class */ (function (_super) {
         if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["TextureBlock"]) {
             newNode = new _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_9__["TextureNodeModel"]();
         }
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["ReflectionTextureBlock"]) {
+            newNode = new _components_diagram_reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_36__["ReflectionTextureNodeModel"]();
+        }
         else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["LightBlock"]) {
             newNode = new _components_diagram_light_lightNodeModel__WEBPACK_IMPORTED_MODULE_15__["LightNodeModel"]();
         }
@@ -71970,6 +73284,9 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["LightInformationBlock"]) {
             newNode = new _components_diagram_lightInformation_lightInformationNodeModel__WEBPACK_IMPORTED_MODULE_31__["LightInformationNodeModel"]();
+        }
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["GradientBlock"]) {
+            newNode = new _components_diagram_gradient_gradientNodeModel__WEBPACK_IMPORTED_MODULE_33__["GradientNodeModel"]();
         }
         else {
             newNode = new _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__["GenericNodeModel"]();
@@ -72275,7 +73592,7 @@ var GraphEditor = /** @class */ (function (_super) {
             nodeModel = this.addValueNode(data);
         }
         else {
-            var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene());
+            var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
             if (block) {
                 this._toAdd = [];
                 block.autoConfigure(this.props.globalState.nodeMaterial);
@@ -72346,566 +73663,6 @@ var GraphEditor = /** @class */ (function (_super) {
     return GraphEditor;
 }(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
 
-=======
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-__webpack_require__(/*! storm-react-diagrams/dist/style.min.css */ "../../node_modules/storm-react-diagrams/dist/style.min.css");
-__webpack_require__(/*! ./main.scss */ "./main.scss");
-__webpack_require__(/*! ./components/diagram/diagram.scss */ "./components/diagram/diagram.scss");
-var NodeCreationOptions = /** @class */ (function () {
-    function NodeCreationOptions() {
-    }
-    return NodeCreationOptions;
-}());
-
-var GraphEditor = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GraphEditor, _super);
-    function GraphEditor(props) {
-        var _this = _super.call(this, props) || this;
-        _this.NodeWidth = 100;
-        _this._leftWidth = _dataStorage__WEBPACK_IMPORTED_MODULE_17__["DataStorage"].ReadNumber("LeftWidth", 200);
-        _this._rightWidth = _dataStorage__WEBPACK_IMPORTED_MODULE_17__["DataStorage"].ReadNumber("RightWidth", 300);
-        _this._nodes = new Array();
-        _this._blocks = new Array();
-        _this._copiedNodes = [];
-        _this._mouseLocationX = 0;
-        _this._mouseLocationY = 0;
-        /** @hidden */
-        _this._toAdd = [];
-        // setup the diagram engine
-        _this._engine = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramEngine"]();
-        _this._engine.installDefaultFactories();
-        _this._engine.registerNodeFactory(new _components_diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__["GenericNodeFactory"](_this.props.globalState));
-        _this._engine.registerNodeFactory(new _components_diagram_texture_textureNodeFactory__WEBPACK_IMPORTED_MODULE_8__["TextureNodeFactory"](_this.props.globalState));
-        _this._engine.registerNodeFactory(new _components_diagram_light_lightNodeFactory__WEBPACK_IMPORTED_MODULE_16__["LightNodeFactory"](_this.props.globalState));
-        _this._engine.registerNodeFactory(new _components_diagram_input_inputNodeFactory__WEBPACK_IMPORTED_MODULE_11__["InputNodeFactory"](_this.props.globalState));
-        _this._engine.registerNodeFactory(new _components_diagram_remap_remapNodeFactory__WEBPACK_IMPORTED_MODULE_21__["RemapNodeFactory"](_this.props.globalState));
-        _this._engine.registerNodeFactory(new _components_diagram_trigonometry_trigonometryNodeFactory__WEBPACK_IMPORTED_MODULE_26__["TrigonometryNodeFactory"](_this.props.globalState));
-        _this._engine.registerNodeFactory(new _components_diagram_clamp_clampNodeFactory__WEBPACK_IMPORTED_MODULE_28__["ClampNodeFactory"](_this.props.globalState));
-        _this._engine.registerNodeFactory(new _components_diagram_lightInformation_lightInformationNodeFactory__WEBPACK_IMPORTED_MODULE_30__["LightInformationNodeFactory"](_this.props.globalState));
-        _this._engine.registerLinkFactory(new _components_diagram_link_advancedLinkFactory__WEBPACK_IMPORTED_MODULE_20__["AdvancedLinkFactory"]());
-        _this.props.globalState.onRebuildRequiredObservable.add(function () {
-            if (_this.props.globalState.nodeMaterial) {
-                _this.buildMaterial();
-            }
-            _this.forceUpdate();
-        });
-        _this.props.globalState.onResetRequiredObservable.add(function (locations) {
-            _this.build(false, locations);
-            if (_this.props.globalState.nodeMaterial) {
-                _this.buildMaterial();
-            }
-        });
-        _this.props.globalState.onUpdateRequiredObservable.add(function () {
-            _this.forceUpdate();
-        });
-        _this.props.globalState.onZoomToFitRequiredObservable.add(function () {
-            _this.zoomToFit();
-        });
-        _this.props.globalState.onReOrganizedRequiredObservable.add(function () {
-            _this.reOrganize();
-        });
-        _this.props.globalState.onGetNodeFromBlock = function (block) {
-            return _this._nodes.filter(function (n) { return n.block === block; })[0];
-        };
-        _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
-            if (!evt.ctrlKey) {
-                return;
-            }
-            if (evt.key === "c") {
-                var selectedItems = _this._engine.diagramModel.getSelectedItems();
-                if (!selectedItems.length) {
-                    return;
-                }
-                var selectedItem = selectedItems[0];
-                if (!selectedItem.block) {
-                    return;
-                }
-                _this._copiedNodes = selectedItems.map(function (i) { return i; });
-            }
-            else if (evt.key === "v") {
-                if (!_this._copiedNodes.length) {
-                    return;
-                }
-                var rootElement = _this.props.globalState.hostDocument.querySelector(".diagram-container");
-                var zoomLevel = _this._engine.diagramModel.getZoomLevel() / 100.0;
-                var currentX = (_this._mouseLocationX - rootElement.offsetLeft - _this._engine.diagramModel.getOffsetX() - _this.NodeWidth) / zoomLevel;
-                var currentY = (_this._mouseLocationY - rootElement.offsetTop - _this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
-                var originalNode = null;
-                for (var _i = 0, _a = _this._copiedNodes; _i < _a.length; _i++) {
-                    var node = _a[_i];
-                    var block = node.block;
-                    if (!block) {
-                        continue;
-                    }
-                    var clone = block.clone(_this.props.globalState.nodeMaterial.getScene());
-                    if (!clone) {
-                        return;
-                    }
-                    var newNode = _this.createNodeFromObject({ nodeMaterialBlock: clone });
-                    var x = 0;
-                    var y = 0;
-                    if (originalNode) {
-                        x = currentX + node.x - originalNode.x;
-                        y = currentY + node.y - originalNode.y;
-                    }
-                    else {
-                        originalNode = node;
-                        x = currentX;
-                        y = currentY;
-                    }
-                    newNode.setPosition(x, y);
-                }
-                _this._engine.repaintCanvas();
-            }
-        }, false);
-        _this.build(true);
-        return _this;
-    }
-    /**
-     * Creates a node and recursivly creates its parent nodes from it's input
-     * @param nodeMaterialBlock
-     */
-    GraphEditor.prototype.createNodeFromObject = function (options) {
-        if (this._blocks.indexOf(options.nodeMaterialBlock) !== -1) {
-            return this._nodes.filter(function (n) { return n.block === options.nodeMaterialBlock; })[0];
-        }
-        this._blocks.push(options.nodeMaterialBlock);
-        if (this.props.globalState.nodeMaterial.attachedBlocks.indexOf(options.nodeMaterialBlock) === -1) {
-            this.props.globalState.nodeMaterial.attachedBlocks.push(options.nodeMaterialBlock);
-        }
-        // Create new node in the graph
-        var newNode;
-        if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["TextureBlock"]) {
-            newNode = new _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_9__["TextureNodeModel"]();
-        }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["LightBlock"]) {
-            newNode = new _components_diagram_light_lightNodeModel__WEBPACK_IMPORTED_MODULE_15__["LightNodeModel"]();
-        }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["InputBlock"]) {
-            newNode = new _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_12__["InputNodeModel"]();
-        }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["TrigonometryBlock"]) {
-            newNode = new _components_diagram_trigonometry_trigonometryNodeModel__WEBPACK_IMPORTED_MODULE_27__["TrigonometryNodeModel"]();
-        }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["RemapBlock"]) {
-            newNode = new _components_diagram_remap_remapNodeModel__WEBPACK_IMPORTED_MODULE_22__["RemapNodeModel"]();
-        }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["ClampBlock"]) {
-            newNode = new _components_diagram_clamp_clampNodeModel__WEBPACK_IMPORTED_MODULE_29__["ClampNodeModel"]();
-        }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["LightInformationBlock"]) {
-            newNode = new _components_diagram_lightInformation_lightInformationNodeModel__WEBPACK_IMPORTED_MODULE_31__["LightInformationNodeModel"]();
-        }
-        else {
-            newNode = new _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__["GenericNodeModel"]();
-        }
-        if (options.nodeMaterialBlock.isFinalMerger) {
-            this.props.globalState.nodeMaterial.addOutputNode(options.nodeMaterialBlock);
-        }
-        this._nodes.push(newNode);
-        this._model.addAll(newNode);
-        if (options.nodeMaterialBlock) {
-            newNode.prepare(options, this._nodes, this._model, this);
-        }
-        return newNode;
-    };
-    GraphEditor.prototype.addValueNode = function (type) {
-        var nodeType = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetConnectionNodeTypeFromString(type);
-        var newInputBlock = new babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["InputBlock"](type, undefined, nodeType);
-        var localNode = this.createNodeFromObject({ type: type, nodeMaterialBlock: newInputBlock });
-        return localNode;
-    };
-    GraphEditor.prototype.onWidgetKeyUp = function (evt) {
-        var widget = this.refs["test"];
-        if (!widget || this.props.globalState.blockKeyboardEvents) {
-            return;
-        }
-        widget.onKeyUp(evt);
-    };
-    GraphEditor.prototype.componentDidMount = function () {
-        if (this.props.globalState.hostDocument) {
-            var widget = this.refs["test"];
-            widget.setState({ document: this.props.globalState.hostDocument });
-            this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this);
-            this.props.globalState.hostDocument.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
-            this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_24__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
-        }
-    };
-    GraphEditor.prototype.componentWillUnmount = function () {
-        if (this.props.globalState.hostDocument) {
-            this.props.globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
-        }
-        this._previewManager.dispose();
-    };
-    GraphEditor.prototype.zoomToFit = function (retry) {
-        var _this = this;
-        if (retry === void 0) { retry = 0; }
-        var xFactor = this._engine.canvas.clientWidth / this._engine.canvas.scrollWidth;
-        var yFactor = this._engine.canvas.clientHeight / this._engine.canvas.scrollHeight;
-        var zoomFactor = xFactor < yFactor ? xFactor : yFactor;
-        if (zoomFactor === 1) {
-            return;
-        }
-        this._engine.diagramModel.setZoomLevel(this._engine.diagramModel.getZoomLevel() * zoomFactor);
-        this._engine.diagramModel.setOffset(0, 0);
-        this._engine.repaintCanvas();
-        retry++;
-        if (retry < 4) {
-            setTimeout(function () { return _this.zoomToFit(retry); }, 1);
-        }
-    };
-    GraphEditor.prototype.buildMaterial = function () {
-        if (!this.props.globalState.nodeMaterial) {
-            return;
-        }
-        try {
-            this.props.globalState.nodeMaterial.build(true);
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"]("Node material build successful", false));
-        }
-        catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"](err, true));
-        }
-    };
-    GraphEditor.prototype.applyFragmentOutputConstraints = function (rootInput) {
-        var model = rootInput.parent;
-        for (var inputKey in model.getPorts()) {
-            var input = model.getPorts()[inputKey];
-            if (rootInput.name === "rgba" && (inputKey === "a" || inputKey === "rgb")
-                ||
-                    (rootInput.name === "a" || rootInput.name === "rgb") && inputKey === "rgba") {
-                for (var key in input.links) {
-                    var other = input.links[key];
-                    other.remove();
-                }
-                continue;
-            }
-        }
-    };
-    GraphEditor.prototype.build = function (needToWait, locations) {
-        var _this = this;
-        if (needToWait === void 0) { needToWait = false; }
-        if (locations === void 0) { locations = null; }
-        // setup the diagram model
-        this._model = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramModel"]();
-        this._nodes = [];
-        this._blocks = [];
-        // Listen to events
-        this._model.addListener({
-            nodesUpdated: function (e) {
-                if (!e.isCreated) {
-                    // Block is deleted
-                    var targetBlock = e.node.block;
-                    if (targetBlock) {
-                        var attachedBlockIndex = _this.props.globalState.nodeMaterial.attachedBlocks.indexOf(targetBlock);
-                        if (attachedBlockIndex > -1) {
-                            _this.props.globalState.nodeMaterial.attachedBlocks.splice(attachedBlockIndex, 1);
-                        }
-                        if (targetBlock.isFinalMerger) {
-                            _this.props.globalState.nodeMaterial.removeOutputNode(targetBlock);
-                        }
-                        var blockIndex = _this._blocks.indexOf(targetBlock);
-                        if (blockIndex > -1) {
-                            _this._blocks.splice(blockIndex, 1);
-                        }
-                    }
-                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                }
-                else {
-                }
-            },
-            linksUpdated: function (e) {
-                if (!e.isCreated) {
-                    // Link is deleted
-                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    var sourcePort = e.link.sourcePort;
-                    var link = _components_diagram_port_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"].SortInputOutput(sourcePort, e.link.targetPort);
-                    if (link) {
-                        if (link.input.connection && link.output.connection) {
-                            if (link.input.connection.connectedPoint) {
-                                // Disconnect standard nodes
-                                link.output.connection.disconnectFrom(link.input.connection);
-                                link.input.syncWithNodeMaterialConnectionPoint(link.input.connection);
-                                link.output.syncWithNodeMaterialConnectionPoint(link.output.connection);
-                                _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                            }
-                        }
-                    }
-                    else {
-                        if (!e.link.targetPort && e.link.sourcePort && e.link.sourcePort.position === "input") {
-                            // Drag from input port, we are going to build an input for it                            
-                            var input_1 = e.link.sourcePort;
-                            if (input_1.connection.type == babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["NodeMaterialBlockConnectionPointTypes"].AutoDetect) {
-                                return;
-                            }
-                            var nodeModel_1 = _this.addValueNode(_blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetStringFromConnectionNodeType(input_1.connection.type));
-                            var link_1 = nodeModel_1.ports.output.link(input_1);
-                            nodeModel_1.x = e.link.points[1].x - _this.NodeWidth;
-                            nodeModel_1.y = e.link.points[1].y;
-                            setTimeout(function () {
-                                _this._model.addLink(link_1);
-                                input_1.syncWithNodeMaterialConnectionPoint(input_1.connection);
-                                nodeModel_1.ports.output.syncWithNodeMaterialConnectionPoint(nodeModel_1.ports.output.connection);
-                                var isFragmentOutput = input_1.parent.block.getClassName() === "FragmentOutputBlock";
-                                if (isFragmentOutput) {
-                                    _this.applyFragmentOutputConstraints(input_1);
-                                }
-                                _this.forceUpdate();
-                            }, 1);
-                            nodeModel_1.ports.output.connection.connectTo(input_1.connection);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                        }
-                    }
-                    _this.forceUpdate();
-                    return;
-                }
-                else {
-                    e.link.addListener({
-                        sourcePortChanged: function () {
-                        },
-                        targetPortChanged: function (evt) {
-                            // Link is created with a target port
-                            var link = _components_diagram_port_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
-                            if (link) {
-                                if (link.output.connection && link.input.connection) {
-                                    var currentBlock = link.input.connection.ownerBlock;
-                                    var isFragmentOutput = currentBlock.getClassName() === "FragmentOutputBlock";
-                                    // Disconnect previous connection
-                                    for (var key in link.input.links) {
-                                        var other = link.input.links[key];
-                                        var sourcePortConnection = other.getSourcePort().connection;
-                                        var targetPortConnection = other.getTargetPort().connection;
-                                        if (sourcePortConnection !== link.output.connection &&
-                                            targetPortConnection !== link.output.connection) {
-                                            other.remove();
-                                        }
-                                    }
-                                    if (link.output.connection.canConnectTo(link.input.connection)) {
-                                        if (isFragmentOutput) {
-                                            _this.applyFragmentOutputConstraints(link.input);
-                                        }
-                                        link.output.connection.connectTo(link.input.connection);
-                                    }
-                                    else {
-                                        evt.entity.remove();
-                                        _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Cannot connect two different connection types");
-                                    }
-                                    _this.forceUpdate();
-                                }
-                                if (_this.props.globalState.nodeMaterial) {
-                                    _this.buildMaterial();
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-        });
-        // Load graph of nodes from the material
-        if (this.props.globalState.nodeMaterial) {
-            var material = this.props.globalState.nodeMaterial;
-            material._vertexOutputNodes.forEach(function (n) {
-                _this.createNodeFromObject({ nodeMaterialBlock: n });
-            });
-            material._fragmentOutputNodes.forEach(function (n) {
-                _this.createNodeFromObject({ nodeMaterialBlock: n });
-            });
-            material.attachedBlocks.forEach(function (n) {
-                _this.createNodeFromObject({ nodeMaterialBlock: n });
-            });
-        }
-        // load model into engine
-        setTimeout(function () {
-            var _a;
-            if (_this._toAdd) {
-                (_a = _this._model).addAll.apply(_a, _this._toAdd);
-            }
-            _this._toAdd = null;
-            _this._engine.setDiagramModel(_this._model);
-            _this.forceUpdate();
-            _this.reOrganize(locations);
-        }, needToWait ? 500 : 1);
-    };
-    GraphEditor.prototype.reOrganize = function (locations) {
-        var _this = this;
-        if (locations === void 0) { locations = null; }
-        if (!locations) {
-            var nodes = _graphHelper__WEBPACK_IMPORTED_MODULE_23__["GraphHelper"].DistributeGraph(this._model);
-            nodes.forEach(function (node) {
-                for (var nodeName in _this._model.nodes) {
-                    var modelNode = _this._model.nodes[nodeName];
-                    if (modelNode.id === node.id) {
-                        modelNode.setPosition(node.x - node.width / 2, node.y - node.height / 2);
-                        return;
-                    }
-                }
-            });
-        }
-        else {
-            for (var _i = 0, locations_1 = locations; _i < locations_1.length; _i++) {
-                var location = locations_1[_i];
-                for (var _a = 0, _b = this._nodes; _a < _b.length; _a++) {
-                    var node = _b[_a];
-                    if (node.block && node.block.uniqueId === location.blockId) {
-                        node.setPosition(location.x, location.y);
-                        break;
-                    }
-                }
-            }
-        }
-        this._engine.repaintCanvas();
-    };
-    GraphEditor.prototype.onPointerDown = function (evt) {
-        this._startX = evt.clientX;
-        this._moveInProgress = true;
-        evt.currentTarget.setPointerCapture(evt.pointerId);
-    };
-    GraphEditor.prototype.onPointerUp = function (evt) {
-        this._moveInProgress = false;
-        evt.currentTarget.releasePointerCapture(evt.pointerId);
-    };
-    GraphEditor.prototype.resizeColumns = function (evt, forLeft) {
-        if (forLeft === void 0) { forLeft = true; }
-        if (!this._moveInProgress) {
-            return;
-        }
-        var deltaX = evt.clientX - this._startX;
-        var rootElement = evt.currentTarget.ownerDocument.getElementById("node-editor-graph-root");
-        if (forLeft) {
-            this._leftWidth += deltaX;
-            this._leftWidth = Math.max(150, Math.min(400, this._leftWidth));
-            _dataStorage__WEBPACK_IMPORTED_MODULE_17__["DataStorage"].StoreNumber("LeftWidth", this._leftWidth);
-        }
-        else {
-            this._rightWidth -= deltaX;
-            this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
-            _dataStorage__WEBPACK_IMPORTED_MODULE_17__["DataStorage"].StoreNumber("RightWidth", this._rightWidth);
-            rootElement.ownerDocument.getElementById("preview").style.height = this._rightWidth + "px";
-        }
-        rootElement.style.gridTemplateColumns = this.buildColumnLayout();
-        this._startX = evt.clientX;
-    };
-    GraphEditor.prototype.buildColumnLayout = function () {
-        return this._leftWidth + "px 4px calc(100% - " + (this._leftWidth + 8 + this._rightWidth) + "px) 4px " + this._rightWidth + "px";
-    };
-    GraphEditor.prototype.emitNewBlock = function (event) {
-        var _this = this;
-        var data = event.dataTransfer.getData("babylonjs-material-node");
-        var nodeModel = null;
-        if (data.indexOf("Block") === -1) {
-            nodeModel = this.addValueNode(data);
-        }
-        else {
-            var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data);
-            if (block) {
-                this._toAdd = [];
-                block.autoConfigure(this.props.globalState.nodeMaterial);
-                nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
-            }
-        }
-        ;
-        if (nodeModel) {
-            var zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
-            var x_1 = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
-            var y_1 = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
-            nodeModel.setPosition(x_1, y_1);
-            var block = nodeModel.block;
-            x_1 -= this.NodeWidth + 150;
-            block._inputs.forEach(function (connection) {
-                if (connection.connectedPoint) {
-                    var existingNodes = _this._nodes.filter(function (n) { return n.block === connection._connectedPoint._ownerBlock; });
-                    var connectedNode = existingNodes[0];
-                    if (connectedNode.x === 0 && connectedNode.y === 0) {
-                        connectedNode.setPosition(x_1, y_1);
-                        y_1 += 80;
-                    }
-                }
-            });
-            this._engine.repaintCanvas();
-            setTimeout(function () {
-                var _a;
-                (_a = _this._model).addAll.apply(_a, _this._toAdd);
-                _this._toAdd = null;
-                _this._model.clearSelection();
-                nodeModel.setSelected(true);
-                _this._engine.repaintCanvas();
-            }, 150);
-        }
-        this.forceUpdate();
-    };
-    GraphEditor.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_portal__WEBPACK_IMPORTED_MODULE_7__["Portal"], { globalState: this.props.globalState },
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "node-editor-graph-root", style: {
-                    gridTemplateColumns: this.buildColumnLayout()
-                }, onMouseMove: function (evt) {
-                    _this._mouseLocationX = evt.pageX;
-                    _this._mouseLocationY = evt.pageY;
-                }, onMouseDown: function (evt) {
-                    if (evt.target.nodeName === "INPUT") {
-                        return;
-                    }
-                    _this.props.globalState.blockKeyboardEvents = false;
-                } },
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_5__["NodeListComponent"], { globalState: this.props.globalState }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "leftGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt); } }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "diagram-container", onDrop: function (event) {
-                        _this.emitNewBlock(event);
-                    }, onDragOver: function (event) {
-                        event.preventDefault();
-                    } },
-                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramWidget"], { className: "diagram", deleteKeys: [46], ref: "test", allowLooseLinks: false, inverseZoom: true, diagramEngine: this._engine, maxNumberPointsPerLink: 0 })),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "right-panel" },
-                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_6__["PropertyTabComponent"], { globalState: this.props.globalState }),
-                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_25__["PreviewMeshControlComponent"], { globalState: this.props.globalState }),
-                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_32__["PreviewAreaComponent"], { globalState: this.props.globalState, width: this._rightWidth })),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogComponent"], { globalState: this.props.globalState })),
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_18__["MessageDialogComponent"], { globalState: this.props.globalState }),
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "blocker" }, "Node Material Editor requires a screen with a minimal resolution of 1000px")));
-    };
-    return GraphEditor;
-}(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
-
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -72957,7 +73714,7 @@ var GraphHelper = /** @class */ (function () {
                 width: node.width | 200,
                 height: node.height | 100
             };
-            output.push({ id: node.id, metadata: tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({}, size, { id: node.id }) });
+            output.push({ id: node.id, metadata: Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, size), { id: node.id }) });
         }
         return output;
     };
@@ -73154,7 +73911,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Portal = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Portal, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Portal, _super);
     function Portal() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -73178,7 +73935,6 @@ var Portal = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SerializationTools", function() { return SerializationTools; });
-<<<<<<< Updated upstream
 /* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
@@ -73208,6 +73964,7 @@ var SerializationTools = /** @class */ (function () {
         return JSON.stringify(serializationObject, undefined, 2);
     };
     SerializationTools.Deserialize = function (serializationObject, globalState) {
+        globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
         // Check for id mapping
         if (serializationObject.locations && serializationObject.map) {
@@ -73223,44 +73980,6 @@ var SerializationTools = /** @class */ (function () {
     return SerializationTools;
 }());
 
-=======
-var SerializationTools = /** @class */ (function () {
-    function SerializationTools() {
-    }
-    SerializationTools.Serialize = function (material, globalState) {
-        var serializationObject = material.serialize();
-        // Store node locations
-        for (var _i = 0, _a = material.attachedBlocks; _i < _a.length; _i++) {
-            var block = _a[_i];
-            var node = globalState.onGetNodeFromBlock(block);
-            if (!serializationObject.locations) {
-                serializationObject.locations = [];
-            }
-            serializationObject.locations.push({
-                blockId: block.uniqueId,
-                x: node ? node.x : 0,
-                y: node ? node.y : 0
-            });
-        }
-        return JSON.stringify(serializationObject, undefined, 2);
-    };
-    SerializationTools.Deserialize = function (serializationObject, globalState) {
-        globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
-        // Check for id mapping
-        if (serializationObject.locations && serializationObject.map) {
-            var map = serializationObject.map;
-            var locations = serializationObject.locations;
-            for (var _i = 0, locations_1 = locations; _i < locations_1.length; _i++) {
-                var location = locations_1[_i];
-                location.blockId = map[location.blockId];
-            }
-        }
-        globalState.onResetRequiredObservable.notifyObservers(serializationObject.locations);
-    };
-    return SerializationTools;
-}());
-
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -73281,7 +74000,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ButtonLineComponent, _super);
     function ButtonLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -73310,76 +74029,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-<<<<<<< HEAD
 
 
 var CheckBoxLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CheckBoxLineComponent, _super);
-    function CheckBoxLineComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        _this._uniqueId = CheckBoxLineComponent._UniqueIdSeed++;
-        if (_this.props.isSelected) {
-            _this.state = { isSelected: _this.props.isSelected() };
-        }
-        else {
-            _this.state = { isSelected: _this.props.target[_this.props.propertyName] === true };
-        }
-        return _this;
-    }
-    CheckBoxLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var currentState;
-        if (this.props.isSelected) {
-            currentState = nextProps.isSelected();
-        }
-        else {
-            currentState = nextProps.target[nextProps.propertyName] === true;
-        }
-        if (currentState !== nextState.isSelected || this._localChange) {
-            nextState.isSelected = currentState;
-            this._localChange = false;
-            return true;
-        }
-        return false;
-    };
-    CheckBoxLineComponent.prototype.onChange = function () {
-        this._localChange = true;
-        if (this.props.onSelect) {
-            this.props.onSelect(!this.state.isSelected);
-        }
-        else {
-            if (this.props.onPropertyChangedObservable) {
-                this.props.onPropertyChangedObservable.notifyObservers({
-                    object: this.props.target,
-                    property: this.props.propertyName,
-                    value: !this.state.isSelected,
-                    initialValue: this.state.isSelected
-                });
-            }
-            this.props.target[this.props.propertyName] = !this.state.isSelected;
-        }
-        if (this.props.onValueChanged) {
-            this.props.onValueChanged();
-        }
-        this.setState({ isSelected: !this.state.isSelected });
-    };
-    CheckBoxLineComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" }))));
-    };
-    CheckBoxLineComponent._UniqueIdSeed = 0;
-    return CheckBoxLineComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-=======
-
-
-var CheckBoxLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CheckBoxLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CheckBoxLineComponent, _super);
     function CheckBoxLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -73440,7 +74093,6 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
     return CheckBoxLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
->>>>>>> 7d06e0c99e959263403d735690f3e1242966191f
 
 
 /***/ }),
@@ -73470,7 +74122,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Color3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Color3LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3LineComponent, _super);
     function Color3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -73604,7 +74256,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DraggableLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DraggableLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DraggableLineComponent, _super);
     function DraggableLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -73637,7 +74289,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FileButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FileButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FileButtonLineComponent, _super);
     function FileButtonLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -73677,12 +74329,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FloatLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatLineComponent, _super);
     function FloatLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         var currentValue = _this.props.target[_this.props.propertyName];
-        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 3)) : "0" };
+        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 2)) : "0" };
         _this._store = currentValue;
         return _this;
     }
@@ -73692,7 +74344,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
+        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 2) : "0";
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;
@@ -73717,6 +74369,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         if (/[^0-9\.\-]/g.test(valueString)) {
             return;
         }
+        valueString = valueString.replace(/(.+\...).+/, "$1");
         var valueAsNumber;
         if (this.props.isInteger) {
             valueAsNumber = parseInt(valueString);
@@ -73769,7 +74422,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LineContainerComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LineContainerComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LineContainerComponent, _super);
     function LineContainerComponent(props) {
         var _this = _super.call(this, props) || this;
         var initialState = _dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean(_this.props.title, !_this.props.closed);
@@ -73819,7 +74472,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-<<<<<<< Updated upstream
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
@@ -73832,7 +74484,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MatrixLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MatrixLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MatrixLineComponent, _super);
     function MatrixLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -73945,69 +74597,6 @@ var MatrixLineComponent = /** @class */ (function (_super) {
     return MatrixLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
-=======
-/* harmony import */ var _vector4LineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
-
-
-
-var MatrixLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MatrixLineComponent, _super);
-    function MatrixLineComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        var matrix = _this.props.target[_this.props.propertyName].clone();
-        _this.state = { value: matrix };
-        return _this;
-    }
-    MatrixLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var nextPropsValue = nextProps.target[nextProps.propertyName];
-        if (!nextPropsValue.equals(nextState.value) || this._localChange) {
-            nextState.value = nextPropsValue.clone();
-            this._localChange = false;
-            return true;
-        }
-        return false;
-    };
-    MatrixLineComponent.prototype.raiseOnPropertyChanged = function (previousValue) {
-        if (this.props.onChange) {
-            this.props.onChange(this.state.value);
-        }
-        if (!this.props.onPropertyChangedObservable) {
-            return;
-        }
-        this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
-            property: this.props.propertyName,
-            value: this.state.value,
-            initialValue: previousValue
-        });
-    };
-    MatrixLineComponent.prototype.updateMatrix = function () {
-        var store = this.props.target[this.props.propertyName].clone();
-        this.props.target[this.props.propertyName] = this.state.value;
-        this.setState({ value: store });
-        this.raiseOnPropertyChanged(store);
-    };
-    MatrixLineComponent.prototype.updateRow = function (value, row) {
-        this._localChange = true;
-        this.state.value.setRow(row, value);
-        this.updateMatrix();
-    };
-    MatrixLineComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label)),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector4LineComponent"], { label: "Row #0", value: this.state.value.getRow(0), onChange: function (value) { return _this.updateRow(value, 0); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector4LineComponent"], { label: "Row #1", value: this.state.value.getRow(1), onChange: function (value) { return _this.updateRow(value, 1); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector4LineComponent"], { label: "Row #2", value: this.state.value.getRow(2), onChange: function (value) { return _this.updateRow(value, 2); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector4LineComponent"], { label: "Row #3", value: this.state.value.getRow(3), onChange: function (value) { return _this.updateRow(value, 3); } }))));
-    };
-    return MatrixLineComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -74028,7 +74617,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MessageDialogComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MessageDialogComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MessageDialogComponent, _super);
     function MessageDialogComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { message: "", isError: false };
@@ -74071,7 +74660,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var NumericInputComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NumericInputComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NumericInputComponent, _super);
     function NumericInputComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74132,7 +74721,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-<<<<<<< Updated upstream
 
 
 var ListLineOption = /** @class */ (function () {
@@ -74141,7 +74729,7 @@ var ListLineOption = /** @class */ (function () {
     return ListLineOption;
 }());
 var OptionsLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](OptionsLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(OptionsLineComponent, _super);
     function OptionsLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74202,77 +74790,6 @@ var OptionsLineComponent = /** @class */ (function (_super) {
     return OptionsLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
-=======
-
-
-var ListLineOption = /** @class */ (function () {
-    function ListLineOption() {
-    }
-    return ListLineOption;
-}());
-var OptionsLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](OptionsLineComponent, _super);
-    function OptionsLineComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        _this.state = { value: _this._getValue(props) };
-        return _this;
-    }
-    OptionsLineComponent.prototype._getValue = function (props) {
-        if (props.getSelection) {
-            return props.getSelection(props.target);
-        }
-        return (props.target && props.propertyName) ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
-    };
-    OptionsLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (this._localChange) {
-            this._localChange = false;
-            return true;
-        }
-        var newValue = this._getValue(nextProps);
-        if (newValue != null && newValue !== nextState.value) {
-            nextState.value = newValue;
-            return true;
-        }
-        return false;
-    };
-    OptionsLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
-        if (!this.props.onPropertyChangedObservable) {
-            return;
-        }
-        this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
-            property: this.props.propertyName,
-            value: newValue,
-            initialValue: previousValue
-        });
-    };
-    OptionsLineComponent.prototype.updateValue = function (valueString) {
-        var value = this.props.valuesAreStrings ? valueString : parseInt(valueString);
-        this._localChange = true;
-        var store = this.state.value;
-        if (!this.props.noDirectUpdate) {
-            this.props.target[this.props.propertyName] = value;
-        }
-        this.setState({ value: value });
-        this.raiseOnPropertyChanged(value, store);
-        if (this.props.onSelect) {
-            this.props.onSelect(value);
-        }
-    };
-    OptionsLineComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value }, this.props.options.map(function (option) {
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
-                })))));
-    };
-    return OptionsLineComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
->>>>>>> Stashed changes
 
 
 /***/ }),
@@ -74382,7 +74899,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SliderLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SliderLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderLineComponent, _super);
     function SliderLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74483,7 +75000,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextInputLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextInputLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextInputLineComponent, _super);
     function TextInputLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74566,7 +75083,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextLineComponent, _super);
     function TextLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -74617,7 +75134,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextureLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureLineComponent, _super);
     function TextureLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
@@ -74788,7 +75305,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector2LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector2LineComponent, _super);
     function Vector2LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74883,7 +75400,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector3LineComponent, _super);
     function Vector3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74984,7 +75501,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector4LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector4LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector4LineComponent, _super);
     function Vector4LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -75084,9 +75601,8 @@ var Vector4LineComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StringTools", function() { return StringTools; });
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__);
-<<<<<<< Updated upstream
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__);
 
 var StringTools = /** @class */ (function () {
     function StringTools() {
@@ -75165,7 +75681,7 @@ var StringTools = /** @class */ (function () {
      * @param type Type to parse.
      */
     StringTools.GetBaseType = function (type) {
-        return babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"][type];
+        return babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"][type];
     };
     /**
      * Download a string into a file that will be saved locally by the browser
@@ -75180,35 +75696,6 @@ var StringTools = /** @class */ (function () {
     return StringTools;
 }());
 
-=======
-/* harmony import */ var file_saver__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! file-saver */ "../../node_modules/file-saver/dist/FileSaver.min.js");
-/* harmony import */ var file_saver__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(file_saver__WEBPACK_IMPORTED_MODULE_1__);
-
-
-var StringTools = /** @class */ (function () {
-    function StringTools() {
-    }
-    /**
-     * Gets the base math type of node material block connection point.
-     * @param type Type to parse.
-     */
-    StringTools.GetBaseType = function (type) {
-        return babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"][type];
-    };
-    /**
-     * Download a string into a file that will be saved locally by the browser
-     * @param content defines the string to download locally as a file
-     */
-    StringTools.DownloadAsFile = function (document, content, filename) {
-        var blob = new Blob([content], {
-            type: "application/octet-stream"
-        });
-        Object(file_saver__WEBPACK_IMPORTED_MODULE_1__["saveAs"])(blob, filename);
-    };
-    return StringTools;
-}());
-
->>>>>>> Stashed changes
 
 
 /***/ }),

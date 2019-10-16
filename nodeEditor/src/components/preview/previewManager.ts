@@ -14,6 +14,10 @@ import { SceneLoader } from 'babylonjs/Loading/sceneLoader';
 import { TransformNode } from 'babylonjs/Meshes/transformNode';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
+import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
+import { LogEntry } from '../log/logComponent';
+import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -22,14 +26,17 @@ export class PreviewManager {
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
+    private _onBackFaceCullingChangedObserver: Nullable<Observer<void>>;
+    private _onDepthPrePassChangedObserver: Nullable<Observer<void>>;
+    private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
-    private _light: HemisphericLight;
     private _meshes: AbstractMesh[];
     private _camera: ArcRotateCamera;
     private _material: NodeMaterial;
     private _globalState: GlobalState;   
     private _currentType: number; 
+    private _lightParent: TransformNode;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
@@ -44,6 +51,10 @@ export class PreviewManager {
             this._refreshPreviewMesh();
         });
 
+        this._onLightUpdatedObserver = globalState.onLightUpdated.add(() => {
+            this._prepareLights();
+        });        
+
         this._onUpdateRequiredObserver = globalState.onUpdateRequiredObservable.add(() => {
             let serializationObject = this._nodeMaterial.serialize();
             this._updatePreview(serializationObject);
@@ -57,6 +68,14 @@ export class PreviewManager {
             this._handleAnimations();
         });
 
+        this._onBackFaceCullingChangedObserver = globalState.onBackFaceCullingChanged.add(() => {
+            this._material.backFaceCulling = this._globalState.backFaceCulling;
+        });
+
+        this._onDepthPrePassChangedObserver = globalState.onDepthPrePassChanged.add(() => {
+            this._material.needDepthPrePass = this._globalState.depthPrePass;
+        });        
+
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
@@ -67,6 +86,8 @@ export class PreviewManager {
         this._camera.minZ = 0.1;
         this._camera.attachControl(targetCanvas, false);
 
+        this._lightParent = new TransformNode("LightParent", this._scene);
+
         this._refreshPreviewMesh();
 
         this._engine.runRenderLoop(() => {
@@ -74,8 +95,45 @@ export class PreviewManager {
             this._scene.render();
         });
 
-        let serializationObject = this._nodeMaterial.serialize();
-        this._updatePreview(serializationObject);
+   //     let cameraLastRotation = 0;
+        let lastOffsetX:number | undefined = undefined; 
+     //   const lightRotationParallaxSpeed = 0.5;        
+        const lightRotationSpeed = 0.01;        
+
+        this._scene.onPointerObservable.add(evt => {
+            if (this._globalState.controlCamera) {
+                return;
+            }
+
+            if (evt.type === PointerEventTypes.POINTERUP) {
+                lastOffsetX = undefined;
+                return;
+            }
+
+            if (evt.event.buttons !== 1) {
+                return;
+            }
+
+            if (lastOffsetX === undefined) {
+                lastOffsetX = evt.event.offsetX;
+            }
+
+            var rotateLighting = (lastOffsetX - evt.event.offsetX) * lightRotationSpeed; 
+            this._lightParent.rotation.y += rotateLighting;
+            lastOffsetX = evt.event.offsetX;
+        });
+
+        // this._scene.registerBeforeRender(() => {
+        //     if (this._camera.alpha === cameraLastRotation) {
+        //         return;
+        //     }
+        //     if (!this._globalState.controlCamera) {
+        //         return;
+        //     }
+        //     var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed; 
+        //     this._lightParent.rotate(Vector3.Up(), rotateLighting);
+        //     cameraLastRotation = this._camera.alpha;
+        // });
     }
 
     private _handleAnimations() {
@@ -85,7 +143,7 @@ export class PreviewManager {
             for (var root of this._scene.rootNodes) {
                 let transformNode = root as TransformNode;
 
-                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh") {
+                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh" || transformNode.getClassName() === "GroundMesh") {
                     if (transformNode.rotationQuaternion) {
                         transformNode.rotation = transformNode.rotationQuaternion.toEulerAngles();
                         transformNode.rotationQuaternion = null;
@@ -96,16 +154,38 @@ export class PreviewManager {
         }
     }
 
-    private _prepareMeshes() {
-        // Material
-        for (var mesh of this._meshes) {
-            mesh.material = this._material;
+    private _prepareLights() {
+        // Remove current lights
+        let currentLights = this._scene.lights.slice(0);
+
+        for (var light of currentLights) {
+            light.dispose();
         }
 
-        // Light
-        if (!this._scene.lights.length) {
-            this._light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
+        // Create new lights based on settings
+        if (this._globalState.hemisphericLight) {
+            new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);            
         }
+
+        if (this._globalState.directionalLight0) {
+            let dir0 = new DirectionalLight("Directional light #0", new Vector3(0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
+            dir0.intensity = 0.9;
+            dir0.diffuse = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.specular = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);      
+            dir0.parent = this._lightParent;
+        }
+
+        if (this._globalState.directionalLight1) {
+            let dir1 = new DirectionalLight("Directional light #1", new Vector3(-0.9519937437504213, -0.24389315636999764, -0.1849974057546125), this._scene);
+            dir1.intensity = 1.2;
+            dir1.specular = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.diffuse = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);        
+            dir1.parent = this._lightParent;                 
+        }
+    }
+
+    private _prepareMeshes() {
+        this._prepareLights();
 
         // Framing
         this._camera.useFramingBehavior = true;
@@ -129,6 +209,10 @@ export class PreviewManager {
 
         // Animations
         this._handleAnimations();
+
+        // Material        
+        let serializationObject = this._nodeMaterial.serialize();
+        this._updatePreview(serializationObject);
     }
 
     private _refreshPreviewMesh() {    
@@ -147,10 +231,19 @@ export class PreviewManager {
             for (var light of lights) {
                 light.dispose();
             }
+
+            this._engine.releaseEffects();
+
+            SceneLoader.ShowLoadingScreen = false;
+
+            this._globalState.onIsLoadingChanged.notifyObservers(true);
         
             switch (this._globalState.previewMeshType) {
                 case PreviewMeshType.Box:
-                    this._meshes.push(Mesh.CreateBox("dummy-box", 2, this._scene));
+                    SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(() => {     
+                        this._meshes.push(...this._scene.meshes);
+                        this._prepareMeshes();
+                    });     
                     break;
                 case PreviewMeshType.Sphere:
                     this._meshes.push(Mesh.CreateSphere("dummy-sphere", 32, 2, this._scene));
@@ -159,8 +252,11 @@ export class PreviewManager {
                     this._meshes.push(Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
                     break;
                 case PreviewMeshType.Cylinder:
-                    this._meshes.push(Mesh.CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene));
-                    break;                
+                    SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(() => {     
+                        this._meshes.push(...this._scene.meshes);
+                        this._prepareMeshes();
+                    });                    
+                    return;                   
                 case PreviewMeshType.Plane:
                     this._meshes.push(Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene));
                     break;    
@@ -184,12 +280,14 @@ export class PreviewManager {
 
     private _forceCompilationAsync(material: NodeMaterial, mesh: AbstractMesh): Promise<void> {
         return material.forceCompilationAsync(mesh);
-
     }
 
     private _updatePreview(serializationObject: any) {
         try {
             let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
+
+            tempMaterial.backFaceCulling = this._globalState.backFaceCulling;
+            tempMaterial.needDepthPrePass = this._globalState.depthPrePass;
 
             if (this._meshes.length) {
                 let tasks = this._meshes.map(m => this._forceCompilationAsync(tempMaterial, m));
@@ -204,6 +302,10 @@ export class PreviewManager {
                     }      
         
                     this._material = tempMaterial;  
+                    this._globalState.onIsLoadingChanged.notifyObservers(false);
+                }).catch(reason => {
+                    this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Shader compilation error:\r\n" + reason, true));
+                    this._globalState.onIsLoadingChanged.notifyObservers(false);
                 });
             } else {
                 this._material = tempMaterial;    
@@ -219,6 +321,9 @@ export class PreviewManager {
         this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
+        this._globalState.onBackFaceCullingChanged.remove(this._onBackFaceCullingChangedObserver);
+        this._globalState.onDepthPrePassChanged.remove(this._onDepthPrePassChangedObserver);
+        this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
 
         if (this._material) {
             this._material.dispose();
@@ -227,10 +332,6 @@ export class PreviewManager {
         this._camera.dispose();
         for (var mesh of this._meshes) {
             mesh.dispose();
-        }
-
-        if (this._light) {
-            this._light.dispose();
         }
 
         this._scene.dispose();

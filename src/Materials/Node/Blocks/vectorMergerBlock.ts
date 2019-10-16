@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../Misc/typeStore';
 
@@ -14,7 +14,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("x", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerInput("y", NodeMaterialBlockConnectionPointTypes.Float);

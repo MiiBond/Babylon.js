@@ -17,6 +17,7 @@ import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.renderTarget";
+import "../../Engines/Extensions/engine.renderTargetCube";
 import { InstancedMesh } from '../../Meshes/instancedMesh';
 import { Engine } from '../../Engines/engine';
 
@@ -538,7 +539,7 @@ export class RenderTargetTexture extends Texture {
      * @param ratio the ratio to apply to the texture size in order to compute the new target size
      */
     public scale(ratio: number): void {
-        var newSize = this.getRenderSize() * ratio;
+        var newSize = Math.max(1, this.getRenderSize() * ratio);
 
         this.resize(newSize);
     }
@@ -696,7 +697,6 @@ export class RenderTargetTexture extends Texture {
 
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
-                            scene._activeIndices.addCount(subMesh.indexCount, false);
                             this._renderingManager.dispatch(subMesh, mesh);
                         }
                     }

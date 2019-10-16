@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { BaseTexture } from '../../../Textures/baseTexture';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
@@ -10,13 +10,14 @@ import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
-import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 import { InputBlock } from '../Input/inputBlock';
-import { NodeMaterialSystemValues } from '../../nodeMaterialSystemValues';
+import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { Constants } from '../../../../Engines/constants';
 
 import "../../../../Shaders/ShadersInclude/reflectionFunction";
+import { CubeTexture } from '../../../Textures/cubeTexture';
+import { Texture } from '../../../Textures/texture';
 
 /**
  * Block used to read a reflection texture from a sampler
@@ -266,6 +267,17 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
+        if (!this.texture) {
+            if (state.target === NodeMaterialBlockTargets.Fragment) {
+                for (var output of this._outputs) {
+                    if (output.hasEndpoints) {
+                        state.compilationString += `${this._declareOutput(output, state)} = vec3(0.).${output.name};\r\n`;
+                    }
+                }
+            }
+            return;
+        }
+
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             this._define3DName = state._getFreeDefineName("REFLECTIONMAP_3D");
             this._defineCubicName = state._getFreeDefineName("REFLECTIONMAP_CUBIC");
@@ -325,7 +337,6 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         let view = `${this.view.associatedVariableName}`;
 
         state.compilationString += `vec3 ${this._reflectionColorName};\r\n`;
-        state.compilationString += `#ifdef ${this._define3DName}\r\n`;
         state.compilationString += `#ifdef ${this._defineMirroredEquirectangularFixedName}\r\n`;
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeMirroredFixedEquirectangularCoords(${worldPos}, ${worldNormal}, ${direction});\r\n`;
         state.compilationString += `#endif\r\n`;
@@ -366,6 +377,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = vec3(0, 0, 0);\r\n`;
         state.compilationString += `#endif\r\n`;
 
+        state.compilationString += `#ifdef ${this._define3DName}\r\n`;
         state.compilationString += `${this._reflectionColorName} = textureCube(${this._cubeSamplerName}, ${this._reflectionCoordsName}).rgb;\r\n`;
         state.compilationString += `#else\r\n`;
         state.compilationString += `vec2 ${this._reflection2DCoordsName} = ${this._reflectionCoordsName}.xy;\r\n`;
@@ -387,6 +399,23 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         return this;
     }
 
+    protected _dumpPropertiesCode() {
+        if (!this.texture) {
+            return "";
+        }
+
+        let codeString: string;
+
+        if (this.texture.isCube) {
+            codeString = `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}");\r\n`;
+        } else {
+            codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
+        }
+        codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
+
+        return codeString;
+    }
+
     public serialize(): any {
         let serializationObject = super.serialize();
 
@@ -401,7 +430,12 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture) {
-            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
+            rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? rootUrl : "";
+            if (serializationObject.texture.isCube) {
+                this.texture = CubeTexture.Parse(serializationObject.texture, scene, rootUrl);
+            } else {
+                this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
+            }
         }
     }
 }

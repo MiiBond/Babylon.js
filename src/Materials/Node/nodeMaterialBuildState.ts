@@ -1,5 +1,5 @@
-import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { Effect } from '../effect';
 import { StringTools } from '../../Misc/stringTools';
@@ -19,9 +19,9 @@ export class NodeMaterialBuildState {
      */
     public uniforms = new Array<string>();
     /**
-     * Gets the list of emitted uniform buffers
-     */
-    public uniformBuffers = new Array<string>();
+    * Gets the list of emitted constants
+    */
+    public constants = new Array<string>();
     /**
      * Gets the list of emitted samplers
      */
@@ -57,6 +57,8 @@ export class NodeMaterialBuildState {
     /** @hidden */
     public _uniformDeclaration = "";
     /** @hidden */
+    public _constantDeclaration = "";
+    /** @hidden */
     public _samplerDeclaration = "";
     /** @hidden */
     public _varyingTransfer = "";
@@ -79,6 +81,10 @@ export class NodeMaterialBuildState {
         let isFragmentMode = (this.target === NodeMaterialBlockTargets.Fragment);
 
         this.compilationString = `\r\n${emitComments ? "//Entry point\r\n" : ""}void main(void) {\r\n${this.compilationString}`;
+
+        if (this._constantDeclaration) {
+            this.compilationString = `\r\n${emitComments ? "//Constants\r\n" : ""}${this._constantDeclaration}\r\n${this.compilationString}`;
+        }
 
         let functionCode = "";
         for (var functionName in this.functions) {
@@ -155,6 +161,12 @@ export class NodeMaterialBuildState {
     /** @hidden */
     public _excludeVariableName(name: string) {
         this.sharedData.variableNames[name] = 0;
+    }
+
+    /** @hidden */
+    public _emit2DSampler(name: string) {
+        this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
+        this.samplers.push(name);
     }
 
     /** @hidden */
@@ -340,5 +352,14 @@ export class NodeMaterialBuildState {
         if (define) {
             this._uniformDeclaration += `#endif\r\n`;
         }
+    }
+
+    /** @hidden */
+    public _emitFloat(value: number) {
+        if (value.toString() === value.toFixed(0)) {
+            return `${value}.0`;
+        }
+
+        return value.toString();
     }
 }
