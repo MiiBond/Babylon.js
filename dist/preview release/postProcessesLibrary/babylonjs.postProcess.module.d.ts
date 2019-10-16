@@ -348,7 +348,6 @@ declare module "babylonjs-post-process/legacy/legacy-ocean" {
 declare module "babylonjs-post-process/legacy/legacy" {
     export * from "babylonjs-post-process/index";
 }
-
 declare module "babylonjs-post-process" {
     export * from "babylonjs-post-process/legacy/legacy";
 }
@@ -658,4 +657,4 @@ declare module BABYLON {
          */
         private _computeCameraRotation;
     }
-}
+}

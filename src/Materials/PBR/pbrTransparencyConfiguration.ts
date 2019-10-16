@@ -195,10 +195,6 @@ export class PBRTransparencyConfiguration {
             if (this._frontDepthTexture && MaterialFlags.TransparencyFrontDepthEnabled) {
                 depthTextureHeight = scene.getEngine().getRenderHeight();
                 depthTextureWidth = scene.getEngine().getRenderWidth();
-                MaterialHelper.BindTextureMatrix(this._frontDepthTexture, uniformBuffer, "frontDepthTexture");
-                if (this._backDepthTexture && MaterialFlags.TransparencyBackDepthEnabled) {
-                    MaterialHelper.BindTextureMatrix(this._backDepthTexture, uniformBuffer, "backDepthTexture");
-                }
                 const camera = scene.activeCamera;
                 if (camera) {
                     uniformBuffer.updateFloat4("transparencyDepthValues", camera.minZ, camera.minZ + camera.maxZ, depthTextureWidth, depthTextureHeight);
