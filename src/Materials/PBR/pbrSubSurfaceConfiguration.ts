@@ -35,6 +35,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_LINEARSPECULARREFRACTION: boolean;
     SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
     SS_DEPTHINREFRACTIONALPHA: boolean;
+    SS_ALBEDOFORREFRACTIONTINT: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
 
@@ -211,6 +212,9 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public depthInRefractionAlpha = false;
 
+    @serialize()
+    public useAlbedoToTintRefraction = false;
+
     /** 
      * Scale the apparent thickness of the material (and how much it scatters, refracts, etc.).
      */
@@ -282,6 +286,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_LODINREFRACTIONALPHA = false;
             defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
             defines.SS_DEPTHINREFRACTIONALPHA = false;
+            defines.SS_ALBEDOFORREFRACTIONTINT = false;
             defines.SS_VOLUME_SCATTERING = this._isVolumeScatteringEnabled;
             defines.SS_VOLUME_THICKNESS = true;
             
@@ -317,6 +322,7 @@ export class PBRSubSurfaceConfiguration {
                         defines.SS_LODINREFRACTIONALPHA = refractionTexture.lodLevelInAlpha;
                         defines.SS_LINKREFRACTIONTOTRANSPARENCY = this._linkRefractionWithTransparency;
                         defines.SS_DEPTHINREFRACTIONALPHA = this._depthInRefractionAlpha;
+                        defines.SS_ALBEDOFORREFRACTIONTINT = this.useAlbedoToTintRefraction;
                     }
                 }
             }

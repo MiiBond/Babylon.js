@@ -111,12 +111,13 @@
                     }
                     else {
                         var scene = createScene();
-
+                        // var sceneUI = createUIScene(scene);
                         if (scene) {
 
                             var processCurrentScene = function(scene) {
                                 engine.runRenderLoop(function() {
                                     scene.render();
+                                    // sceneUI.render();
                                     divFps.innerHTML = engine.getFps().toFixed() + " fps";
                                 });
                             }

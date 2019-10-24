@@ -87,13 +87,15 @@ void main(void) {
         #else
             float frontDepth = texture2D(frontDepthTexture, screenCoords).r;
         #endif
-        #ifdef DEPTH_PEELING_BACK
-            float backDepth = texture2D(backDepthTexture, screenCoords).r;
-        #endif
-        if (frontDepth >= sceneDepth || backDepth <= sceneDepth) {
+        if (frontDepth >= sceneDepth) {
             discard;
         }
-
+        #ifdef DEPTH_PEELING_BACK
+            float backDepth = texture2D(backDepthTexture, screenCoords).r;
+            if (backDepth <= sceneDepth) {
+                discard;
+            }
+        #endif
     #endif
 #endif
 
@@ -347,6 +349,8 @@ void main(void) {
         vec3 anisotropicNormal = getAnisotropicBentNormals(anisotropicTangent, anisotropicBitangent, normalW, viewDirectionW, anisotropy);
     #endif
 
+    // Add param to control whether albedo is used for constant tint
+    // TintColor and Tint at Distance is used for volume tint
     #if defined(SUBSURFACE) || defined(SS_REFRACTION)
         float thickness = 0.0;
     #endif
@@ -1102,13 +1106,8 @@ void main(void) {
     #ifdef SS_REFRACTION
         vec3 refractionTransmittance = vec3(refractionIntensity);
         #if defined(SS_THICKNESSANDMASK_TEXTURE) || defined(SS_DEPTHINREFRACTIONALPHA)
-            #ifdef USE_ALBEDOFORREFRACTIONTINT
-            // TODO - this def is not defined and the thickness value needs to be scaled before the tint will be visible.
-                vec3 volumeAlbedo = computeColorAtDistanceInMedia(surfaceAlbedo.rgb, vTintColor.w);
-            #else
-                vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
-            #endif
-
+            vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
+            
             // // Simulate Flat Surface
             // thickness /=  dot(refractionVector, -normalW);
 
@@ -1128,6 +1127,11 @@ void main(void) {
             // Compute tint from min distance only.
             vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
             refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
+        #endif
+
+        // Tint by the surface albedo
+        #ifdef SS_ALBEDOFORREFRACTIONTINT
+            refractionTransmittance *= surfaceAlbedo.rgb;
         #endif
 
         // Decrease Albedo Contribution
@@ -1378,11 +1382,19 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
     #ifndef UNLIT
         vec3 refref = vec3(0.0);
         #ifdef REFLECTION
-            if (gl_FrontFacing) {
+            // If this is a thin surface, render reflection on both sides.
+            // If it's a volume, render reflections only on front side.
+            #ifndef SS_VOLUME_SCATTERING
                 refref = finalReflectedLight;
-            }
+            #else
+                if (gl_FrontFacing) {
+                    refref = finalReflectedLight;
+                }
+            #endif
         #endif
-        #ifdef SS_REFRACTION
+        #if defined(SS_REFRACTION) && defined(SS_VOLUME_SCATTERING)
+            // If this is a volume, render refractions only on back sides.
+            // TODO - maybe this isn't needed?
             if (!gl_FrontFacing) {
                 refref = finalRefractedLight;
             }

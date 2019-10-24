@@ -89,6 +89,7 @@ export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
         // Don't let the material gather RT's because, if it does, the scene will try to render the RT for the refractionTexture.
         // TODO - don't do this if not using depth peeling?
         pbrMaterial.getRenderTargetTextures = null;
+        pbrMaterial.subSurface.useAlbedoToTintRefraction = true;
 
         if (extension.transmissionFactor !== undefined) {
             pbrMaterial.subSurface.refractionIntensity = extension.transmissionFactor;

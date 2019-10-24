@@ -728,6 +728,8 @@ export class PBRMaterial extends PBRBaseMaterial {
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
+        this.depthPeeling.copyTo(clone.depthPeeling);
+        this.subSurface.copyTo(clone.subSurface);
 
         return clone;
     }

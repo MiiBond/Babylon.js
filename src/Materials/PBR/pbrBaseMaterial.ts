@@ -241,6 +241,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
     public SS_DEPTHINREFRACTIONALPHA = false;
+    public SS_ALBEDOFORREFRACTIONTINT = false;
 
     public ADOBE_TRANSPARENCY_G_BUFFER = false;
     public ADOBE_TRANSPARENCY_G_BUFFER_LENGTH = 3;

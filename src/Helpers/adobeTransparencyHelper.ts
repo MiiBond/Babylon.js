@@ -5,7 +5,6 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Texture } from "../Materials/Textures/texture";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Constants } from "../Engines/constants";
 
 import "../Meshes/Builders/planeBuilder";
@@ -47,6 +46,14 @@ export interface IAdobeTransparencyHelperOptions {
     sceneScale: number;
 }
 
+class MaterialCacheEntry {
+    gbufferMaterial1: PBRMaterial;
+    gbufferMaterial2: PBRMaterial;
+    regularMaterial: PBRMaterial;
+}
+
+interface MaterialCacheMap {[s: string]: MaterialCacheEntry; };
+
 /**
  *
  */
@@ -79,6 +86,10 @@ export class AdobeTransparencyHelper {
     private _mrtDisabled: Boolean = false;
     private _volumeRenderingEnabled: boolean = false;
 
+    
+    private _materialCache: MaterialCacheMap = {};
+    // private _regularMaterialCache: MaterialMap;
+
     public disabled: boolean = false;
 
     /**
@@ -106,7 +117,7 @@ export class AdobeTransparencyHelper {
         if (!engine.getCaps().drawBuffersExtension) {
             this._mrtDisabled = true;
         }
-        this._volumeRenderingEnabled = (engine._gl as any).COLOR_ATTACHMENT5 !== undefined;
+        // this._volumeRenderingEnabled = (engine._gl as any).COLOR_ATTACHMENT5 !== undefined;
         this._setupRenderTargets();
     }
 
@@ -128,6 +139,8 @@ export class AdobeTransparencyHelper {
 
         this._options = newOptions;
         this._setupRenderTargets();
+        // If size changes, recreate everything
+        // If number of passes changes, do minimal creation as needed.
     }
 
     public getRenderTarget(pass: number = 0): Nullable<Texture> {
@@ -170,14 +183,14 @@ export class AdobeTransparencyHelper {
             // This is a bit of a hack to force alpha-blended geometry to render with our scene refraction.
             if (material.needAlphaBlending()) {
                 // material.subSurface.isRefractionEnabled = true;
-                material.getRenderTargetTextures = null;
-                material.forceDepthWrite = true;
-                material.backFaceCulling = false;
+                // material.getRenderTargetTextures = null;
+                // material.forceDepthWrite = true;
+                // material.backFaceCulling = false;
             }
-            material.refractionTexture = this.getFinalComposite();
+            // material.refractionTexture = this.getFinalComposite();
             // material.transparency.refractionScale = this._options.refractionScale;
             // material.transparency.sceneScale = this._options.sceneScale;
-            material.subSurface.depthInRefractionAlpha = !this._mrtDisabled;
+            // material.subSurface.depthInRefractionAlpha = !this._mrtDisabled;
             return true;
         }
         return false;
@@ -185,8 +198,9 @@ export class AdobeTransparencyHelper {
 
     private _addMesh(mesh: AbstractMesh): void {
         if (mesh instanceof Mesh) {
-            mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
+            // mesh.onMaterialChangedObservable.add(this.onMeshMaterialChanged.bind(this));
             if (this.shouldRenderAsTransparency(mesh.material)) {
+                this.registerMaterialInCache(mesh);
                 this._transparentMeshesCache.push(mesh);
             } else {
                 this._opaqueMeshesCache.push(mesh);
@@ -201,9 +215,10 @@ export class AdobeTransparencyHelper {
 
     private _removeMesh(mesh: AbstractMesh): void {
         if (mesh instanceof Mesh) {
-            mesh.onMaterialChangedObservable.remove(this.onMeshMaterialChanged.bind(this));
+            // mesh.onMaterialChangedObservable.remove(this.onMeshMaterialChanged.bind(this));
             let idx = this._transparentMeshesCache.indexOf(mesh);
             if (idx !== -1) {
+                this.unregisterMaterialInCache(mesh);
                 this._transparentMeshesCache.splice(idx, 1);
             }
             idx = this._opaqueMeshesCache.indexOf(mesh);
@@ -218,6 +233,71 @@ export class AdobeTransparencyHelper {
         }
     }
 
+    private registerMaterialInCache(mesh: Mesh): void {
+        if (this._materialCache[mesh.uniqueId]) {
+            console.error("Material is being registered for transparency but it already is.");
+            return;
+        }
+        if (!this.shouldRenderAsTransparency(mesh.material)) {
+            console.error("Material is being registered for transparency and isn't transparent.")
+            return;
+        }
+        const cacheEntry = this.makeMaterialCacheEntry(mesh);
+        if (cacheEntry) {
+            this._materialCache[mesh.uniqueId] = cacheEntry;
+        }
+    }
+
+    private unregisterMaterialInCache(mesh: Mesh): void {
+        const cache = this._materialCache[mesh.uniqueId];
+        if (cache) {
+            delete this._materialCache[mesh.uniqueId];
+        }
+    }
+
+    private makeMaterialCacheEntry(mesh: Mesh): Nullable<MaterialCacheEntry> {
+        const cacheEntry = new MaterialCacheEntry();
+        if (!mesh.material) {
+            return null;
+        }
+        const material = mesh.material as PBRMaterial;
+        cacheEntry.regularMaterial = material;
+        const gbuffer_pass_1 = material.clone(`${mesh.material.name}_gbuffer1`);
+        gbuffer_pass_1.getRenderTargetTextures = null;
+        gbuffer_pass_1.depthPeeling.isEnabled = true;
+        gbuffer_pass_1.useAdobeGBufferRendering = true;
+        gbuffer_pass_1.adobeGBufferVolumeInfoEnabled = this._volumeRenderingEnabled;
+        gbuffer_pass_1.depthPeeling.frontDepthTextureIsInverse = false;
+        gbuffer_pass_1.backFaceCulling = false;
+        gbuffer_pass_1.forceNormalForward = true;
+        // TODO - Refraction gets disabled if we don't assign a refraction texture. However, we don't need
+        // the refraction texture for each pass.
+        gbuffer_pass_1.refractionTexture = this._scene.environmentTexture;
+        // if (mesh.material.needAlphaBlending()) {
+            // material.subSurface.isRefractionEnabled = true;
+            gbuffer_pass_1.getRenderTargetTextures = null;
+            // 
+        // }
+        gbuffer_pass_1.forceDepthWrite = true;
+        gbuffer_pass_1.needAlphaBlending = () => false;
+        // material.refractionTexture = this.getFinalComposite();
+        // material.transparency.refractionScale = this._options.refractionScale;
+        // material.transparency.sceneScale = this._options.sceneScale;
+        cacheEntry.gbufferMaterial1 = gbuffer_pass_1;
+        
+        // Subsequent passes use an inverse depth buffer and don't need a refraction texture.
+        const gbuffer_pass_2 = gbuffer_pass_1.clone(`${mesh.material.name}_gbuffer2`);
+        gbuffer_pass_2.depthPeeling.frontDepthTextureIsInverse = true;
+        gbuffer_pass_2.refractionTexture = this._scene.environmentTexture; // TODO - try making this null!
+        gbuffer_pass_2.getRenderTargetTextures = null;
+        gbuffer_pass_2.subSurface.depthInRefractionAlpha = !this._mrtDisabled;
+        cacheEntry.gbufferMaterial2 = gbuffer_pass_2;
+
+        material.needAlphaBlending = () => false;
+
+        return cacheEntry;
+    }
+
     private _parseScene(): void {
         this._scene.meshes.forEach(this._addMesh.bind(this));
         // Listen for when a mesh is added to the scene and add it to our cache lists.
@@ -227,35 +307,37 @@ export class AdobeTransparencyHelper {
     }
 
     // When one of the meshes in the scene has its material changed, make sure that it's in the correct cache list.
-    private onMeshMaterialChanged(mesh: AbstractMesh) {
-        if (mesh instanceof Mesh) {
-            let transparent_idx = this._transparentMeshesCache.indexOf(mesh);
-            let opaque_idx = this._opaqueMeshesCache.indexOf(mesh);
+    // private onMeshMaterialChanged(mesh: AbstractMesh) {
+    //     if (mesh instanceof Mesh) {
+    //         let transparent_idx = this._transparentMeshesCache.indexOf(mesh);
+    //         let opaque_idx = this._opaqueMeshesCache.indexOf(mesh);
 
-            // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
-            if (this.shouldRenderAsTransparency(mesh.material)) {
-                if (opaque_idx !== -1) {
-                    this._opaqueMeshesCache.splice(opaque_idx, 1);
-                    this._transparentMeshesCache.push(mesh);
-                } else if (transparent_idx === -1) {
-                    this._transparentMeshesCache.push(mesh);
-                }
-                // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
-            } else {
-                if (transparent_idx !== -1) {
-                    this._transparentMeshesCache.splice(transparent_idx, 1);
-                    this._opaqueMeshesCache.push(mesh);
-                } else if (opaque_idx === -1) {
-                    this._opaqueMeshesCache.push(mesh);
-                }
-            }
-        }
-        if (this._transparentMeshesCache.length == 0) {
-            this.disabled = true;
-        } else {
-            this.disabled = false;
-        }
-    }
+    //         // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
+    //         if (this.shouldRenderAsTransparency(mesh.material)) {
+    //             // this.registerMaterialInCache(mesh);
+    //             if (opaque_idx !== -1) {
+    //                 this._opaqueMeshesCache.splice(opaque_idx, 1);
+    //                 this._transparentMeshesCache.push(mesh);
+    //             } else if (transparent_idx === -1) {
+    //                 this._transparentMeshesCache.push(mesh);
+    //             }
+    //             // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
+    //         } else {
+    //             if (transparent_idx !== -1) {
+    //                 // this.unregisterMaterialInCache(mesh);
+    //                 this._transparentMeshesCache.splice(transparent_idx, 1);
+    //                 this._opaqueMeshesCache.push(mesh);
+    //             } else if (opaque_idx === -1) {
+    //                 this._opaqueMeshesCache.push(mesh);
+    //             }
+    //         }
+    //     }
+    //     if (this._transparentMeshesCache.length == 0) {
+    //         this.disabled = true;
+    //     } else {
+    //         this.disabled = false;
+    //     }
+    // }
 
     /**
      * Setup the image processing according to the specified options.
@@ -401,27 +483,20 @@ export class AdobeTransparencyHelper {
                 if (multiRenderTarget.renderList) {
                     multiRenderTarget.renderList.forEach((mesh: AbstractMesh) => {
                         if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
-                            if (mesh.material.needAlphaBlending()) {
-                                mesh.material.alphaMode = Engine.ALPHA_DISABLE;
+                            const cachedMaterial = this._materialCache[mesh.uniqueId];
+                            if (cachedMaterial) {
+                                if (idx > 0) {
+                                    const passMaterial = cachedMaterial.gbufferMaterial2;
+                                    passMaterial.depthPeeling.frontDepthTexture = this._mrtRenderTargets[idx - 1].textures[1];
+                                    passMaterial.depthPeeling.frontDepthTextureIsInverse = true;
+                                    passMaterial.depthPeeling.backDepthTexture = this._opaqueDepthRenderer.getDepthMap();
+                                    mesh.material = passMaterial;
+                                } else {
+                                    cachedMaterial.gbufferMaterial1.depthPeeling.frontDepthTexture = this._frontDepthRenderer.getDepthMap();
+                                    cachedMaterial.gbufferMaterial1.depthPeeling.backDepthTexture = this._opaqueDepthRenderer.getDepthMap();
+                                    mesh.material = cachedMaterial.gbufferMaterial1;
+                                }
                             }
-                            mesh.material.depthPeeling.isEnabled = true;
-                            mesh.material.useAdobeGBufferRendering = true;
-                            // mesh.material.backFaceCulling = false;
-                            mesh.material.adobeGBufferVolumeInfoEnabled = this._volumeRenderingEnabled;
-                            if (idx > 0) {
-                                mesh.material.depthPeeling.frontDepthTexture = this._mrtRenderTargets[idx - 1].textures[1];
-                                mesh.material.depthPeeling.frontDepthTextureIsInverse = true;
-                            } else {
-                                mesh.material.depthPeeling.frontDepthTexture = this._frontDepthRenderer.getDepthMap();
-                                mesh.material.depthPeeling.frontDepthTextureIsInverse = false;
-                            }
-                            mesh.material.depthPeeling.backDepthTexture = this._opaqueDepthRenderer.getDepthMap();
-                            // (mesh.material as PBRMaterial).sideOrientation = PBRMaterial.CounterClockWiseSideOrientation;
-                            mesh.material.backFaceCulling = false;
-                            // mesh.material.twoSidedLighting = true;
-                            mesh.material.forceNormalForward = true;
-                            // (mesh.material as PBRMaterial).disableDepthWrite = true;
-                            mesh.material.refractionTexture = mesh.getScene().environmentTexture;
                         }
                     });
                 }
@@ -433,16 +508,18 @@ export class AdobeTransparencyHelper {
 
                         multiRenderTarget.renderList.forEach((mesh: AbstractMesh) => {
                             if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
-                                mesh.material.depthPeeling.isEnabled = false;
-                                mesh.material.useAdobeGBufferRendering = false;
-                                mesh.material.adobeGBufferVolumeInfoEnabled = false;
-                                // (mesh.material as PBRMaterial).sideOrientation = PBRMaterial.ClockWiseSideOrientation;
-                                // mesh.material.backFaceCulling = true;
-                                // mesh.material.twoSidedLighting = false;
-                                // mesh.material.forceNormalForward = false;
-                                // (mesh.material as PBRMaterial).disableDepthWrite = false;
-                                mesh.material.refractionTexture = this.getFinalComposite();
-                                // (mesh.material as PBRMaterial).subSurface.isTranslucencyEnabled = true;
+                                const cachedMaterial = this._materialCache[mesh.uniqueId];
+                                if (cachedMaterial) {
+                                    const regularMaterial = cachedMaterial.regularMaterial;
+                                    if (regularMaterial.needAlphaBlending()) {
+                                        regularMaterial.subSurface.isRefractionEnabled = true;
+                                        regularMaterial.getRenderTargetTextures = null;
+                                        regularMaterial.forceDepthWrite = true;
+                                    }
+                                    regularMaterial.subSurface.depthInRefractionAlpha = !this._mrtDisabled;
+                                    regularMaterial.refractionTexture = this.getFinalComposite();
+                                    mesh.material = regularMaterial;
+                                }
                             }
                         });
                     }

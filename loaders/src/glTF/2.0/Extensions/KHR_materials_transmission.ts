@@ -78,10 +78,12 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         pbrMaterial.subSurface.isRefractionEnabled = true;
         // pbrMaterial.transparencyMode = PBRBaseMaterial.PBRMATERIAL_OPAQUE;
         // pbrMaterial.subSurface.tintColor = pbrMaterial.albedoColor;
-        pbrMaterial.backFaceCulling = false;
-        pbrMaterial.twoSidedLighting = true;
+
+        pbrMaterial.backFaceCulling = true;
+        // pbrMaterial.twoSidedLighting = true;
         pbrMaterial.separateCullingPass = false;
         pbrMaterial.enableSpecularAntiAliasing = true;
+        pbrMaterial.subSurface.useAlbedoToTintRefraction = true;
 
         // Don't let the material gather RT's because, if it does, the scene will try to render the RT for the refractionTexture.
         // TODO - don't do this if not using depth peeling?
