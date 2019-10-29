@@ -34,6 +34,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_RGBDREFRACTION: boolean;
     SS_LINEARSPECULARREFRACTION: boolean;
     SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
+    SS_LINKALPHAWITHCLEARREFRACTION: boolean;
     SS_DEPTHINREFRACTIONALPHA: boolean;
     SS_ALBEDOFORREFRACTIONTINT: boolean;
 
@@ -157,6 +158,15 @@ export class PBRSubSurfaceConfiguration {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public linkRefractionWithTransparency = false;
+
+    private _treatAlphaAsClearRefraction = false;
+    /**
+     * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+     * Materials half opaque for instance using refraction could benefit from this control.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public treatAlphaAsClearRefraction = false;
 
     /**
      * Defines the minimum thickness stored in the thickness map.
@@ -285,6 +295,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_REFRACTIONMAP_OPPOSITEZ = false;
             defines.SS_LODINREFRACTIONALPHA = false;
             defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
+            defines.SS_LINKALPHAWITHCLEARREFRACTION = false;
             defines.SS_DEPTHINREFRACTIONALPHA = false;
             defines.SS_ALBEDOFORREFRACTIONTINT = false;
             defines.SS_VOLUME_SCATTERING = this._isVolumeScatteringEnabled;
@@ -323,6 +334,7 @@ export class PBRSubSurfaceConfiguration {
                         defines.SS_LINKREFRACTIONTOTRANSPARENCY = this._linkRefractionWithTransparency;
                         defines.SS_DEPTHINREFRACTIONALPHA = this._depthInRefractionAlpha;
                         defines.SS_ALBEDOFORREFRACTIONTINT = this.useAlbedoToTintRefraction;
+                        defines.SS_LINKALPHAWITHCLEARREFRACTION = this._treatAlphaAsClearRefraction;
                     }
                 }
             }
@@ -435,7 +447,7 @@ export class PBRSubSurfaceConfiguration {
      * Returns true if alpha blending should be disabled.
      */
     public get disableAlphaBlending(): boolean {
-        return this.isRefractionEnabled && this._linkRefractionWithTransparency;
+        return this.isRefractionEnabled && (this._linkRefractionWithTransparency || this._treatAlphaAsClearRefraction);
     }
 
     /**

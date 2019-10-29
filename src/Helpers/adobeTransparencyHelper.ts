@@ -261,6 +261,9 @@ export class AdobeTransparencyHelper {
             return null;
         }
         const material = mesh.material as PBRMaterial;
+        if (!material.subSurface.isRefractionEnabled) {
+            material.subSurface.refractionIntensity = 0;
+        }
         cacheEntry.regularMaterial = material;
         const gbuffer_pass_1 = material.clone(`${mesh.material.name}_gbuffer1`);
         gbuffer_pass_1.getRenderTargetTextures = null;
@@ -270,16 +273,18 @@ export class AdobeTransparencyHelper {
         gbuffer_pass_1.depthPeeling.frontDepthTextureIsInverse = false;
         gbuffer_pass_1.backFaceCulling = false;
         gbuffer_pass_1.forceNormalForward = true;
+        // If refraction is disabled, it means we're not using transmission. So, we'll set refractionIntensity to 0 so that
+        // when it's enabled, it won't
+        
         // TODO - Refraction gets disabled if we don't assign a refraction texture. However, we don't need
         // the refraction texture for each pass.
         gbuffer_pass_1.refractionTexture = this._scene.environmentTexture;
-        // if (mesh.material.needAlphaBlending()) {
-            // material.subSurface.isRefractionEnabled = true;
-            gbuffer_pass_1.getRenderTargetTextures = null;
-            // 
-        // }
-        gbuffer_pass_1.forceDepthWrite = true;
-        gbuffer_pass_1.needAlphaBlending = () => false;
+        
+        gbuffer_pass_1.forceDepthWrite = false;
+        if (gbuffer_pass_1.needAlphaBlending()) {
+            // gbuffer_pass_1.subSurface.refractionIntensity = 0;
+            gbuffer_pass_1.needAlphaBlending = () => false;
+        }
         // material.refractionTexture = this.getFinalComposite();
         // material.transparency.refractionScale = this._options.refractionScale;
         // material.transparency.sceneScale = this._options.sceneScale;
@@ -291,9 +296,22 @@ export class AdobeTransparencyHelper {
         gbuffer_pass_2.refractionTexture = this._scene.environmentTexture; // TODO - try making this null!
         gbuffer_pass_2.getRenderTargetTextures = null;
         gbuffer_pass_2.subSurface.depthInRefractionAlpha = !this._mrtDisabled;
+        if (gbuffer_pass_2.needAlphaBlending()) {
+            // gbuffer_pass_2.subSurface.refractionIntensity = 0;
+            gbuffer_pass_2.needAlphaBlending = () => false;
+        }
         cacheEntry.gbufferMaterial2 = gbuffer_pass_2;
 
-        material.needAlphaBlending = () => false;
+        // material.needAlphaBlending = () => false;
+        material.forceDepthWrite = true;
+        material.getRenderTargetTextures = null;
+        if (material.needAlphaBlending()) {
+            // material.subSurface.refractionIntensity = 0;
+            // gbuffer_pass_1.getRenderTargetTextures = null;
+            // material.needAlphaBlending = () => false;
+            // material.linkRefractionWithTransparency = true;
+            material.subSurface.treatAlphaAsClearRefraction = true;
+        }
 
         return cacheEntry;
     }
@@ -512,8 +530,8 @@ export class AdobeTransparencyHelper {
                                 if (cachedMaterial) {
                                     const regularMaterial = cachedMaterial.regularMaterial;
                                     if (regularMaterial.needAlphaBlending()) {
-                                        regularMaterial.subSurface.isRefractionEnabled = true;
-                                        regularMaterial.getRenderTargetTextures = null;
+                                        // regularMaterial.subSurface.isRefractionEnabled = true;
+                                        // regularMaterial.getRenderTargetTextures = null;
                                         regularMaterial.forceDepthWrite = true;
                                     }
                                     regularMaterial.subSurface.depthInRefractionAlpha = !this._mrtDisabled;

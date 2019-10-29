@@ -280,6 +280,20 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
+     * This parameters will make the material used its opacity to control how much it is showing
+     * the undistorted refraction texture through. This can be used when combining opacity with refraction.
+     */
+    public get treatAlphaAsClearRefraction(): boolean {
+        return this.subSurface.treatAlphaAsClearRefraction;
+    }
+    public set treatAlphaAsClearRefraction(value: boolean) {
+        this.subSurface.treatAlphaAsClearRefraction = value;
+        if (value) {
+            this.subSurface.isRefractionEnabled = true;
+        }
+    }
+
+    /**
      * If true, the light map contains occlusion information instead of lighting info.
      */
     @serialize()

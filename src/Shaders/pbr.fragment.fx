@@ -441,7 +441,7 @@ void main(void) {
                     thickness = (1.0 - refraction_clear.a) - sceneDepth;
                     thickness = max(thickness, 0.0);
                 #endif
-                #if defined(ALPHABLEND)
+                #if defined(ALPHABLEND) || defined(SS_LINKALPHAWITHCLEARREFRACTION)
                     // Blend between clear, unrefracted background and the refracted one.
                     refraction_colour.rgb = mix(refraction_clear.rgb, refraction_colour.rgb, alpha);
                 #endif
@@ -615,6 +615,10 @@ void main(void) {
         environmentRadiance.rgb *= vReflectionColor.rgb;
         environmentIrradiance *= vReflectionColor.rgb;
 
+        #ifdef SS_LINKALPHAWITHCLEARREFRACTION
+            environmentRadiance.rgb *= alpha;
+        #endif
+
     #endif
 
     // ___________________ Compute Reflectance aka R0 F0 info _________________________
@@ -707,6 +711,10 @@ void main(void) {
             // _____________________________ Levels _____________________________________
             environmentSheenRadiance.rgb *= vReflectionInfos.x;
             environmentSheenRadiance.rgb *= vReflectionColor.rgb;
+
+            #ifdef SS_LINKALPHAWITHCLEARREFRACTION
+                environmentSheenRadiance.rgb *= alpha;
+            #endif
         #endif
     #endif
 
@@ -860,6 +868,10 @@ void main(void) {
             // _____________________________ Levels _____________________________________
             environmentClearCoatRadiance.rgb *= vReflectionInfos.x;
             environmentClearCoatRadiance.rgb *= vReflectionColor.rgb;
+
+            #ifdef SS_LINKALPHAWITHCLEARREFRACTION
+                environmentClearCoatRadiance.rgb *= alpha;
+            #endif
         #endif
     #endif
 
@@ -877,11 +889,6 @@ void main(void) {
     #ifdef SUBSURFACE
         #ifdef SS_REFRACTION
             float refractionIntensity = vSubSurfaceIntensity.x;
-            #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
-                refractionIntensity *= (1.0 - alpha);
-                // Put alpha back to 1;
-                alpha = 1.0;
-            #endif
         #endif
         #ifdef SS_TRANSLUCENCY
             float translucencyIntensity = vSubSurfaceIntensity.y;
@@ -911,6 +918,11 @@ void main(void) {
             #endif
         #endif
 
+        #ifdef SS_LINKALPHAWITHCLEARREFRACTION
+            // If we're relying on a clear, non-coloured "refraction" where alpha is 0, we need to make sure
+            // refractionIntensity is at least (1 - alpha).
+            refractionIntensity = max(refractionIntensity, 1.0 - alpha);
+        #endif
         //  #if defined(SS_DEPTHINREFRACTIONALPHA) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
         //     #ifdef SS_VOLUME_SCATTERING
         //         #ifdef SS_DEPTHINREFRACTIONALPHA
@@ -1131,7 +1143,11 @@ void main(void) {
 
         // Tint by the surface albedo
         #ifdef SS_ALBEDOFORREFRACTIONTINT
-            refractionTransmittance *= surfaceAlbedo.rgb;
+            #ifdef SS_LINKALPHAWITHCLEARREFRACTION
+                refractionTransmittance *= mix(vec3(1.0), surfaceAlbedo.rgb, alpha);
+            #else
+                refractionTransmittance *= surfaceAlbedo.rgb;
+            #endif
         #endif
 
         // Decrease Albedo Contribution
@@ -1149,7 +1165,13 @@ void main(void) {
         specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, refractionIntensity);
 
         // In theory T = 1 - R.
-        refractionTransmittance *= 1.0 - specularEnvironmentReflectance;
+        #ifdef SS_LINKALPHAWITHCLEARREFRACTION
+            refractionTransmittance *= 1.0 - (specularEnvironmentReflectance * alpha);
+            // Put alpha back to 1;
+            alpha = 1.0;
+        #else
+            refractionTransmittance *= 1.0 - specularEnvironmentReflectance;
+        #endif
     #endif
 
     // _______________________________  IBL Translucency ________________________________
