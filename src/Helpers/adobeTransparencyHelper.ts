@@ -25,9 +25,14 @@ import { Engine } from '../Engines/engine';
  */
 export interface IAdobeTransparencyHelperOptions {
     /**
-     * Number of layers of transparency that can be rendered. The higher the number, the slower the performance.
+     * Number of layers of transparency that will have resources allocated to. The higher the number, the more memory overhead is needed.
      */
     numPasses: number;
+
+    /**
+     * Number of layers of transparency that are currently rendered. The higher the number, the slower the performance.
+     */
+    passesToEnable: number;
 
     /**
      * The size of the render buffers
@@ -67,7 +72,8 @@ export class AdobeTransparencyHelper {
             numPasses: 4,
             renderSize: 256,
             refractionScale: 1.0,
-            sceneScale: 1.0
+            sceneScale: 1.0,
+            passesToEnable: 2
         };
     }
 
@@ -76,6 +82,10 @@ export class AdobeTransparencyHelper {
      */
     private readonly _scene: Scene;
     private _options: IAdobeTransparencyHelperOptions;
+    private _numEnabledPasses: number = 0;
+    private _currentMRTIndex: number = -1;
+    private _opaqueRTIndex: number = -1;
+    
     private _opaqueRenderTarget: RenderTargetTexture;
     private _opaqueDepthRenderer: DepthRenderer;
     private _frontDepthRenderer: DepthRenderer;
@@ -119,6 +129,10 @@ export class AdobeTransparencyHelper {
         }
         // this._volumeRenderingEnabled = (engine._gl as any).COLOR_ATTACHMENT5 !== undefined;
         this._setupRenderTargets();
+
+        while (this._numEnabledPasses < this._options.passesToEnable) {
+            this.enablePass();
+        }
     }
 
     /**
@@ -137,10 +151,38 @@ export class AdobeTransparencyHelper {
             ...options
         };
 
-        this._options = newOptions;
-        this._setupRenderTargets();
         // If size changes, recreate everything
-        // If number of passes changes, do minimal creation as needed.
+        if (newOptions.renderSize !== this._options.renderSize) {
+            this._options = newOptions;
+            this._setupRenderTargets();
+        // If number of passes changes, create or remove passes as needed.
+        } else if (newOptions.numPasses > this._options.numPasses) {
+            const numPassesToAdd = newOptions.numPasses - this._options.numPasses;
+            this._options = newOptions;
+            for (let i = 0; i < numPassesToAdd; i++) {
+                this.addPass();
+            }
+        } else if (newOptions.numPasses < this._options.numPasses) {
+            const numPassesToRemove = this._options.numPasses - newOptions.numPasses;
+            this._options = newOptions;
+            for (let i = 0; i < numPassesToRemove; i++) {
+                this.removePass();
+            }
+        }
+
+        // If only the number of enabled passes changes, just enable or disable passes as needed.
+        // This doesn't require creating or deleting any RT's.
+        if (options.passesToEnable !== undefined && options.passesToEnable !== this._options.passesToEnable) {
+            this._options = newOptions;
+            while (this._numEnabledPasses < options.passesToEnable) {
+                this.enablePass();
+            }
+            while (this._numEnabledPasses > options.passesToEnable) {
+                this.disablePass();
+            }
+        }
+
+        this._compositor.updateOptions(options);
     }
 
     public getRenderTarget(pass: number = 0): Nullable<Texture> {
@@ -358,9 +400,18 @@ export class AdobeTransparencyHelper {
     // }
 
     /**
-     * Setup the image processing according to the specified options.
-     */
-    private _setupRenderTargets(): void {
+    * Add another pass
+    */
+    private addPass(): void {
+
+        if (this._mrtRenderTargets.length >= this._options.numPasses) {
+            return;
+        }
+        
+        if (this.disabled) {
+            return;
+        }
+
         let floatTextureType = 0;
         // if (this._scene.getEngine().getCaps().textureHalfFloatRender) {
         //     floatTextureType = Engine.TEXTURETYPE_HALF_FLOAT;
@@ -368,6 +419,163 @@ export class AdobeTransparencyHelper {
         // else if (this._scene.getEngine().getCaps().textureFloatRender) {
             floatTextureType = Engine.TEXTURETYPE_FLOAT;
         // }
+
+        const isFirstPass = this._mrtRenderTargets.length === 0;
+        const mrtIdx = this._mrtRenderTargets.length;
+        // Create another pass
+        const renderBufferCount = this._volumeRenderingEnabled ? 6 : 3;
+        const multiRenderTarget = new MultiRenderTarget("transparency_mrt_" + mrtIdx, this._options.renderSize, renderBufferCount, this._scene, {
+            defaultType: floatTextureType,
+            types: [Constants.TEXTURETYPE_UNSIGNED_BYTE, floatTextureType, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE],
+            samplingModes: [MultiRenderTarget.BILINEAR_SAMPLINGMODE],
+            doNotChangeAspectRatio: true,
+            generateMipMaps: true
+        });
+        multiRenderTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
+        multiRenderTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
+        multiRenderTarget.refreshRate = 1;
+        multiRenderTarget.renderParticles = false;
+        multiRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
+        // multiRenderTarget.lodGenerationScale = 1;
+        multiRenderTarget.anisotropicFilteringLevel = 4;
+        // multiRenderTarget.noMipmap = true;
+        // multiRenderTarget.samplingMode = Texture.BILINEAR_SAMPLINGMODE;
+        // multiRenderTarget.lodGenerationOffset = -0.5;
+        multiRenderTarget.textures.forEach((tex) => tex.hasAlpha = true);
+
+        multiRenderTarget.renderList = this._transparentMeshesCache;
+        // multiRenderTarget.renderList = this._opaqueMeshesCache;
+        multiRenderTarget.onBeforeRenderObservable.add((eventData: number, eventState: any) => {
+
+            // Enable transparent materials to output to MRT
+            
+            this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
+                if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
+                    const cachedMaterial = this._materialCache[mesh.uniqueId];
+                    if (cachedMaterial) {
+                        if (!isFirstPass) {
+                            const passMaterial = cachedMaterial.gbufferMaterial2;
+                            passMaterial.depthPeeling.frontDepthTexture = this._mrtRenderTargets[mrtIdx - 1].textures[1];
+                            passMaterial.depthPeeling.frontDepthTextureIsInverse = true;
+                            passMaterial.depthPeeling.backDepthTexture = this._opaqueDepthRenderer.getDepthMap();
+                            mesh.material = passMaterial;
+                        } else {
+                            cachedMaterial.gbufferMaterial1.depthPeeling.frontDepthTexture = this._frontDepthRenderer.getDepthMap();
+                            cachedMaterial.gbufferMaterial1.depthPeeling.backDepthTexture = this._opaqueDepthRenderer.getDepthMap();
+                            mesh.material = cachedMaterial.gbufferMaterial1;
+                        }
+                    }
+                }
+            });
+        });
+
+        this._mrtRenderTargets.push(multiRenderTarget);
+    }
+    
+    private removePass(): boolean {
+        if (!this._mrtRenderTargets.length) {
+            return false;
+        }
+        // If all passes are currently enabled, disable the last one before removing it.
+        if (this._numEnabledPasses >= this._mrtRenderTargets.length) {
+            this.disablePass();
+        }
+        const mrt = this._mrtRenderTargets.pop();
+        if (mrt) {
+            mrt.onBeforeRenderObservable.clear();
+            mrt.onAfterRenderObservable.clear();
+            mrt.dispose();
+        }
+        return true;
+    }
+
+    public setEnabledPasses(numPasses: number, forceCreateNewPass: boolean = false) {
+        const updateOptions: Partial<IAdobeTransparencyHelperOptions> = {};
+        if (this._options.numPasses < numPasses && forceCreateNewPass) {
+            updateOptions.numPasses = numPasses;
+            updateOptions.passesToEnable = numPasses;
+            this.updateOptions(updateOptions);
+        } else {
+            updateOptions.passesToEnable = numPasses;
+            this.updateOptions(updateOptions);
+        }
+    }
+
+    // Enable another pass, if one exists.
+    public enablePass(): void {
+        if (this._numEnabledPasses >= this._mrtRenderTargets.length) {
+            return;
+        }
+        // Remove existing bound callback for the last MRT.
+        if (this._numEnabledPasses) {
+            this._mrtRenderTargets[this._numEnabledPasses - 1].onAfterRenderObservable.removeCallback(this._onAfterLastMRTPass, this);
+        }
+        this._mrtRenderTargets[this._numEnabledPasses].renderList = this._transparentMeshesCache;
+        // Add MRT's to render targets list.
+        if (this._currentMRTIndex >= 0) {
+            this._scene.customRenderTargets.splice(this._currentMRTIndex + 1, 0, this._mrtRenderTargets[this._numEnabledPasses]);
+        } else {
+            this._scene.customRenderTargets.push(this._mrtRenderTargets[this._numEnabledPasses]);
+        }
+        
+        // Enable callback to update materials on the last MRT.
+        this._mrtRenderTargets[this._numEnabledPasses].onAfterRenderObservable.add(this._onAfterLastMRTPass, undefined, false, this);
+        this._numEnabledPasses++;
+        this._currentMRTIndex++;
+    }
+
+    public disablePass(): void {
+        if (this._numEnabledPasses === 0) {
+            return;
+        }
+        // Add MRT's to render targets list.
+        this._numEnabledPasses--;
+        if (this._currentMRTIndex >= 0) {
+            this._mrtRenderTargets[this._numEnabledPasses].onAfterRenderObservable.removeCallback(this._onAfterLastMRTPass, this);
+            const removedRTs = this._scene.customRenderTargets.splice(this._currentMRTIndex, 1);
+            // Clear these RT's (mainly for debugging purposes)
+            removedRTs.forEach((texRT) => {
+                texRT.renderList = [];
+                texRT.render();
+            });
+            if (this._numEnabledPasses) {
+                this._mrtRenderTargets[this._numEnabledPasses - 1].onAfterRenderObservable.add(this._onAfterLastMRTPass, undefined, false, this);
+            }
+        } else {
+            throw new Error("Can't disable pass without an MRT index");
+        }
+        this._currentMRTIndex--;
+    }
+
+    private _onAfterLastMRTPass(eventData: number): void {
+        // Disable transparent materials to output to MRT
+        if (this._transparentMeshesCache) {
+
+            this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
+                if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
+                    const cachedMaterial = this._materialCache[mesh.uniqueId];
+                    if (cachedMaterial) {
+                        const regularMaterial = cachedMaterial.regularMaterial;
+                        if (regularMaterial.needAlphaBlending()) {
+                            // regularMaterial.subSurface.isRefractionEnabled = true;
+                            // regularMaterial.getRenderTargetTextures = null;
+                            regularMaterial.forceDepthWrite = true;
+                        }
+                        regularMaterial.subSurface.depthInRefractionAlpha = !this._mrtDisabled;
+                        regularMaterial.refractionTexture = this.getFinalComposite();
+                        mesh.material = regularMaterial;
+                    }
+                }
+            });
+        }
+
+        this._compositor.render();
+    }
+
+    /**
+     * Setup the render targets according to the specified options.
+     */
+    private _setupRenderTargets(): void {
 
         // Remove any layers rendering to the opaque scene.
         if (this._scene.layers) {
@@ -380,7 +588,7 @@ export class AdobeTransparencyHelper {
         }
 
         // Remove opaque render target
-        let rt_idx = this._scene.customRenderTargets.indexOf(this._opaqueRenderTarget);
+        this._opaqueRTIndex = this._scene.customRenderTargets.indexOf(this._opaqueRenderTarget);
         if (this._opaqueRenderTarget) {
             this._opaqueRenderTarget.dispose();
         }
@@ -392,9 +600,10 @@ export class AdobeTransparencyHelper {
             this._opaqueRenderTarget.lodGenerationScale = 1;
             this._opaqueRenderTarget.lodGenerationOffset = -4;
             (this._opaqueRenderTarget as any).depth = this._options.refractionScale;
-            if (rt_idx >= 0) {
-                this._scene.customRenderTargets.splice(rt_idx, 0, this._opaqueRenderTarget);
+            if (this._opaqueRTIndex >= 0) {
+                this._scene.customRenderTargets.splice(this._opaqueRTIndex, 0, this._opaqueRenderTarget);
             } else {
+                this._opaqueRTIndex = this._scene.customRenderTargets.length;
                 this._scene.customRenderTargets.push(this._opaqueRenderTarget);
             }
 
@@ -417,6 +626,7 @@ export class AdobeTransparencyHelper {
             return;
         }
 
+        let rt_idx = -1;
         if (this._opaqueDepthRenderer) {
             rt_idx = this._scene.customRenderTargets.indexOf(this._opaqueDepthRenderer.getDepthMap());
             this._opaqueDepthRenderer.dispose();
@@ -448,15 +658,15 @@ export class AdobeTransparencyHelper {
                 this._scene.customRenderTargets.splice(rt_idx, 0, this._frontDepthRenderer.getDepthMap());
             } else {
                 this._scene.customRenderTargets.push(this._frontDepthRenderer.getDepthMap());
+                rt_idx = this._scene.customRenderTargets.length - 1;
             }
         }
 
         // Before creating MRT's and depth passes, remove the existing ones.
-        this._mrtRenderTargets.forEach((mrt) => {
-            mrt.onBeforeRenderObservable.clear();
-            mrt.onAfterRenderObservable.clear();
-            mrt.dispose();
-        });
+        while (this.removePass()) {}
+
+        // Set the "current" MRT pointer to the front depth RT so that the next enabled MRT goes right after.
+        this._currentMRTIndex = rt_idx;
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
             if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
@@ -467,91 +677,8 @@ export class AdobeTransparencyHelper {
         // Create all the render targets for the depth-peeling passes
         this._mrtRenderTargets = [];
 
-        if (this.disabled) {
-            return;
-        }
-
-        for (let idx = 0; idx < this._options.numPasses; idx++) {
-
-            const renderBufferCount = this._volumeRenderingEnabled ? 6 : 3;
-            const multiRenderTarget = new MultiRenderTarget("transparency_mrt_" + idx, this._options.renderSize, renderBufferCount, this._scene, {
-                defaultType: floatTextureType,
-                types: [Constants.TEXTURETYPE_UNSIGNED_BYTE, floatTextureType, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE],
-                samplingModes: [MultiRenderTarget.BILINEAR_SAMPLINGMODE],
-                doNotChangeAspectRatio: true,
-                generateMipMaps: true
-            });
-            multiRenderTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
-            multiRenderTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
-            multiRenderTarget.refreshRate = 1;
-            multiRenderTarget.renderParticles = false;
-            multiRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
-            // multiRenderTarget.lodGenerationScale = 1;
-            multiRenderTarget.anisotropicFilteringLevel = 4;
-            // multiRenderTarget.noMipmap = true;
-            // multiRenderTarget.samplingMode = Texture.BILINEAR_SAMPLINGMODE;
-            // multiRenderTarget.lodGenerationOffset = -0.5;
-            multiRenderTarget.textures.forEach((tex) => tex.hasAlpha = true);
-
-            multiRenderTarget.renderList = this._transparentMeshesCache;
-            // multiRenderTarget.renderList = this._opaqueMeshesCache;
-            multiRenderTarget.onBeforeRenderObservable.add((eventData: number, eventState: any) => {
-
-                // Enable transparent materials to output to MRT
-                if (multiRenderTarget.renderList) {
-                    multiRenderTarget.renderList.forEach((mesh: AbstractMesh) => {
-                        if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
-                            const cachedMaterial = this._materialCache[mesh.uniqueId];
-                            if (cachedMaterial) {
-                                if (idx > 0) {
-                                    const passMaterial = cachedMaterial.gbufferMaterial2;
-                                    passMaterial.depthPeeling.frontDepthTexture = this._mrtRenderTargets[idx - 1].textures[1];
-                                    passMaterial.depthPeeling.frontDepthTextureIsInverse = true;
-                                    passMaterial.depthPeeling.backDepthTexture = this._opaqueDepthRenderer.getDepthMap();
-                                    mesh.material = passMaterial;
-                                } else {
-                                    cachedMaterial.gbufferMaterial1.depthPeeling.frontDepthTexture = this._frontDepthRenderer.getDepthMap();
-                                    cachedMaterial.gbufferMaterial1.depthPeeling.backDepthTexture = this._opaqueDepthRenderer.getDepthMap();
-                                    mesh.material = cachedMaterial.gbufferMaterial1;
-                                }
-                            }
-                        }
-                    });
-                }
-            });
-            if (idx == this._options.numPasses - 1) {
-                multiRenderTarget.onAfterRenderObservable.add((eventData: number) => {
-                    // Disable transparent materials to output to MRT
-                    if (multiRenderTarget.renderList) {
-
-                        multiRenderTarget.renderList.forEach((mesh: AbstractMesh) => {
-                            if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
-                                const cachedMaterial = this._materialCache[mesh.uniqueId];
-                                if (cachedMaterial) {
-                                    const regularMaterial = cachedMaterial.regularMaterial;
-                                    if (regularMaterial.needAlphaBlending()) {
-                                        // regularMaterial.subSurface.isRefractionEnabled = true;
-                                        // regularMaterial.getRenderTargetTextures = null;
-                                        regularMaterial.forceDepthWrite = true;
-                                    }
-                                    regularMaterial.subSurface.depthInRefractionAlpha = !this._mrtDisabled;
-                                    regularMaterial.refractionTexture = this.getFinalComposite();
-                                    mesh.material = regularMaterial;
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-
-            this._mrtRenderTargets.push(multiRenderTarget);
-        }
-
-        // Add MRT's to render targets list.
-        if (rt_idx >= 0) {
-            this._scene.customRenderTargets.splice(rt_idx + 1, 0, ...this._mrtRenderTargets);
-        } else {
-            this._mrtRenderTargets.forEach((target) => this._scene.customRenderTargets.push(target));
+        for (let i = 0; i < this._options.numPasses; i++) {
+            this.addPass();
         }
 
         if (this._compositor) {
@@ -559,17 +686,13 @@ export class AdobeTransparencyHelper {
         }
         this._compositor = new AdobeTransparencyCompositor({
             renderSize: this._options.renderSize,
-            numPasses: this._options.numPasses,
+            passesToEnable: this._options.passesToEnable,
             volumeRendering: this._volumeRenderingEnabled,
             refractionScale: this._options.refractionScale,
             sceneScale: this._options.sceneScale }, this._scene);
         this._compositor.setBackgroundDepthTexture(this._opaqueDepthRenderer.getDepthMap());
         this._compositor.setBackgroundTexture(this._opaqueRenderTarget);
         this._compositor.setTransparentTextures(this._mrtRenderTargets);
-
-        this._mrtRenderTargets[this._mrtRenderTargets.length - 1].onAfterRenderObservable.add((eventData: number) => {
-            this._compositor.render();
-        });
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
             if (mesh.material instanceof PBRMaterial) {

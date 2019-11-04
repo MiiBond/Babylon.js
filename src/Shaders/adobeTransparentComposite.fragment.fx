@@ -19,6 +19,7 @@ uniform sampler2D textureSampler;
 // uniform mat4 worldViewProjection;
 // uniform sampler2D backgroundTexture;
 uniform float renderSize;
+uniform float renderOpacity;
 uniform sampler2D colourTexture;
 uniform sampler2D reflectionTexture;
 uniform sampler2D miscTexture;
@@ -124,6 +125,6 @@ void main(void) {
     #else
         finalColour += reflection.xyz;
     #endif
-    finalColour = mix(background_clear.xyz, finalColour.xyz, colour.a);
+    finalColour = mix(background_clear.xyz, finalColour.xyz, colour.a * renderOpacity);
     gl_FragColor = vec4(finalColour, pixel_depth);
 }
