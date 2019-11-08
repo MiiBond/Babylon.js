@@ -4,6 +4,7 @@ import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Texture } from "../Materials/Textures/texture";
+import { RawTexture } from "../Materials/Textures/rawTexture";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "../Engines/constants";
 
@@ -49,6 +50,10 @@ export interface IAdobeTransparencyHelperOptions {
      * without the interior of transparent objects being affected.
      */
     sceneScale: number;
+
+    volumeRendering: boolean;
+
+    animationTime: number;
 }
 
 class MaterialCacheEntry {
@@ -73,7 +78,9 @@ export class AdobeTransparencyHelper {
             renderSize: 256,
             refractionScale: 1.0,
             sceneScale: 1.0,
-            passesToEnable: 2
+            passesToEnable: 2,
+            volumeRendering: true,
+            animationTime: 1000
         };
     }
 
@@ -99,6 +106,7 @@ export class AdobeTransparencyHelper {
     
     private _materialCache: MaterialCacheMap = {};
     // private _regularMaterialCache: MaterialMap;
+    private _blackTexture: RawTexture;
 
     public disabled: boolean = false;
 
@@ -119,7 +127,11 @@ export class AdobeTransparencyHelper {
             ...options
         };
         this._scene = scene;
+        const data: ArrayBufferView = new Uint8Array([0, 0, 0]);
+        this._blackTexture = new RawTexture(data, 1, 1, Engine.TEXTUREFORMAT_RGB, this._scene, false);
         this.onErrorObservable = new Observable();
+        this._volumeRenderingEnabled = this._options.volumeRendering && (this._scene.getEngine()._gl as any).COLOR_ATTACHMENT5 !== undefined;
+        
         this._parseScene();
 
         const engine = scene.getEngine();
@@ -127,10 +139,10 @@ export class AdobeTransparencyHelper {
         if (!engine.getCaps().drawBuffersExtension) {
             this._mrtDisabled = true;
         }
-        // this._volumeRenderingEnabled = (engine._gl as any).COLOR_ATTACHMENT5 !== undefined;
+        
         this._setupRenderTargets();
 
-        while (this._numEnabledPasses < this._options.passesToEnable) {
+        while (!this.disabled && this._numEnabledPasses < this._options.passesToEnable) {
             this.enablePass();
         }
     }
@@ -145,35 +157,38 @@ export class AdobeTransparencyHelper {
         if (!newValues.length) {
             return;
         }
+        if (this.disabled) {
+            return;
+        }
 
         const newOptions = {
             ...this._options,
             ...options
         };
 
+        const oldOptions = this._options;
+        this._options = newOptions;
+
         // If size changes, recreate everything
-        if (newOptions.renderSize !== this._options.renderSize) {
-            this._options = newOptions;
+        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.volumeRendering !== oldOptions.volumeRendering) {
+            this._volumeRenderingEnabled = this._options.volumeRendering && (this._scene.getEngine()._gl as any).COLOR_ATTACHMENT4 !== undefined;
             this._setupRenderTargets();
         // If number of passes changes, create or remove passes as needed.
-        } else if (newOptions.numPasses > this._options.numPasses) {
-            const numPassesToAdd = newOptions.numPasses - this._options.numPasses;
-            this._options = newOptions;
+        } else if (newOptions.numPasses > oldOptions.numPasses) {
+            const numPassesToAdd = newOptions.numPasses - oldOptions.numPasses;
             for (let i = 0; i < numPassesToAdd; i++) {
-                this.addPass();
+                this._addPass();
             }
-        } else if (newOptions.numPasses < this._options.numPasses) {
-            const numPassesToRemove = this._options.numPasses - newOptions.numPasses;
-            this._options = newOptions;
+        } else if (newOptions.numPasses < oldOptions.numPasses) {
+            const numPassesToRemove = oldOptions.numPasses - newOptions.numPasses;
             for (let i = 0; i < numPassesToRemove; i++) {
-                this.removePass();
+                this._removePass();
             }
         }
 
         // If only the number of enabled passes changes, just enable or disable passes as needed.
         // This doesn't require creating or deleting any RT's.
-        if (options.passesToEnable !== undefined && options.passesToEnable !== this._options.passesToEnable) {
-            this._options = newOptions;
+        if (options.passesToEnable !== undefined && options.passesToEnable !== oldOptions.passesToEnable) {
             while (this._numEnabledPasses < options.passesToEnable) {
                 this.enablePass();
             }
@@ -306,6 +321,7 @@ export class AdobeTransparencyHelper {
         if (!material.subSurface.isRefractionEnabled) {
             material.subSurface.refractionIntensity = 0;
         }
+
         cacheEntry.regularMaterial = material;
         const gbuffer_pass_1 = material.clone(`${mesh.material.name}_gbuffer1`);
         gbuffer_pass_1.getRenderTargetTextures = null;
@@ -319,8 +335,11 @@ export class AdobeTransparencyHelper {
         // when it's enabled, it won't
         
         // TODO - Refraction gets disabled if we don't assign a refraction texture. However, we don't need
-        // the refraction texture for each pass.
+        // the refraction texture for the gbuffer passes.
         gbuffer_pass_1.refractionTexture = this._scene.environmentTexture;
+        if (!gbuffer_pass_1.refractionTexture) {
+            gbuffer_pass_1.refractionTexture = this._blackTexture;
+        }
         
         gbuffer_pass_1.forceDepthWrite = false;
         if (gbuffer_pass_1.needAlphaBlending()) {
@@ -402,7 +421,7 @@ export class AdobeTransparencyHelper {
     /**
     * Add another pass
     */
-    private addPass(): void {
+    private _addPass(): void {
 
         if (this._mrtRenderTargets.length >= this._options.numPasses) {
             return;
@@ -423,10 +442,10 @@ export class AdobeTransparencyHelper {
         const isFirstPass = this._mrtRenderTargets.length === 0;
         const mrtIdx = this._mrtRenderTargets.length;
         // Create another pass
-        const renderBufferCount = this._volumeRenderingEnabled ? 6 : 3;
+        const renderBufferCount = this._volumeRenderingEnabled ? 5 : 3;
         const multiRenderTarget = new MultiRenderTarget("transparency_mrt_" + mrtIdx, this._options.renderSize, renderBufferCount, this._scene, {
             defaultType: floatTextureType,
-            types: [Constants.TEXTURETYPE_UNSIGNED_BYTE, floatTextureType, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE],
+            types: [Constants.TEXTURETYPE_UNSIGNED_BYTE, floatTextureType, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE],
             samplingModes: [MultiRenderTarget.BILINEAR_SAMPLINGMODE],
             doNotChangeAspectRatio: true,
             generateMipMaps: true
@@ -442,6 +461,8 @@ export class AdobeTransparencyHelper {
         // multiRenderTarget.samplingMode = Texture.BILINEAR_SAMPLINGMODE;
         // multiRenderTarget.lodGenerationOffset = -0.5;
         multiRenderTarget.textures.forEach((tex) => tex.hasAlpha = true);
+        // multiRenderTarget.textures.forEach((tex) => tex.depth = this._options.refractionScale);
+        // float darkening2 = 1.0 - min(length(vRefractionUVW.xy)*thickness * 10.0, 1.0);
 
         multiRenderTarget.renderList = this._transparentMeshesCache;
         // multiRenderTarget.renderList = this._opaqueMeshesCache;
@@ -450,7 +471,7 @@ export class AdobeTransparencyHelper {
             // Enable transparent materials to output to MRT
             
             this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
-                if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
+                // if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
                     const cachedMaterial = this._materialCache[mesh.uniqueId];
                     if (cachedMaterial) {
                         if (!isFirstPass) {
@@ -465,14 +486,14 @@ export class AdobeTransparencyHelper {
                             mesh.material = cachedMaterial.gbufferMaterial1;
                         }
                     }
-                }
+                // }
             });
         });
 
         this._mrtRenderTargets.push(multiRenderTarget);
     }
     
-    private removePass(): boolean {
+    private _removePass(): boolean {
         if (!this._mrtRenderTargets.length) {
             return false;
         }
@@ -503,7 +524,7 @@ export class AdobeTransparencyHelper {
 
     // Enable another pass, if one exists.
     public enablePass(): void {
-        if (this._numEnabledPasses >= this._mrtRenderTargets.length) {
+        if (this.disabled || this._numEnabledPasses >= this._mrtRenderTargets.length) {
             return;
         }
         // Remove existing bound callback for the last MRT.
@@ -552,7 +573,7 @@ export class AdobeTransparencyHelper {
         if (this._transparentMeshesCache) {
 
             this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
-                if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
+                // if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
                     const cachedMaterial = this._materialCache[mesh.uniqueId];
                     if (cachedMaterial) {
                         const regularMaterial = cachedMaterial.regularMaterial;
@@ -565,7 +586,7 @@ export class AdobeTransparencyHelper {
                         regularMaterial.refractionTexture = this.getFinalComposite();
                         mesh.material = regularMaterial;
                     }
-                }
+                // }
             });
         }
 
@@ -663,7 +684,7 @@ export class AdobeTransparencyHelper {
         }
 
         // Before creating MRT's and depth passes, remove the existing ones.
-        while (this.removePass()) {}
+        while (this._removePass()) {}
 
         // Set the "current" MRT pointer to the front depth RT so that the next enabled MRT goes right after.
         this._currentMRTIndex = rt_idx;
@@ -678,21 +699,24 @@ export class AdobeTransparencyHelper {
         this._mrtRenderTargets = [];
 
         for (let i = 0; i < this._options.numPasses; i++) {
-            this.addPass();
+            this._addPass();
         }
-
+        
         if (this._compositor) {
             this._compositor.dispose();
         }
-        this._compositor = new AdobeTransparencyCompositor({
-            renderSize: this._options.renderSize,
-            passesToEnable: this._options.passesToEnable,
-            volumeRendering: this._volumeRenderingEnabled,
-            refractionScale: this._options.refractionScale,
-            sceneScale: this._options.sceneScale }, this._scene);
-        this._compositor.setBackgroundDepthTexture(this._opaqueDepthRenderer.getDepthMap());
-        this._compositor.setBackgroundTexture(this._opaqueRenderTarget);
-        this._compositor.setTransparentTextures(this._mrtRenderTargets);
+        if (!this.disabled) {
+            this._compositor = new AdobeTransparencyCompositor({
+                renderSize: this._options.renderSize,
+                animationTime: this._options.animationTime,
+                passesToEnable: this._options.passesToEnable,
+                volumeRendering: this._volumeRenderingEnabled,
+                refractionScale: this._options.refractionScale,
+                sceneScale: this._options.sceneScale }, this._scene);
+            this._compositor.setBackgroundDepthTexture(this._opaqueDepthRenderer.getDepthMap());
+            this._compositor.setBackgroundTexture(this._opaqueRenderTarget);
+            this._compositor.setTransparentTextures(this._mrtRenderTargets);
+        }
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
             if (mesh.material instanceof PBRMaterial) {

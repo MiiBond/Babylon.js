@@ -58,7 +58,7 @@ uniform Material
     uniform mat4 refractionMatrix;
     uniform vec2 vThicknessInfos;
     uniform mat4 thicknessMatrix;
-    uniform vec3 vVolumeScatterColor;
+    uniform vec3 vScatterColor;
     uniform vec3 vThicknessParam;
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;

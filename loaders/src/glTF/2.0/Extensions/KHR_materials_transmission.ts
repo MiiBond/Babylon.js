@@ -95,26 +95,6 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
             pbrMaterial.subSurface.refractionIntensity = 1.0;
         }
 
-        // if (extension.interiorIor !== undefined) {
-        //     pbrMaterial.subSurface.indexOfRefraction = extension.interiorIor;
-        // }
-        // if (extension.ior !== undefined) {
-        //     pbrMaterial.subSurface.indexOfRefraction = extension.ior;
-        // }
-
-        // if (material.extras && material.extras.ADOBE_transparency && material.extras.ADOBE_transparency.density) {
-        //     const volume_info = material.extras.ADOBE_transparency;
-            // pbrMaterial.subSurface.scatteringIntensity = extension.attenuationDistance;
-            // pbrMaterial.subSurface.isVolumeScatteringEnabled = true;
-            // pbrMaterial.subSurface.maximumThickness = 1.0;
-            // pbrMaterial.subSurface.minimumThickness = 0.0;
-            // if (extension.interiorColor !== undefined) {
-            //     pbrMaterial.subSurface.volumeScatterColor = Color3.FromArray(extension.subsurfaceColor);
-            //     pbrMaterial.subSurface.translucencyIntensity = volume_info.density ? 1.0 - volume_info.density : 0.01;
-            // }
-        // }
-        
-
         if (extension.transmissionTexture) {
             return this._loader.loadTextureInfoAsync(context, extension.transmissionTexture)
                 .then((texture: BaseTexture) => {

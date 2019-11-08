@@ -73,18 +73,18 @@ export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
 
         // console.log(extension);
         // console.log(babylonMaterial);
-        console.log(material.extras);
+        // console.log(material.extras);
 
         // const transparencyExtension = material.extensions.ADOBE_materials_thin_transparency;
         let pbrMaterial = babylonMaterial as PBRMaterial;
         
         pbrMaterial.subSurface.isRefractionEnabled = true;
         // pbrMaterial.transparencyMode = PBRBaseMaterial.PBRMATERIAL_OPAQUE;
-        pbrMaterial.subSurface.tintColor = pbrMaterial.albedoColor;
-        pbrMaterial.backFaceCulling = false;
-        pbrMaterial.twoSidedLighting = true;
+        // pbrMaterial.backFaceCulling = false;
+        // pbrMaterial.twoSidedLighting = true;
         pbrMaterial.separateCullingPass = false;
         pbrMaterial.enableSpecularAntiAliasing = true;
+        pbrMaterial.subSurface.isVolumeThicknessEnabled = true;
 
         // Don't let the material gather RT's because, if it does, the scene will try to render the RT for the refractionTexture.
         // TODO - don't do this if not using depth peeling?
@@ -104,12 +104,16 @@ export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
         if (material.extras && material.extras.ADOBE_transparency && material.extras.ADOBE_transparency.density) {
             const volume_info = material.extras.ADOBE_transparency;
             pbrMaterial.subSurface.scatteringIntensity = volume_info.density;
-            pbrMaterial.subSurface.isVolumeScatteringEnabled = true;
+            pbrMaterial.subSurface.isVolumeThicknessEnabled = true;
+            pbrMaterial.subSurface.isScatteringEnabled = true;
             pbrMaterial.subSurface.maximumThickness = 1.0;
             pbrMaterial.subSurface.minimumThickness = 0.0;
             if (volume_info.interiorColor !== undefined) {
-                pbrMaterial.subSurface.volumeScatterColor = Color3.FromArray(volume_info.interiorColor);
-                pbrMaterial.subSurface.translucencyIntensity = volume_info.density ? 1.0 - volume_info.density : 0.01;
+                pbrMaterial.subSurface.tintColor = Color3.FromArray(volume_info.interiorColor);
+                pbrMaterial.subSurface.scatterColor = Color3.FromArray(volume_info.interiorColor);
+                // Conversion to distance is -ln(color) / density
+                // Factor of 100 is used to convert from cm to m.
+                pbrMaterial.subSurface.tintColorAtDistance = -Math.log(pbrMaterial.subSurface.scatterColor.toLuminance()) / (volume_info.density * 100);
             }
         }
         

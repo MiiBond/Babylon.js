@@ -120,8 +120,8 @@ uniform mat4 view;
         uniform mat4 thicknessMatrix;
     #endif
 
-    #ifdef SS_VOLUME_SCATTERING
-        uniform vec3 vVolumeScatterColor;
+    #ifdef SS_VOLUME_THICKNESS
+        uniform vec3 vScatterColor;
     #endif
 
     uniform vec3 vThicknessParam;
@@ -131,6 +131,6 @@ uniform mat4 view;
 #endif
 
 // Depth Peeling
-#ifdef DEPTH_PEELING
+#if defined(DEPTH_PEELING) || defined(SS_DEPTHINREFRACTIONALPHA)
     uniform vec4 depthValues;
 #endif

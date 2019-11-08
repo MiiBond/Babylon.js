@@ -81,7 +81,7 @@ export class KHR_materials_volume_transmission implements IGLTFLoaderExtension {
         
         pbrMaterial.subSurface.isRefractionEnabled = true;
         // pbrMaterial.transparencyMode = PBRBaseMaterial.PBRMATERIAL_OPAQUE;
-        pbrMaterial.subSurface.tintColor = pbrMaterial.albedoColor;
+        
         pbrMaterial.backFaceCulling = false;
         pbrMaterial.twoSidedLighting = true;
         pbrMaterial.separateCullingPass = false;
@@ -100,16 +100,22 @@ export class KHR_materials_volume_transmission implements IGLTFLoaderExtension {
         if (extension.interiorIor !== undefined) {
             pbrMaterial.subSurface.indexOfRefraction = extension.interiorIor;
         }
+        pbrMaterial.subSurface.isVolumeThicknessEnabled = true;
 
+           
+        pbrMaterial.subSurface.maximumThickness = 1.0;
+        pbrMaterial.subSurface.minimumThickness = 0.0;
+        if (extension.attenuationColor !== undefined) {
+            pbrMaterial.subSurface.tintColor = Color3.FromArray(extension.attenuationColor);
+            // pbrMaterial.subSurface.translucencyIntensity = extension.attenuationDistance ? 1.0 - extension.attenuationDistance : 0.01;
+        }
+        if (extension.scatterColor !== undefined) {
+            pbrMaterial.subSurface.isScatteringEnabled = true;
+            pbrMaterial.subSurface.scatterColor = Color3.FromArray(extension.scatterColor);
+            // pbrMaterial.subSurface.translucencyIntensity = extension.attenuationDistance ? 1.0 - extension.attenuationDistance : 0.01;
+        }
         if (extension.attenuationDistance) {
-            pbrMaterial.subSurface.scatteringIntensity = extension.attenuationDistance;
-            pbrMaterial.subSurface.isVolumeScatteringEnabled = true;
-            pbrMaterial.subSurface.maximumThickness = 1.0;
-            pbrMaterial.subSurface.minimumThickness = 0.0;
-            if (extension.attenuationColor !== undefined) {
-                pbrMaterial.subSurface.volumeScatterColor = Color3.FromArray(extension.attenuationColor);
-                pbrMaterial.subSurface.translucencyIntensity = extension.attenuationDistance ? 1.0 - extension.attenuationDistance : 0.01;
-            }
+            pbrMaterial.subSurface.tintColorAtDistance = extension.attenuationDistance;
         }
         
 

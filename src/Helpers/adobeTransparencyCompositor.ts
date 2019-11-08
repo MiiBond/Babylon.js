@@ -22,6 +22,7 @@ export interface IAdobeTransparencyCompositorOptions {
     volumeRendering: boolean;
     refractionScale: number;
     sceneScale: number;
+    animationTime: number;
 }
 
 /**
@@ -38,7 +39,8 @@ export class AdobeTransparencyCompositor {
             volumeRendering: false,
             refractionScale: 1.0,
             sceneScale: 1.0,
-            passesToEnable: 2
+            passesToEnable: 2,
+            animationTime: 1000
         };
     }
 
@@ -102,7 +104,7 @@ export class AdobeTransparencyCompositor {
             }
             const newPasses = newOptions.passesToEnable - oldOptions.passesToEnable;
             if (newPasses > 0) {
-                this._animatePasses(newPasses);
+                this._animatePasses(newPasses, this._options.animationTime);
             }
         }
     }
@@ -151,8 +153,8 @@ export class AdobeTransparencyCompositor {
         }
         defines += "#define REFRACTION_SCALE " + this._options.refractionScale.toFixed(20) + "\n";
         defines += "#define TRANSPARENCY_SCENE_SCALE " + this._options.sceneScale.toFixed(20) + "\n";
-        let postEffect = new PostProcess("transparentComposite", "adobeTransparentComposite", ["renderSize", "renderOpacity"],
-            ["colourTexture", "reflectionTexture", "miscTexture", "interiorColorTexture", "interiorInfoTexture", "backgroundDepth"],
+        let postEffect = new PostProcess("transparentComposite", "adobeTransparentComposite", ["renderSize", "renderOpacity", "depthValues"],
+            ["colourTexture", "reflectionTexture", "miscTexture", "attenuationTexture", "scatterTexture", "backgroundDepth"],
             postOptions, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), undefined, defines, floatTextureType);
         postEffect._textures.forEach((tex) => {
             tex._lodGenerationOffset = -4;
@@ -166,6 +168,10 @@ export class AdobeTransparencyCompositor {
                 tex._lodGenerationOffset = -4;
                 tex._lodGenerationScale = 0.25;
             });
+            const camera = this._scene.activeCamera;
+            if (camera) {
+                effect.setFloat2("depthValues", camera.minZ, camera.minZ + camera.maxZ);
+            }
             if (this.transparentTextures[passNum]) {
                 effect.setFloat("renderOpacity", this._effectOpacity[this._effectOpacity.length - 1 - passNum]);
                 effect.setFloat("renderSize", this.transparentTextures[passNum].textures[0].getSize().width);
@@ -174,8 +180,8 @@ export class AdobeTransparencyCompositor {
                 effect.setTexture("miscTexture", this.transparentTextures[passNum].textures[2]);
     
                 if (this._options.volumeRendering) {
-                    effect.setTexture("interiorColorTexture", this.transparentTextures[passNum].textures[3]);
-                    effect.setTexture("interiorInfoTexture", this.transparentTextures[passNum].textures[4]);
+                    effect.setTexture("attenuationTexture", this.transparentTextures[passNum].textures[3]);
+                    effect.setTexture("scatterTexture", this.transparentTextures[passNum].textures[4]);
                 }
     
                 if (passNum === this._options.passesToEnable - 1) {
