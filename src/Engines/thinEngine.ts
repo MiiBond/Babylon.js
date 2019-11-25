@@ -128,14 +128,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.25";
+        return "babylonjs@4.1.0-beta.2";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.25";
+        return "4.1.0-beta.2";
     }
 
     /**
@@ -345,7 +345,7 @@ export class ThinEngine {
     public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
 
     /** @hidden */
-    public _bindedRenderFunction: any;
+    public _boundRenderFunction: any;
 
     private _vaoRecordInProgress = false;
     private _mustWipeVertexAttributes = false;
@@ -353,6 +353,7 @@ export class ThinEngine {
     private _emptyTexture: Nullable<InternalTexture>;
     private _emptyCubeTexture: Nullable<InternalTexture>;
     private _emptyTexture3D: Nullable<InternalTexture>;
+    private _emptyTexture2DArray: Nullable<InternalTexture>;
 
     /** @hidden */
     public _frameHandler: number;
@@ -413,6 +414,17 @@ export class ThinEngine {
         }
 
         return this._emptyTexture3D;
+    }
+
+    /**
+     * Gets the default empty 2D array texture
+     */
+    public get emptyTexture2DArray(): InternalTexture {
+        if (!this._emptyTexture2DArray) {
+            this._emptyTexture2DArray = this.createRawTexture2DArray(new Uint8Array(4), 1, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        }
+
+        return this._emptyTexture2DArray;
     }
 
     /**
@@ -693,6 +705,7 @@ export class ThinEngine {
             maxCombinedTexturesImageUnits: this._gl.getParameter(this._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS),
             maxVertexTextureImageUnits: this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS),
             maxTextureSize: this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE),
+            maxSamples: this._gl.getParameter(this._gl.MAX_SAMPLES),
             maxCubemapTextureSize: this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE),
             maxRenderTextureSize: this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE),
             maxVertexAttribs: this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS),
@@ -728,6 +741,7 @@ export class ThinEngine {
             textureLOD: (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true : false,
             blendMinMax: false,
             multiview: this._gl.getExtension('OVR_multiview2'),
+            oculusMultiview: this._gl.getExtension('OCULUS_multiview'),
             depthTextureExtension: false
         };
 
@@ -1024,7 +1038,7 @@ export class ThinEngine {
         }
 
         if (this._activeRenderLoops.length > 0) {
-           this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+           this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         } else {
             this._renderingQueueLaunched = false;
         }
@@ -1101,8 +1115,8 @@ export class ThinEngine {
 
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
-            this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+            this._boundRenderFunction = this._renderLoop.bind(this);
+            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
     }
 
@@ -2854,6 +2868,24 @@ export class ThinEngine {
         throw _DevTools.WarnImport("Engine.RawTexture");
     }
 
+    /**
+     * Creates a new raw 2D array texture
+     * @param data defines the data used to create the texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param depth defines the number of layers of the texture
+     * @param format defines the format of the texture
+     * @param generateMipMaps defines if the engine must generate mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param compression defines the compressed used (can be null)
+     * @param textureType defines the compressed used (can be null)
+     * @returns a new raw 2D array texture (stored in an InternalTexture)
+     */
+    public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+        throw _DevTools.WarnImport("Engine.RawTexture");
+    }
+
     private _unpackFlipYCached: Nullable<boolean> = null;
 
     /**
@@ -2886,20 +2918,18 @@ export class ThinEngine {
      */
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         var filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps);
-
+        var target = this._gl.TEXTURE_2D;
         if (texture.isCube) {
-            this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
-            this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+            target = this._gl.TEXTURE_CUBE_MAP;
         } else if (texture.is3D) {
-            this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
-            this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
-        } else {
-            this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
-            this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+            target = this._gl.TEXTURE_3D;
+        } else if (texture.is2DArray) {
+            target = this._gl.TEXTURE_2D_ARRAY;
         }
+
+        this._setTextureParameterInteger(target, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
+        this._setTextureParameterInteger(target, this._gl.TEXTURE_MIN_FILTER, filters.min);
+        this._bindTextureDirectly(target, null);
 
         texture.samplingMode = samplingMode;
     }
@@ -3239,6 +3269,7 @@ export class ThinEngine {
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             if (this.webGLVersion > 1) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, null);
             }
         }
     }
@@ -3291,6 +3322,7 @@ export class ThinEngine {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                 if (this.webGLVersion > 1) {
                     this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                    this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, null);
                 }
             }
             return false;
@@ -3318,6 +3350,9 @@ export class ThinEngine {
         else if (texture.is3D) {
             internalTexture = this.emptyTexture3D;
         }
+        else if (texture.is2DArray) {
+            internalTexture = this.emptyTexture2DArray;
+        }
         else {
             internalTexture = this.emptyTexture;
         }
@@ -3340,29 +3375,31 @@ export class ThinEngine {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, internalTexture, isPartOfTextureArray);
             }
-        } else if (internalTexture && internalTexture.is3D) {
+        } else if (internalTexture && (internalTexture.is3D || internalTexture.is2DArray)) {
+            let is3D = internalTexture.is3D;
+            let target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
+
             if (needToBind) {
-                this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
+                this._bindTextureDirectly(target, internalTexture, isPartOfTextureArray);
             }
 
             if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                 internalTexture._cachedWrapU = texture.wrapU;
-                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
+                this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
             }
 
             if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
                 internalTexture._cachedWrapV = texture.wrapV;
-                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
+                this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
             }
 
-            if (internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
+            if (is3D && internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
                 internalTexture._cachedWrapR = texture.wrapR;
-                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(texture.wrapR), internalTexture);
+                this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(texture.wrapR), internalTexture);
             }
 
-            this._setAnisotropicLevel(this._gl.TEXTURE_3D, texture);
-        }
-        else if (internalTexture && internalTexture.isCube) {
+            this._setAnisotropicLevel(target, texture);
+        } else if (internalTexture && internalTexture.isCube) {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture, isPartOfTextureArray);
             }
@@ -3544,7 +3581,7 @@ export class ThinEngine {
         this._currentBufferPointers = [];
         this._renderingCanvas = null;
         this._currentProgram = null;
-        this._bindedRenderFunction = null;
+        this._boundRenderFunction = null;
 
         Effect.ResetCache();
 

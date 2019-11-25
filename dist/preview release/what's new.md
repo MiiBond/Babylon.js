@@ -14,6 +14,7 @@
   - WebXR updated to spec as of July 10th ([TrevorDev](https://github.com/TrevorDev))
   - WebXR webVR parity helpers (Vive, WMR, Oculus Rift) ([TrevorDev](https://github.com/TrevorDev))
 - Added support for Offscreen canvas [Doc](https://doc.babylonjs.com/how_to/using_offscreen_canvas) ([Deltakosh](https://github.com/deltakosh/)
+- Added support for multiple canvases with one engine [Doc](https://doc.babylonjs.com/how_to/multi_canvases) ([Deltakosh](https://github.com/deltakosh/)
 
 ## Updates
 
@@ -22,6 +23,7 @@
 - Added support for dual shock gamepads ([Deltakosh](https://github.com/deltakosh/))
 - Support Vive Focus 3Dof controller ([TrevorDev](https://github.com/TrevorDev))
 - Planar positioning support for GizmoManager ([Balupg](https://github.com/balupg))
+- ScaleGizmo and AxisScaleGizmo sensitivity factor ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Individual gizmos can now be enabled/disabled ([Balupg](https://github.com/balupg))
 - Unify preparation of instance attributes. Added `MaterialHelper.PushAttributesForInstances` ([MarkusBillharz](https://github.com/MarkusBillharz))
 - Added support for PBR [irradiance map](https://doc.babylonjs.com/how_to/physically_based_rendering_master#irradiance-map)
@@ -40,6 +42,9 @@
 - Added optional parameter to use Euler angles in planeRotationGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added `AnimationGroup.onAnimationGroupLoopObservable` ([Deltakosh](https://github.com/deltakosh/))
 - Supports custom materials to generate glow through ```referenceMeshToUseItsOwnMaterial``` in the ```GlowLayer``` ([sebavan](http://www.github.com/sebavan))
+- Added `RawTexture2DArray` to enable use of WebGL2 2D array textures by custom shaders ([atg](https://github.com/atg))
+- Added multiview support for the shader material (and the line-mesh class) ([RaananW](https://github.com/RaananW/))
+- Added various (interpolation) functions to Path3D, also `alignTangentsWithPath`, `slice`, `getClosestPositionTo` ([Poolminer](https://github.com/Poolminer/))
 
 ### Engine
 
@@ -64,6 +69,7 @@
 - Ambiant and metallic maps are displayed correctly on PBR material even when using ORM packed texture ([Deltakosh](https://github.com/deltakosh/))
 - Added support for inspectable strings ([Deltakosh](https://github.com/deltakosh/))
 - Added support for CreateScreenshotUsingRenderTarget ([13djwright](https://github.com/13djwright/))
+- Added support for `Material.depthFunction` property ([Popov72](https://github.com/Popov72))
 
 ### Tools
 
@@ -73,6 +79,10 @@
 - Added support for side by side and top bottom images in the `PhotoDome` ([Deltakosh](https://github.com/deltakosh/))
 - Added playground ts-local (TypeScript support for local playground) ([pjoe](https://github.com/pjoe/))
 - Added RGBD Texture tools [Sebavan](https://github.com/sebavan/)
+- Bumped Monaco Editor to 0.18.1 and improved TypeScript compilation pipeline in the playground ([sailro](http://www.github.com/sailro))
+- Added support for clickable errors in the playground ([sailro](http://www.github.com/sailro))
+- Added a color picker and previewer for BABYLON.ColorX invocations in the playground ([sailro](http://www.github.com/sailro))
+- Added support for diffing snippets in the playground ([sailro](http://www.github.com/sailro))
 
 ### Meshes
 
@@ -97,14 +107,19 @@
 - Added support for using HTTP range requests when loading `MSFT_lod` extension from a glTF binary. ([bghgary](https://github.com/bghgary))
 - Added a flag to enable/disable creation of instances for glTF loader. ([bghgary](https://github.com/bghgary))
 - Added an order property to glTF loader extensions to support reordering. ([bghgary](https://github.com/bghgary))
+- Added support for GLTF clearcoat extension [Sebavan](https://github.com/sebavan/)
+- Added support for GLTF specular extension [Sebavan](https://github.com/sebavan/)
+- Added support for GLTF sheen extension [Sebavan](https://github.com/sebavan/)
 
 ### Materials
 
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
 - Added `ShaderMaterial.setArray4` ([JonathanTron](https://github.com/JonathanTron/))
+- Added get/set accessors for `ShaderMaterial._shaderPath` ([Popov72](https://github.com/Popov72))
 - Added `scene.environmentIntensity` to control the IBL strength overall in a scene ([Sebavan](https://github.com/sebavan/))
 - Added support of image processing for `WaterMaterial` ([julien-moreau](https://github.com/julien-moreau))
 - Added `pbrBRDFConfiguration.useSpecularGlossinessInputEnergyConservation` to allow Specular-Workflow energy conservation to be turned off ([ColorDigital-PS](https://github.com/ColorDigital-PS)).
+- Added `depthFunction` new property to `Material` base class ([Popov72](https://github.com/Popov72))
 
 ### ScreenshotTools
 
@@ -123,10 +138,14 @@
 
 ### WebXR / WebVR
 
-- Compliance with the mozilla WebXR emulator ([RaananW](https://github.com/RaananW/))
+- Compliance with the mozilla WebXR emulator for chrome and firefox ([RaananW](https://github.com/RaananW/))
+- Use the same icon as in VR ([RaananW](https://github.com/RaananW/))
 - Gamepad object is now exposed in the WebXRController class ([RaananW](https://github.com/RaananW/))
 - If canvas does not have WebXR support the scene will still render (mainly Firefox) ([RaananW](https://github.com/RaananW/))
 - Added support for foveated rendering in Oculus Quest ([Deltakosh](https://github.com/deltakosh/))
+- Added option to configure the output canvas ([RaananW](https://github.com/RaananW/))
+- Supporting multisampled multiview rendering using the oculus multiview extension ([RaananW](https://github.com/RaananW/))
+- Preparing to deprecate supportsSession in favor of isSupportedSession ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -139,12 +158,13 @@
 - Added `Button.delegatePickingToChildren` to let buttons delegate hit testing to embedded controls ([Deltakosh](https://github.com/deltakosh/))
 - Added `Container.maxLayoutCycle` and `Container.logLayoutCycleErrors` to get more control over layout cycles ([Deltakosh](https://github.com/deltakosh/))
 - Added `StackPanel.ignoreLayoutWarnings` to disable console warnings when controls with percentage size are added to a StackPanel ([Deltakosh](https://github.com/deltakosh/))
-- Added `_getSVGAttribs` functionality for loading multiple svg icons from an external svg file via icon id. Fixed bug for Chrome.([lockphase](https://github.com/lockphase/))
+- Added `_getSVGAttribs` functionality for loading multiple svg icons from an external svg file via icon id. Fixed bug for Chrome. Strip icon id from image url for firefox.([lockphase](https://github.com/lockphase/))
 
 ### Particles
 
 - Added the feature `expandable` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature `removeParticles()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
+- Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 
 ### Navigation Mesh
 
@@ -170,7 +190,7 @@
 - Fixed bug in `Ray.intersectsTriangle` where the barycentric coordinates `bu` and `bv` being returned is actually `bv` and `bw`. ([bghgary](https://github.com/bghgary))
 - Do not call `onError` when creating a texture when falling back to another loader ([TrevorDev](https://github.com/TrevorDev))
 - Context loss should not cause PBR materials to render black or instances to stop rendering ([TrevorDev](https://github.com/TrevorDev))
-- Only cast pointer ray input when pointer is locked in webVR ([TrevorDev](https://github.com/TrevorDev))
+- Only cast pointer ray input when pointer is locked in WebVR ([TrevorDev](https://github.com/TrevorDev))
 - Fix Right Hand coordinates with directional lights and shadows, hemispheric lights and spot lights ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Avoid using default utility layer in gizmo manager to support multiple scenes ([TrevorDev](https://github.com/TrevorDev))
 - Fix bug when adding and removing observers in quick succession ([sable](https://github.com/thscott))
@@ -194,6 +214,12 @@
 - Fixed a single frame drop after leaving webxr on some devices ([RaananW](https://github.com/RaananW/))
 - Fixed bug where vignette aspect ratio would be wrong when rendering direct to canvas
 - Fixed Path2 length computation ([Poolminer](https://github.com/Poolminer/))
+- Cloning of `ShaderMaterial` also clone `shaderPath` and `options` properties ([Popov72](https://github.com/Popov72))
+- Prevent an infinite loop when calling `engine.dispose()` in a scene with multiple `SoundTracks` defined ([kirbysayshi](https://github.com/kirbysayshi))
+- Fixed missing properties in serialization / parsing of `coneParticleEmitter` ([Popov72](https://github.com/Popov72))
+- Fix a bug with exit VR and Edge ([RaananW](https://github.com/RaananW/))
+- Fixed an issue with size of texture in multiview ([RaananW](https://github.com/RaananW/))
+- Fixed Path3D (bi)normals computation for specific edge cases ([Poolminer](https://github.com/Poolminer/))
 
 ## Breaking changes
 

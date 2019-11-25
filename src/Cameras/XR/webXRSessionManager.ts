@@ -5,7 +5,7 @@ import { IDisposable, Scene } from "../../scene";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { WebXRRenderTarget, WebXRState } from './webXRTypes';
-import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
+import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
 
 interface IRenderTargetProvider {
     getRenderTargetForEye(eye: XREye): RenderTargetTexture;
@@ -182,7 +182,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param eye the eye for which to get the render target
      * @returns the render target for the specified eye
      */
-    public getRenderTargetTextureForEye(eye: XREye) : RenderTargetTexture {
+    public getRenderTargetTextureForEye(eye: XREye): RenderTargetTexture {
         return this._rttProvider!.getRenderTargetForEye(eye);
     }
 
@@ -203,10 +203,15 @@ export class WebXRSessionManager implements IDisposable {
      * @returns true if supported
      */
     public supportsSessionAsync(sessionMode: XRSessionMode) {
-        if (!(navigator as any).xr || !(navigator as any).xr.supportsSession) {
+        if (!(navigator as any).xr) {
+            return Promise.resolve(false);
+        }
+        // When the specs are final, remove supportsSession!
+        const functionToUse = (navigator as any).xr.isSessionSupported || (navigator as any).xr.supportsSession;
+        if (!functionToUse) {
             return Promise.resolve(false);
         } else {
-            return (navigator as any).xr.supportsSession(sessionMode).then(() => {
+            return functionToUse.call((navigator as any).xr, sessionMode).then(() => {
                 return Promise.resolve(true);
             }).catch((e: any) => {
                 Logger.Warn(e);
@@ -218,14 +223,15 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Creates a WebXRRenderTarget object for the XR session
      * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
+     * @param options optional options to provide when creating a new render target
      * @returns a WebXR render target to which the session can render
      */
-    public getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>) : WebXRRenderTarget {
+    public getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>, options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget {
         if (this._xrNavigator.xr.native) {
             return this._xrNavigator.xr.getWebXRRenderTarget(this.scene.getEngine());
         }
         else {
-            return new WebXRManagedOutputCanvas(this.scene.getEngine(), this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement, onStateChangedObservable!);
+            return new WebXRManagedOutputCanvas(this.scene.getEngine(), this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement, onStateChangedObservable!, options);
         }
     }
 

@@ -12,7 +12,8 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
-import { Color4, Matrix, Viewport, Color3 } from "../Maths/math";
+import { Matrix, Viewport, Color3 } from "../Maths/math";
+import { IColor4Like } from '../Maths/math.like';
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
@@ -53,6 +54,7 @@ interface INativeEngine {
     setBlendMode(blendMode: number): void;
 
     setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+    setInt(uniform: WebGLUniformLocation, int: number): void;
     setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
     setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
     setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
@@ -67,12 +69,11 @@ interface INativeEngine {
     setFloat(uniform: WebGLUniformLocation, value: number): void;
     setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
     setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
-    setBool(uniform: WebGLUniformLocation, bool: number): void;
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean): void;
-    loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): void;
+    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean, invertY: boolean): boolean;
+    loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): boolean;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
     setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
@@ -89,10 +90,15 @@ interface INativeEngine {
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
     draw(fillMode: number, vertexStart: number, vertexCount: number): void;
 
-    clear(r: number, g: number, b: number, a: number, backBuffer: boolean, depth: boolean, stencil: boolean): void;
+    clear(flags: number): void;
+    clearColor(r: number, g: number, b: number, a: number): void;
+    clearDepth(depth: number): void;
+    clearStencil(stencil: number): void;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
+
+    setViewPort(x: number, y: number, width: number, height: number): void;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -143,6 +149,13 @@ class NativeFilter {
     public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 10;
 }
 
+// these flags match bgfx.
+class NativeClearFlags
+{
+    public static readonly CLEAR_COLOR = 1;
+    public static readonly CLEAR_DEPTH = 2;
+    public static readonly CLEAR_STENCIL = 4;
+}
 // TODO: change this to match bgfx.
 // Must match AddressMode enum in SpectreEngine.h.
 class NativeAddressMode {
@@ -170,11 +183,13 @@ class NativeTexture extends InternalTexture {
 }
 
 /** @hidden */
-declare var nativeEngine: INativeEngine;
+declare var _native: any;
 
 /** @hidden */
 export class NativeEngine extends Engine {
-    private readonly _native: INativeEngine = nativeEngine;
+    private readonly _native: INativeEngine = new _native.Engine();
+    /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
+    private readonly INVALID_HANDLE = 65535;
 
     public getHardwareScalingLevel(): number {
         return 1.0;
@@ -278,8 +293,21 @@ export class NativeEngine extends Engine {
         }
     }
 
-    public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
-        this._native.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+        var mode = 0;
+        if (backBuffer && color) {
+            this._native.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
+            mode |= NativeClearFlags.CLEAR_COLOR;
+        }
+        if (depth) {
+            this._native.clearDepth(1.0);
+            mode |= NativeClearFlags.CLEAR_DEPTH;
+        }
+        if (stencil) {
+            this._native.clearStencil(0);
+            mode |= NativeClearFlags.CLEAR_STENCIL;
+        }
+        this._native.clear(mode);
     }
 
     public createIndexBuffer(indices: IndicesArray): NativeDataBuffer {
@@ -288,6 +316,9 @@ export class NativeEngine extends Engine {
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
         buffer.nativeIndexBuffer = this._native.createIndexBuffer(data);
+        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
+            throw new Error("Could not create a native index buffer.");
+        }
         return buffer;
     }
 
@@ -295,6 +326,9 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.nativeVertexBuffer = this._native.createVertexBuffer(ArrayBuffer.isView(data) ? data : new Float32Array(data));
+        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
+            throw new Error("Could not create a native vertex buffer.");
+        }
         return buffer;
     }
 
@@ -487,8 +521,8 @@ export class NativeEngine extends Engine {
     }
 
     public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
-        // TODO: Implement.
         this._cachedViewport = viewport;
+        this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
@@ -590,6 +624,14 @@ export class NativeEngine extends Engine {
      */
     public getAlphaMode(): number {
         return this._alphaMode;
+    }
+
+    public setInt(uniform: WebGLUniformLocation, int: number): void {
+        if (!uniform) {
+            return;
+        }
+
+        this._native.setInt(uniform, int);
     }
 
     public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
@@ -734,14 +776,6 @@ export class NativeEngine extends Engine {
         }
 
         this._native.setFloat3(uniform, x, y, z);
-    }
-
-    public setBool(uniform: WebGLUniformLocation, bool: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._native.setBool(uniform, bool);
     }
 
     public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
@@ -946,12 +980,9 @@ export class NativeEngine extends Engine {
                     return;
                 }
 
-                this._native.loadTexture(webGLTexture, data, !noMipmap);
-
-                if (invertY) {
-                    throw new Error("Support for textures with inverted Y coordinates not yet implemented.");
+                if (!this._native.loadTexture(webGLTexture, data, !noMipmap, invertY)) {
+                    throw new Error("Could not load a native texture.");
                 }
-                //this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
                 texture.baseWidth = this._native.getTextureWidth(webGLTexture);
                 texture.baseHeight = this._native.getTextureHeight(webGLTexture);
@@ -1064,7 +1095,9 @@ export class NativeEngine extends Engine {
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
                 texture.invertY = true;
-                this._native.loadCubeTexture(texture._webGLTexture!, imageData, true);
+                if (!this._native.loadCubeTexture(texture._webGLTexture!, imageData, true)) {
+                    throw new Error("Could not load a native cube texture.");
+                }
 
                 texture.isReady = true;
                 if (onLoad) {
@@ -1292,6 +1325,8 @@ export class NativeEngine extends Engine {
             internalTexture = this.emptyCubeTexture;
         } else if (texture.is3D) {
             internalTexture = this.emptyTexture3D;
+        } else if (texture.is2DArray) {
+            internalTexture = this.emptyTexture2DArray;
         } else {
             internalTexture = this.emptyTexture;
         }

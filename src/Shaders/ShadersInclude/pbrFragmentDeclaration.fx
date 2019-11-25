@@ -131,6 +131,6 @@ uniform mat4 view;
 #endif
 
 // Depth Peeling
-#if defined(DEPTH_PEELING) || defined(SS_DEPTHINREFRACTIONALPHA)
+#if defined(DEPTH_PEELING) || defined(SS_DEPTHINREFRACTIONALPHA) || defined(SS_VOLUME_THICKNESS)
     uniform vec4 depthValues;
 #endif

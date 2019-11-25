@@ -632,7 +632,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (!scene || !_this._texture) {
             return _this;
         }
-        _this._rootCanvas = scene.getEngine().getRenderingCanvas();
+        _this._rootElement = scene.getEngine().getInputElement();
         _this._renderObserver = scene.onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
         _this._preKeyboardObserver = scene.onPreKeyboardObservable.add(function (info) {
             if (!_this._focusedControl) {
@@ -959,7 +959,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (!scene) {
             return;
         }
-        this._rootCanvas = null;
+        this._rootElement = null;
         scene.onBeforeCameraRenderObservable.remove(this._renderObserver);
         if (this._resizeObserver) {
             scene.getEngine().onResizeObservable.remove(this._resizeObserver);
@@ -1118,8 +1118,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     };
     /** @hidden */
     AdvancedDynamicTexture.prototype._changeCursor = function (cursor) {
-        if (this._rootCanvas) {
-            this._rootCanvas.style.cursor = cursor;
+        if (this._rootElement) {
+            this._rootElement.style.cursor = cursor;
             this._cursorChanged = true;
         }
     };
@@ -1751,7 +1751,7 @@ var Checkbox = /** @class */ (function (_super) {
         return "Checkbox";
     };
     /** @hidden */
-    Checkbox.prototype._draw = function (context) {
+    Checkbox.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         var actualWidth = this._currentMeasure.width - this._thickness;
@@ -3569,8 +3569,7 @@ var Container = /** @class */ (function (_super) {
             child._render(context, invalidatedRectangle);
         }
     };
-    /** @hidden */
-    Container.prototype._getDescendants = function (results, directDescendantsOnly, predicate) {
+    Container.prototype.getDescendantsToRef = function (results, directDescendantsOnly, predicate) {
         if (directDescendantsOnly === void 0) { directDescendantsOnly = false; }
         if (!this.children) {
             return;
@@ -3581,7 +3580,7 @@ var Container = /** @class */ (function (_super) {
                 results.push(item);
             }
             if (!directDescendantsOnly) {
-                item._getDescendants(results, false, predicate);
+                item.getDescendantsToRef(results, false, predicate);
             }
         }
     };
@@ -4727,8 +4726,13 @@ var Control = /** @class */ (function () {
         }
         this.notRenderable = false;
     };
-    /** @hidden */
-    Control.prototype._getDescendants = function (results, directDescendantsOnly, predicate) {
+    /**
+     * Will store all controls that have this control as ascendant in a given array
+     * @param results defines the array where to store the descendants
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     */
+    Control.prototype.getDescendantsToRef = function (results, directDescendantsOnly, predicate) {
         if (directDescendantsOnly === void 0) { directDescendantsOnly = false; }
         // Do nothing by default
     };
@@ -4740,7 +4744,7 @@ var Control = /** @class */ (function () {
      */
     Control.prototype.getDescendants = function (directDescendantsOnly, predicate) {
         var results = new Array();
-        this._getDescendants(results, directDescendantsOnly, predicate);
+        this.getDescendantsToRef(results, directDescendantsOnly, predicate);
         return results;
     };
     /**
@@ -5665,7 +5669,7 @@ var DisplayGrid = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    DisplayGrid.prototype._draw = function (context) {
+    DisplayGrid.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         if (this._isEnabled) {
@@ -6319,6 +6323,7 @@ var Image = /** @class */ (function (_super) {
         if (url === void 0) { url = null; }
         var _this = _super.call(this, name) || this;
         _this.name = name;
+        _this._workingCanvas = null;
         _this._loaded = false;
         _this._stretch = Image.STRETCH_FILL;
         _this._autoScale = false;
@@ -6595,10 +6600,10 @@ var Image = /** @class */ (function (_super) {
         this._markAsDirty();
     };
     Image.prototype._extractNinePatchSliceDataFromImage = function () {
-        if (!Image._WorkingCanvas) {
-            Image._WorkingCanvas = document.createElement('canvas');
+        if (!this._workingCanvas) {
+            this._workingCanvas = document.createElement('canvas');
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         var context = canvas.getContext('2d');
         var width = this._domImage.width;
         var height = this._domImage.height;
@@ -6647,7 +6652,7 @@ var Image = /** @class */ (function (_super) {
             this._loaded = false;
             this._source = value;
             if (value) {
-                this._svgCheck(value);
+                value = this._svgCheck(value);
             }
             this._domImage = document.createElement("img");
             this._domImage.onload = function () {
@@ -6693,6 +6698,10 @@ var Image = /** @class */ (function (_super) {
                     }
                 };
             }
+            return svgsrc;
+        }
+        else {
+            return value;
         }
     };
     /**
@@ -6795,10 +6804,10 @@ var Image = /** @class */ (function (_super) {
         if (!_super.prototype.contains.call(this, x, y)) {
             return false;
         }
-        if (!this._detectPointerOnOpaqueOnly || !Image._WorkingCanvas) {
+        if (!this._detectPointerOnOpaqueOnly || !this._workingCanvas) {
             return true;
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         var context = canvas.getContext("2d");
         var width = this._currentMeasure.width | 0;
         var height = this._currentMeasure.height | 0;
@@ -6847,10 +6856,10 @@ var Image = /** @class */ (function (_super) {
         if (!this._detectPointerOnOpaqueOnly) {
             return;
         }
-        if (!Image._WorkingCanvas) {
-            Image._WorkingCanvas = document.createElement('canvas');
+        if (!this._workingCanvas) {
+            this._workingCanvas = document.createElement('canvas');
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         var width = this._currentMeasure.width;
         var height = this._currentMeasure.height;
         var context = canvas.getContext("2d");
@@ -6863,7 +6872,7 @@ var Image = /** @class */ (function (_super) {
         if (!this._detectPointerOnOpaqueOnly) {
             return;
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         context = canvas.getContext("2d");
         context.drawImage(this._domImage, sx, sy, sw, sh, tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
     };
@@ -6960,7 +6969,6 @@ var Image = /** @class */ (function (_super) {
         this.onImageLoadedObservable.clear();
         this.onSVGAttributesComputedObservable.clear();
     };
-    Image._WorkingCanvas = null;
     // Static
     /** STRETCH_NONE */
     Image.STRETCH_NONE = 0;
@@ -7951,7 +7959,7 @@ var InputText = /** @class */ (function (_super) {
         var insertPosition = this._text.length - this._cursorOffset;
         this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
     };
-    InputText.prototype._draw = function (context) {
+    InputText.prototype._draw = function (context, invalidatedRectangle) {
         var _this = this;
         context.save();
         this._applyStates(context);
@@ -8605,7 +8613,7 @@ var MultiLine = /** @class */ (function (_super) {
     MultiLine.prototype._getTypeName = function () {
         return "MultiLine";
     };
-    MultiLine.prototype._draw = function (context) {
+    MultiLine.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
@@ -10583,7 +10591,7 @@ var ImageBasedSlider = /** @class */ (function (_super) {
     ImageBasedSlider.prototype._getTypeName = function () {
         return "ImageBasedSlider";
     };
-    ImageBasedSlider.prototype._draw = function (context) {
+    ImageBasedSlider.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         this._prepareRenderingData("rectangle");
@@ -10892,7 +10900,7 @@ var Slider = /** @class */ (function (_super) {
     Slider.prototype._getTypeName = function () {
         return "Slider";
     };
-    Slider.prototype._draw = function (context) {
+    Slider.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         this._prepareRenderingData(this.isThumbCircle ? "circle" : "rectangle");
@@ -11635,7 +11643,7 @@ var TextBlock = /** @class */ (function (_super) {
         context.fillText(text, this._currentMeasure.left + x, y);
     };
     /** @hidden */
-    TextBlock.prototype._draw = function (context) {
+    TextBlock.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         // Render lines

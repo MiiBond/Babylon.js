@@ -127,8 +127,9 @@ export class AdobeTransparencyHelper {
             ...options
         };
         this._scene = scene;
-        const data: ArrayBufferView = new Uint8Array([0, 0, 0]);
-        this._blackTexture = new RawTexture(data, 1, 1, Engine.TEXTUREFORMAT_RGB, this._scene, false);
+        const data: ArrayBufferView = new Uint8Array([0, 0, 0, 1]);
+        this._blackTexture = new RawTexture(data, 1, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false);
+        this._blackTexture.hasAlpha = false;
         this.onErrorObservable = new Observable();
         this._volumeRenderingEnabled = this._options.volumeRendering && (this._scene.getEngine()._gl as any).COLOR_ATTACHMENT5 !== undefined;
         
@@ -136,13 +137,17 @@ export class AdobeTransparencyHelper {
 
         const engine = scene.getEngine();
 
-        if (!engine.getCaps().drawBuffersExtension) {
+        if (engine.webGLVersion < 2) {
+            // We should be able to allow this MRT depth-peeling technique with WebGL 1.0, if the device
+            // supports the drawBuffers extension. However, when I do this, I get a series of framebuffer incomplete errors.
+            // This goes away if I don't have a float texture as one of the targets but that disallows depth-peeling anyway.
+        // if (!engine.getCaps().drawBuffersExtension) {
             this._mrtDisabled = true;
         }
         
         this._setupRenderTargets();
 
-        while (!this.disabled && this._numEnabledPasses < this._options.passesToEnable) {
+        while (!this.disabled && this.isUsingDepthPeeling() && this._numEnabledPasses < this._options.passesToEnable) {
             this.enablePass();
         }
     }
@@ -186,6 +191,11 @@ export class AdobeTransparencyHelper {
             }
         }
 
+        // If not using depth peeling, we don't have passes to enable/disable so just return.
+        if (!this.isUsingDepthPeeling()) {
+            return;
+        }
+
         // If only the number of enabled passes changes, just enable or disable passes as needed.
         // This doesn't require creating or deleting any RT's.
         if (options.passesToEnable !== undefined && options.passesToEnable !== oldOptions.passesToEnable) {
@@ -214,14 +224,15 @@ export class AdobeTransparencyHelper {
         return this._mrtRenderTargets[pass].textures[mrtIndex];
     }
 
+    public isUsingDepthPeeling(): boolean {
+        return !this._mrtDisabled;
+    }
+
     public getFinalComposite(): Nullable<Texture> {
-        if (this._mrtDisabled) {
-            return this._opaqueRenderTarget;
+        if (this.isUsingDepthPeeling()) {
+            return this._compositor.compositedTexture;
         }
-        if (!this._compositor) {
-            return null;
-        }
-        return this._compositor.compositedTexture;
+        return this._opaqueRenderTarget;
     }
 
     public getOpaqueTarget(): Nullable<Texture> {
@@ -238,12 +249,12 @@ export class AdobeTransparencyHelper {
         }
         if (material instanceof PBRMaterial && (material.subSurface.isRefractionEnabled || material.needAlphaBlending())) {
             // This is a bit of a hack to force alpha-blended geometry to render with our scene refraction.
-            if (material.needAlphaBlending()) {
+            // if (material.needAlphaBlending()) {
                 // material.subSurface.isRefractionEnabled = true;
                 // material.getRenderTargetTextures = null;
                 // material.forceDepthWrite = true;
                 // material.backFaceCulling = false;
-            }
+            // }
             // material.refractionTexture = this.getFinalComposite();
             // material.transparency.refractionScale = this._options.refractionScale;
             // material.transparency.sceneScale = this._options.sceneScale;
@@ -442,11 +453,16 @@ export class AdobeTransparencyHelper {
         const isFirstPass = this._mrtRenderTargets.length === 0;
         const mrtIdx = this._mrtRenderTargets.length;
         // Create another pass
-        const renderBufferCount = this._volumeRenderingEnabled ? 5 : 3;
+        let renderBufferCount = 3;
+        let typesArray = [Constants.TEXTURETYPE_UNSIGNED_BYTE, floatTextureType, Constants.TEXTURETYPE_UNSIGNED_BYTE];
+        if (this._volumeRenderingEnabled) {
+            renderBufferCount = 5;
+            typesArray = typesArray.concat([Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE]);
+        }
         const multiRenderTarget = new MultiRenderTarget("transparency_mrt_" + mrtIdx, this._options.renderSize, renderBufferCount, this._scene, {
             defaultType: floatTextureType,
-            types: [Constants.TEXTURETYPE_UNSIGNED_BYTE, floatTextureType, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE, Constants.TEXTURETYPE_UNSIGNED_BYTE],
-            samplingModes: [MultiRenderTarget.BILINEAR_SAMPLINGMODE],
+            types: typesArray,
+            samplingModes: [MultiRenderTarget.TRILINEAR_SAMPLINGMODE],
             doNotChangeAspectRatio: true,
             generateMipMaps: true
         });
@@ -621,6 +637,9 @@ export class AdobeTransparencyHelper {
             this._opaqueRenderTarget.lodGenerationScale = 1;
             this._opaqueRenderTarget.lodGenerationOffset = -4;
             (this._opaqueRenderTarget as any).depth = this._options.refractionScale;
+            if (!this.isUsingDepthPeeling()) {
+                (this._opaqueRenderTarget as any).depth *= 0.005;
+            }
             if (this._opaqueRTIndex >= 0) {
                 this._scene.customRenderTargets.splice(this._opaqueRTIndex, 0, this._opaqueRenderTarget);
             } else {
@@ -636,7 +655,7 @@ export class AdobeTransparencyHelper {
             }
         }
 
-        if (this._mrtDisabled) {
+        if (!this.isUsingDepthPeeling()) {
             if (!this.disabled) {
                 this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
                     if (this.shouldRenderAsTransparency(mesh.material) && mesh.material instanceof PBRMaterial) {
