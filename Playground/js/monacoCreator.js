@@ -4,10 +4,14 @@
 class MonacoCreator {
     constructor(parent) {
         this.parent = parent;
-        
+
         this.jsEditor = null;
+        this.diffEditor = null;
+        this.diffNavigator = null;
         this.monacoMode = "javascript";
         this.blockEditorChange = false;
+        this.definitionWorker = null;
+        this.deprecatedCandidates = [];
 
         this.compilerTriggerTimeoutID = null;
     }
@@ -19,7 +23,7 @@ class MonacoCreator {
     };
 
     getCode() {
-        if(this.jsEditor) return this.jsEditor.getValue();
+        if (this.jsEditor) return this.jsEditor.getValue();
         else return "";
     };
     setCode(value) {
@@ -48,26 +52,150 @@ class MonacoCreator {
     /**
      * Load the Monaco Node module.
      */
-    loadMonaco(typings) {
-        var xhr = new XMLHttpRequest();
+    async loadMonaco(typings) {
+        let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
+        if (!response.ok) {
+            return;
+        }
 
-        xhr.open('GET', typings || "babylon.d.txt", true);
+        let libContent = await response.text();
 
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' } });
-                    require(['vs/editor/editor.main'], function () {
-                        this.setupMonacoCompilationPipeline(xhr.responseText);
-                        this.setupMonacoColorProvider();
+        if (!typings) {
+            response = await fetch(typings || "https://preview.babylonjs.com/gui/babylon.gui.d.ts");
+            if (!response.ok) {
+                return;
+            }
 
-                        this.parent.main.run();
-                    }.bind(this));
+            libContent += await response.text();
+        }
+
+        this.setupDefinitionWorker(libContent);
+
+        require.config({ paths: { 'vs': 'node_modules/monaco-editor/dev/vs' } });
+
+        require(['vs/editor/editor.main'], () => {
+            this.setupMonacoCompilationPipeline(libContent);
+            this.setupMonacoColorProvider();
+
+            require(['vs/language/typescript/languageFeatures'], module => {
+                this.hookMonacoCompletionProvider(module.SuggestAdapter);
+            });
+
+            this.parent.main.run();
+        });
+    };
+
+    setupDefinitionWorker(libContent) {
+        this.definitionWorker = new Worker('js/definitionWorker.js');
+        this.definitionWorker.addEventListener('message', ({ data }) => {
+            this.deprecatedCandidates = data.result;
+            this.analyzeCode();
+        });
+        this.definitionWorker.postMessage({ code: libContent });
+    }
+
+    isDeprecatedEntry(details) {
+        return details
+            && details.tags
+            && details.tags.find(this.isDeprecatedTag);
+    }
+
+    isDeprecatedTag(tag) {
+        return tag
+            && tag.name == "deprecated";
+    }
+
+    async analyzeCode() {
+        // if the definition worker is very fast, this can be called out of context
+        if (!this.jsEditor)
+            return;
+
+        const model = this.jsEditor.getModel();
+        if (!model)
+            return;
+
+        const uri = model.uri;
+
+        let worker = null;
+        if (this.parent.settingsPG.ScriptLanguage == "JS")
+            worker = await monaco.languages.typescript.getJavaScriptWorker();
+        else
+            worker = await monaco.languages.typescript.getTypeScriptWorker();
+
+        const languageService = await worker(uri);
+        const source = '[deprecated members]';
+
+        monaco.editor.setModelMarkers(model, source, []);
+        const markers = [];
+
+        for (const candidate of this.deprecatedCandidates) {
+            const matches = model.findMatches(candidate, null, false, true, null, false);
+            for (const match of matches) {
+                const position = { lineNumber: match.range.startLineNumber, column: match.range.startColumn };
+                const wordInfo = model.getWordAtPosition(position);
+                const offset = model.getOffsetAt(position);
+
+                // continue if we already found an issue here
+                if (markers.find(m => m.startLineNumber == position.lineNumber && m.startColumn == position.column))
+                    continue;
+
+                // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
+                const details = await languageService.getCompletionEntryDetails(uri.toString(), offset, wordInfo.word);
+                if (this.isDeprecatedEntry(details)) {
+                    const deprecatedInfo = details.tags.find(this.isDeprecatedTag);
+                    markers.push({
+                        startLineNumber: match.range.startLineNumber,
+                        endLineNumber: match.range.endLineNumber,
+                        startColumn: wordInfo.startColumn,
+                        endColumn: wordInfo.endColumn,
+                        message: deprecatedInfo.text,
+                        severity: monaco.MarkerSeverity.Warning,
+                        source: source,
+                    });
                 }
             }
-        }.bind(this);
-        xhr.send(null);
-    };
+        }
+
+        monaco.editor.setModelMarkers(model, source, markers);
+    }
+
+    hookMonacoCompletionProvider(provider) {
+        const provideCompletionItems = provider.prototype.provideCompletionItems;
+        const owner = this;
+
+        provider.prototype.provideCompletionItems = async function (model, position, context, token) {
+            // reuse 'this' to preserve context through call (using apply)
+            const result = await provideCompletionItems.apply(this, [model, position, context, token]);
+
+            if (!result || !result.suggestions)
+                return result;
+
+            const suggestions = result.suggestions.filter(item => !item.label.startsWith("_"));
+
+            for (const suggestion of suggestions) {
+                if (owner.deprecatedCandidates.includes(suggestion.label)) {
+
+                    // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
+                    const uri = suggestion.uri;
+                    const worker = await this._worker(uri);
+                    const model = monaco.editor.getModel(uri);
+                    const details = await worker.getCompletionEntryDetails(uri.toString(), model.getOffsetAt(position), suggestion.label)
+
+                    if (owner.isDeprecatedEntry(details)) {
+                        suggestion.tags = [monaco.languages.CompletionItemTag.Deprecated];
+                    }
+                }
+            }
+
+            // preserve incomplete flag or force it when the definition is not yet analyzed
+            const incomplete = (result.incomplete && result.incomplete == true) || owner.deprecatedCandidates.length == 0;
+
+            return {
+                suggestions: suggestions,
+                incomplete: incomplete
+            };
+        }
+    }
 
     setupMonacoCompilationPipeline(libContent) {
         const typescript = monaco.languages.typescript;
@@ -82,8 +210,13 @@ class MonacoCreator {
         } else {
             typescript.typescriptDefaults.setCompilerOptions({
                 module: typescript.ModuleKind.AMD,
-                target: typescript.ScriptTarget.ES5,
+                target: typescript.ScriptTarget.ESNext,
                 noLib: false,
+                strict: false,
+                alwaysStrict: false,
+                strictFunctionTypes: false,
+                suppressExcessPropertyErrors: false,
+                suppressImplicitAnyIndexErrors: true,
                 noResolve: true,
                 suppressOutputPathCheck: true,
 
@@ -97,18 +230,18 @@ class MonacoCreator {
         monaco.languages.registerColorProvider(this.monacoMode, {
             provideColorPresentations: (model, colorInfo) => {
                 const color = colorInfo.color;
-                
+
                 const precision = 100.0;
                 const converter = (n) => Math.round(n * precision) / precision;
-                
+
                 let label;
                 if (color.alpha === undefined || color.alpha === 1.0) {
                     label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)})`;
                 } else {
                     label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)}, ${converter(color.alpha)})`;
                 }
-        
-                return [ { label: label } ];
+
+                return [{ label: label }];
             },
 
             provideDocumentColors: (model) => {
@@ -120,13 +253,13 @@ class MonacoCreator {
                 const converter = (g) => g === undefined ? undefined : Number(g);
 
                 return matches.map(match => ({
-                    color: { 
-                        red: converter(match.matches[1]), 
-                        green: converter(match.matches[2]), 
+                    color: {
+                        red: converter(match.matches[1]),
+                        green: converter(match.matches[2]),
                         blue: converter(match.matches[3]),
                         alpha: converter(match.matches[4])
                     },
-                    range:{
+                    range: {
                         startLineNumber: match.range.startLineNumber,
                         startColumn: match.range.startColumn + match.matches[0].indexOf("("),
                         endLineNumber: match.range.startLineNumber,
@@ -168,10 +301,13 @@ class MonacoCreator {
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
         this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
-
         this.jsEditor.setValue(oldCode);
-        this.jsEditor.onKeyUp(function () {
+
+        const analyzeCodeDebounced = this.parent.utils.debounceAsync((async) => this.analyzeCode(), 500);
+
+        this.jsEditor.onDidChangeModelContent(function () {
             this.parent.utils.markDirty();
+            analyzeCodeDebounced();
         }.bind(this));
     };
 
@@ -191,36 +327,60 @@ class MonacoCreator {
             contextmenu: false,
             fontSize: this.parent.settingsPG.fontSize
         }
-       
-        const diffEditor = monaco.editor.createDiffEditor(diffView, diffOptions);
-        diffEditor.setModel({
+
+        this.diffEditor = monaco.editor.createDiffEditor(diffView, diffOptions);
+        this.diffEditor.setModel({
             original: leftModel,
             modified: rightModel
         });
 
-        const cleanup = function() {
-            diffView.style.display = "none";
-            // We need to properly dispose, else the monaco script editor will use those models in the editor compilation pipeline!
-            leftModel.dispose();
-            rightModel.dispose();
-            diffEditor.dispose();
-        }
+        this.diffNavigator = monaco.editor.createDiffNavigator(this.diffEditor, {
+            followsCaret: true,
+            ignoreCharChanges: true
+        });
 
-        diffEditor.addCommand(monaco.KeyCode.Escape, cleanup);
-        diffEditor.focus();
+        const menuPG = this.parent.menuPG;
+        const main = this.parent.main;
+        const monacoCreator = this;
+
+        this.diffEditor.addCommand(monaco.KeyCode.Escape, function () { main.toggleDiffEditor(monacoCreator, menuPG); });
+        // Adding default VSCode bindinds for previous/next difference
+        this.diffEditor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.F5, function () { main.navigateToNext(); });
+        this.diffEditor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.F5, function () { main.navigateToPrevious(); });
+
+        this.diffEditor.focus();
+    }
+
+    disposeDiff() {
+        if (!this.diffEditor)
+            return;
+
+        // We need to properly dispose, else the monaco script editor will use those models in the editor compilation pipeline!
+        let model = this.diffEditor.getModel();
+        let leftModel = model.original;
+        let rightModel = model.modified;
+
+        leftModel.dispose();
+        rightModel.dispose();
+
+        this.diffNavigator.dispose();
+        this.diffEditor.dispose();
+
+        this.diffNavigator = null;
+        this.diffEditor = null;
     }
 
     /**
      * Format the code in the editor
      */
-    formatCode () {
+    formatCode() {
         this.jsEditor.getAction('editor.action.formatDocument').run();
     };
 
     /**
      * Toggle the minimap
      */
-    toggleMinimap () {
+    toggleMinimap() {
         var minimapToggle = document.getElementById("minimapToggle1280");
         if (minimapToggle.classList.contains('checked')) {
             this.jsEditor.updateOptions({ minimap: { enabled: false } });
@@ -252,11 +412,11 @@ class MonacoCreator {
             const result = await languageService.getEmitOutput(uriStr);
             const diagnostics = await Promise.all([languageService.getSyntacticDiagnostics(uriStr), languageService.getSemanticDiagnostics(uriStr)]);
 
-            diagnostics.forEach(function(diagset) {
+            diagnostics.forEach(function (diagset) {
                 if (diagset.length) {
                     const diagnostic = diagset[0];
                     const position = model.getPositionAt(diagnostic.start);
-                    
+
                     const error = new EvalError(diagnostic.messageText);
                     error.lineNumber = position.lineNumber;
                     error.columnNumber = position.column;

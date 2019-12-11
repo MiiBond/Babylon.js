@@ -31,11 +31,15 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Fires every time a new xrFrame arrives which can be used to update the camera
      */
-    public onXRFrameObservable: Observable<any> = new Observable<any>();
+    public onXRFrameObservable: Observable<XRFrame> = new Observable<XRFrame>();
     /**
      * Fires when the xr session is ended either by the device or manually done
      */
     public onXRSessionEnded: Observable<any> = new Observable<any>();
+    /**
+     * Fires when the xr session is ended either by the device or manually done
+     */
+    public onXRSessionInit: Observable<XRSession> = new Observable<XRSession>();
 
     /**
      * Underlying xr session
@@ -52,6 +56,9 @@ export class WebXRSessionManager implements IDisposable {
      */
     public currentFrame: Nullable<XRFrame>;
 
+    /** WebXR timestamp updated every frame */
+    public currentTimestamp: number = -1;
+
     private _xrNavigator: any;
     private baseLayer: Nullable<XRWebGLLayer> = null;
     private _rttProvider: Nullable<IRenderTargetProvider>;
@@ -62,7 +69,10 @@ export class WebXRSessionManager implements IDisposable {
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
      * @param scene The scene which the session should be created for
      */
-    constructor(private scene: Scene) {
+    constructor(
+        /** The scene which the session should be created for */
+        public scene: Scene
+    ) {
 
     }
 
@@ -87,9 +97,10 @@ export class WebXRSessionManager implements IDisposable {
      * @param optionalFeatures defines optional values to pass to the session builder
      * @returns a promise which will resolve once the session has been initialized
      */
-    public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}) {
+    public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}): Promise<XRSession> {
         return this._xrNavigator.xr.requestSession(xrSessionMode, optionalFeatures).then((session: XRSession) => {
             this.session = session;
+            this.onXRSessionInit.notifyObservers(session);
             this._sessionEnded = false;
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
@@ -106,6 +117,7 @@ export class WebXRSessionManager implements IDisposable {
                 this.onXRSessionEnded.notifyObservers(null);
                 this.scene.getEngine()._renderLoop();
             }, { once: true });
+            return this.session;
         });
     }
 
@@ -157,7 +169,10 @@ export class WebXRSessionManager implements IDisposable {
                 }
                 // Store the XR frame in the manager to be consumed by the XR camera to update pose
                 this.currentFrame = xrFrame;
-                this.onXRFrameObservable.notifyObservers(null);
+                this.currentTimestamp = timestamp;
+                if (xrFrame) {
+                    this.onXRFrameObservable.notifyObservers(xrFrame);
+                }
                 this.scene.getEngine()._renderLoop();
             }
         };
@@ -191,8 +206,10 @@ export class WebXRSessionManager implements IDisposable {
      * @returns Promise which resolves after it exits XR
      */
     public exitXRAsync() {
-        if (this.session) {
-            return this.session.end();
+        if (this.session && !this._sessionEnded) {
+            return this.session.end().catch((e) => {
+                Logger.Warn("could not end XR session. It has ended already.");
+            });
         }
         return Promise.resolve();
     }
@@ -203,21 +220,7 @@ export class WebXRSessionManager implements IDisposable {
      * @returns true if supported
      */
     public supportsSessionAsync(sessionMode: XRSessionMode) {
-        if (!(navigator as any).xr) {
-            return Promise.resolve(false);
-        }
-        // When the specs are final, remove supportsSession!
-        const functionToUse = (navigator as any).xr.isSessionSupported || (navigator as any).xr.supportsSession;
-        if (!functionToUse) {
-            return Promise.resolve(false);
-        } else {
-            return functionToUse.call((navigator as any).xr, sessionMode).then(() => {
-                return Promise.resolve(true);
-            }).catch((e: any) => {
-                Logger.Warn(e);
-                return Promise.resolve(false);
-            });
-        }
+        return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 
     /**
@@ -240,6 +243,7 @@ export class WebXRSessionManager implements IDisposable {
      * Converts the render layer of xrSession to a render target
      * @param session session to create render target for
      * @param scene scene the new render target should be created for
+     * @param baseLayer the webgl layer to create the render target for
      */
     public static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer) {
         if (!baseLayer) {
@@ -264,5 +268,28 @@ export class WebXRSessionManager implements IDisposable {
     public dispose() {
         this.onXRFrameObservable.clear();
         this.onXRSessionEnded.clear();
+    }
+
+    /**
+     * Gets a promise returning true when fullfiled if the given session mode is supported
+     * @param sessionMode defines the session to test
+     * @returns a promise
+     */
+    public static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
+        if (!(navigator as any).xr) {
+            return Promise.resolve(false);
+        }
+        // When the specs are final, remove supportsSession!
+        const functionToUse = (navigator as any).xr.isSessionSupported || (navigator as any).xr.supportsSession;
+        if (!functionToUse) {
+            return Promise.resolve(false);
+        } else {
+            return functionToUse.call((navigator as any).xr, sessionMode).then(() => {
+                return Promise.resolve(true);
+            }).catch((e: any) => {
+                Logger.Warn(e);
+                return Promise.resolve(false);
+            });
+        }
     }
 }

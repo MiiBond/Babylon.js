@@ -1061,10 +1061,10 @@ void main(void) {
         #endif
 
         #ifdef SHEEN
-            sheenEnvironmentReflectance *= (conservationFactor * conservationFactor);
+            sheenEnvironmentReflectance *= conservationFactor;
         #endif
 
-        specularEnvironmentReflectance *= (conservationFactor * conservationFactor);
+        specularEnvironmentReflectance *= conservationFactor;
     #endif
 
     // _____________________________ Transmittance + Tint ________________________________
@@ -1261,7 +1261,7 @@ void main(void) {
         #endif
 
         #ifdef SS_REFRACTION
-            finalRefraction *= (conservationFactor * conservationFactor);
+            finalRefraction *= conservationFactor;
             #ifdef CLEARCOAT_TINT
                 finalRefraction *= absorption;
             #endif

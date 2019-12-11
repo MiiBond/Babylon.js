@@ -7,6 +7,7 @@ import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
 import { WebXRState, WebXRRenderTarget } from './webXRTypes';
+import { WebXRFeaturesManager } from './webXRFeaturesManager';
 
 /**
  * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
@@ -42,6 +43,9 @@ export class WebXRExperienceHelper implements IDisposable {
     /** Session manager used to keep track of xr session */
     public sessionManager: WebXRSessionManager;
 
+    /** A features manager for this xr session */
+    public featuresManager: WebXRFeaturesManager;
+
     private _nonVRCamera: Nullable<Camera> = null;
     private _originalSceneAutoClear = true;
 
@@ -69,6 +73,7 @@ export class WebXRExperienceHelper implements IDisposable {
     private constructor(private scene: Scene) {
         this.camera = new WebXRCamera("", scene);
         this.sessionManager = new WebXRSessionManager(scene);
+        this.featuresManager = new WebXRFeaturesManager(this.sessionManager);
         this.container = new AbstractMesh("WebXR Container", scene);
         this.camera.parent = this.container;
 
@@ -93,7 +98,7 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param renderTarget the output canvas that will be used to enter XR mode
      * @returns promise that resolves after xr mode has entered
      */
-    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget) {
+    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): Promise<WebXRSessionManager> {
         if (!this._supported) {
             throw "XR session not supported by this browser";
         }
@@ -138,10 +143,15 @@ export class WebXRExperienceHelper implements IDisposable {
             // Wait until the first frame arrives before setting state to in xr
             this.sessionManager.onXRFrameObservable.addOnce(() => {
                 this._setState(WebXRState.IN_XR);
+
+                this.setPositionOfCameraUsingContainer(new Vector3(this._nonVRCamera!.position.x, this.camera.position.y, this._nonVRCamera!.position.z));
             });
+
+            return this.sessionManager;
         }).catch((e: any) => {
             console.log(e);
             console.log(e.message);
+            throw (e);
         });
     }
 
