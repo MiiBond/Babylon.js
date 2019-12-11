@@ -114,9 +114,9 @@ void main(void) {
             vec3 singleScatterAlbedo = vec3(0.68) * scatterColor.rgb;
             vec3 scatterCoeff = volumeAlbedo * singleScatterAlbedo / ior;
             volumeAlbedo = volumeAlbedo * (1.0 - singleScatterAlbedo) / ior;
-            refraction_color *= exp(-volumeAlbedo * thickness);
-            vec3 scatterTransmittance = vec3(1.0) - cocaLambert(scatterCoeff, thickness);
-            refraction_color = mix(refraction_color.rgb, scatterTransmittance, dot(scatterTransmittance, vec3(0.333)));
+            // refraction_color *= exp(-volumeAlbedo * thickness);
+            // vec3 scatterTransmittance = vec3(1.0) - cocaLambert(scatterCoeff, thickness);
+            // refraction_color = mix(refraction_color.rgb, scatterTransmittance, dot(scatterTransmittance, vec3(0.333)));
             // vec3 clamped_color = clamp(attenuationColor.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
             // float density = scatterColor.r;
             // vec3 absorption_coeff = -log((clamped_color));

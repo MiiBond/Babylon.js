@@ -86,6 +86,7 @@ export class KHR_materials_volume_transmission implements IGLTFLoaderExtension {
         pbrMaterial.twoSidedLighting = true;
         pbrMaterial.separateCullingPass = false;
         pbrMaterial.enableSpecularAntiAliasing = true;
+        pbrMaterial.subSurface.useAlbedoToTintRefraction = true;
 
         // Don't let the material gather RT's because, if it does, the scene will try to render the RT for the refractionTexture.
         // TODO - don't do this if not using depth peeling?
@@ -106,6 +107,14 @@ export class KHR_materials_volume_transmission implements IGLTFLoaderExtension {
         pbrMaterial.subSurface.maximumThickness = 1.0;
         pbrMaterial.subSurface.minimumThickness = 0.0;
         if (extension.attenuationColor !== undefined) {
+            for (let i = 0; i < 3; i++) {
+                // add epsilon because 0 attenuation implies that a 0 channel must always be zero in order for
+                // white light to be attenuated to attenuationColor at attenuationDistance. This is a contradiction.
+                // The spec should probably dictate that values can't be 0.0.
+                if (extension.attenuationColor[i] === 0) {
+                    extension.attenuationColor[i] += 0.000001;
+                }
+            }
             pbrMaterial.subSurface.tintColor = Color3.FromArray(extension.attenuationColor);
             // pbrMaterial.subSurface.translucencyIntensity = extension.attenuationDistance ? 1.0 - extension.attenuationDistance : 0.01;
         }

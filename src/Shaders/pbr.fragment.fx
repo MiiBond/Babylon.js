@@ -389,16 +389,16 @@ void main(void) {
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
         #elif defined(SS_VOLUME_THICKNESS) && defined(SS_DEPTHINREFRACTIONALPHA)
-            thickness = vRefractionInfos.z * ((1.0 - refraction_clear.a) - sceneDepth);
+            thickness = (1.0 - refraction_clear.a) - sceneDepth;
             // If thickness is changing rapidly, set it to 0 to try to avoid ugly edges on objects.
-            if (abs(dFdx(thickness)) * 100.0 > 1.0) {
-                thickness = 0.000001;
-            }
-            if (abs(dFdy(thickness)) * 100.0 > 1.0) {
-                thickness = 0.000001;
-            }
+            // if (abs(dFdx(thickness)) * 100.0 > 1.0) {
+            //     thickness = 0.000001;
+            // }
+            // if (abs(dFdy(thickness)) * 100.0 > 1.0) {
+            //     thickness = 0.000001;
+            // }
             
-            vec3 vRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW + refractionVector * thickness, 1.0));
+            vec3 vRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW + refractionVector * vRefractionInfos.z * thickness, 1.0));
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
             refractionCoords.y = 1.0 - refractionCoords.y;
         #else
@@ -456,17 +456,6 @@ void main(void) {
                     refraction_colour.rgb = mix(refraction_clear.rgb, refraction_colour.rgb, alpha);
                 #endif
 
-                // #ifdef SS_VOLUME_THICKNESS
-                //     // Do density calculation here.
-                //     vec3 clamped_color = clamp(vScatterColor.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
-                //     float ior = vRefractionInfos.y;
-                //     #ifndef TRANSPARENCY_SCENE_SCALE
-                //         #define TRANSPARENCY_SCENE_SCALE 1.0
-                //     #endif
-                //     vec3 absorption_coeff = -log((clamped_color));
-                //     vec3 scattering_coeff = vec3(0.6931472);
-
-                // #endif
                 environmentRefraction.rgb = refraction_colour.rgb;
             #else
                 environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
@@ -933,53 +922,7 @@ void main(void) {
             // refractionIntensity is at least (1 - alpha).
             refractionIntensity = max(refractionIntensity, 1.0 - alpha);
         #endif
-        //  #if defined(SS_DEPTHINREFRACTIONALPHA) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
-        //     #ifdef SS_VOLUME_THICKNESS
-        //         #ifdef SS_DEPTHINREFRACTIONALPHA
-        //             float thickness_scale = 1000.0 * thickness;
-        //         #else
-        //             float thickness_scale = vRefractionInfos.z;
-        //         #endif
-        //         vec3 volumetric_scattering_fog = vec3(0.0);
-        //         if (gl_FrontFacing) {
-        //             // Based on Volumetric Light Scattering Eq 1
-        //             // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
-        //             environmentRefraction.rgb *= 1.0 / exp((absorption_coeff) * thickness_scale * TRANSPARENCY_SCENE_SCALE);
-        //             volumetric_scattering_fog = clamped_color * clamped_color * scattering_coeff * (1.0 - 1.0 / exp((scattering_coeff) * thickness_scale * TRANSPARENCY_SCENE_SCALE));
-        //         }
-        //     #endif
-        // #endif
-
-        // #if defined(SS_REFRACTION) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
-        //     #ifdef SS_VOLUME_THICKNESS
-        //         if (gl_FrontFacing) {
-
-        //             volumetric_scattering_fog *= environmentIrradiance;
-        //             environmentRefraction.rgb += volumetric_scattering_fog;
-        //             environmentRefraction.rgb = clamp(environmentRefraction.rgb, 0.0, 1.0);
-        //         }
-        //     #endif
-        // #endif
-
-
-
-        // #if defined(SS_VOLUME_THICKNESS) && !defined(SS_REFRACTIONMAP_3D) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
-        //     thickness = 4000.0*thickness;
-        // #else
-        //     thickness = vThicknessParam.y;
-        // #endif
-
-        // #if defined(SS_VOLUME_THICKNESS) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
-        //     vec3 volumetric_scattering_fog = vec3(0.0);
-        //     if (gl_FrontFacing) {
-        //         float density = 1.0;
-        //         // Based on Volumetric Light Scattering Eq 1
-        //         // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
-        //         environmentRefraction.rgb *= 1.0 / exp((absorption_coeff) * density * thickness * TRANSPARENCY_SCENE_SCALE);
-        //         volumetric_scattering_fog = clamped_color * clamped_color * scattering_coeff * (1.0 - 1.0 / exp((scattering_coeff) * density * 0.1 * thickness_scale * TRANSPARENCY_SCENE_SCALE));
-        //     }
-        // #endif
-
+        
         #ifdef SS_TRANSLUCENCY
             thickness = maxEps(thickness);
             vec3 transmittance = transmittanceBRDF_Burley(vTintColor.rgb, vDiffusionDistance, thickness);
@@ -1151,8 +1094,8 @@ void main(void) {
             // float NdotRefract = dot(normalW, refractionVector);
             // thickness *= -NdotRefract;
             #ifdef SS_SCATTERING
-                vec3 scatterCoeff = volumeAlbedo * singleScatterAlbedo / vRefractionInfos.y;
-                volumeAlbedo = volumeAlbedo * (1.0 - singleScatterAlbedo) / vRefractionInfos.y;
+                vec3 scatterCoeff = singleScatterAlbedo / vRefractionInfos.y;
+                // volumeAlbedo = volumeAlbedo * (1.0 - singleScatterAlbedo) / vRefractionInfos.y;
             #endif
             refractionTransmittance *= cocaLambert(volumeAlbedo, thickness);
         #elif defined(SS_LINKREFRACTIONTOTRANSPARENCY)
@@ -1161,32 +1104,36 @@ void main(void) {
             vec3 volumeAlbedo = saturate(maxChannel * surfaceAlbedo);
 
             // Tint reflectance
-            environmentRefraction.rgb *= volumeAlbedo;
+            refractionTransmittance *= volumeAlbedo;
         #else
             // Compute tint from min distance only.
             vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
             #ifdef SS_SCATTERING
-                vec3 scatterCoeff = volumeAlbedo * singleScatterAlbedo / vRefractionInfos.y;
-                volumeAlbedo = volumeAlbedo * (vec3(1.0) - singleScatterAlbedo) / vRefractionInfos.y;
+                vec3 scatterCoeff = singleScatterAlbedo / vRefractionInfos.y;
+                // volumeAlbedo = volumeAlbedo * (vec3(1.0) - singleScatterAlbedo) / vRefractionInfos.y;
             #endif
             refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
         #endif
 
         #ifdef SS_SCATTERING
             vec3 scatterTransmittance = vec3(1.0) - cocaLambert(scatterCoeff, thickness);
-            // volumeAlbedo = volumeAlbedo * (1.0 - singleScatterAlbedo); //vec3(0.6931472);
-            // vec3 volumetric_scattering_fog = vScatterColor * (1.0 - 1.0 / exp(scattering_coeff * thickness));
-            // volumetric_scattering_fog *= environmentIrradiance;
-            // refractionTransmittance *= volumetric_scattering_fog;//mix(refractionTransmittance, volumetric_scattering_fog, 1.0);
+            scatterTransmittance /= scatterCoeff;
+            scatterTransmittance /= volumeAlbedo;
         #endif
 
+        #ifdef SS_LINKALPHAWITHCLEARREFRACTION
+            vec3 clearRefraction = refractionTransmittance;
+        #endif
         // Tint by the surface albedo
         #ifdef SS_ALBEDOFORREFRACTIONTINT
-            #ifdef SS_LINKALPHAWITHCLEARREFRACTION
-                refractionTransmittance *= mix(vec3(1.0), surfaceAlbedo.rgb, alpha);
-            #else
-                refractionTransmittance *= surfaceAlbedo.rgb;
+            refractionTransmittance *= surfaceAlbedo.rgb;
+            #ifdef SS_SCATTERING
+                scatterTransmittance *= surfaceAlbedo.rgb;
             #endif
+        #endif
+
+        #ifdef SS_LINKALPHAWITHCLEARREFRACTION
+            refractionTransmittance = mix(clearRefraction, refractionTransmittance, alpha);
         #endif
 
         // Decrease Albedo Contribution
@@ -1284,12 +1231,13 @@ void main(void) {
 
     // _____________________________ Refraction ______________________________________
     #ifdef SS_REFRACTION
-        #ifdef SS_SCATTERING
-            vec3 finalRefraction = mix(environmentRefraction.rgb, scatterTransmittance, dot(scatterTransmittance, vec3(0.333)));
-        #else
-            vec3 finalRefraction = environmentRefraction.rgb;
-        #endif
+        vec3 finalRefraction = environmentRefraction.rgb;
         finalRefraction *= refractionTransmittance;
+        #ifdef SS_SCATTERING
+            finalRefraction += clamp(scatterTransmittance, 0.0, 1.0);
+            // refractionTransmittance += scatterTransmittance * environmentIrradiance;
+            // refractionTransmittance = clamp(refractionTransmittance, 0.0, 1.0);
+        #endif
     #endif
 
     // _____________________________ Clear Coat _______________________________________
