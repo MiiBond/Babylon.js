@@ -36,6 +36,8 @@ export class DepthRenderer {
 
     public useDepthPeeling: boolean = false;
     public depthPeelingMap: Nullable<RenderTargetTexture>;
+    /** Enable or disable the depth renderer. When disabled, the depth texture is not updated */
+    public enabled = true;
 
     /**
      * Specifiess that the depth renderer will only be used within

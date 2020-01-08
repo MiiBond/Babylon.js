@@ -1164,7 +1164,9 @@ void main(void) {
 
         #ifdef SS_LINKALPHAWITHCLEARREFRACTION
             refractionTransmittance = mix(clearRefraction, refractionTransmittance, alpha);
-            scatterTransmittance = mix(clearRefraction, scatterTransmittance, alpha);
+            #ifdef SS_SCATTERING
+                scatterTransmittance = mix(clearRefraction, scatterTransmittance, alpha);
+            #endif
         #endif
 
         // Decrease Albedo Contribution
