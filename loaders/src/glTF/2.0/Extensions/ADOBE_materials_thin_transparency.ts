@@ -109,11 +109,16 @@ export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
             pbrMaterial.subSurface.maximumThickness = 1.0;
             pbrMaterial.subSurface.minimumThickness = 0.0;
             if (volume_info.interiorColor !== undefined) {
-                pbrMaterial.subSurface.tintColor = Color3.FromArray(volume_info.interiorColor);
+                // pbrMaterial.subSurface.tintColor = Color3.FromArray(volume_info.interiorColor);
                 pbrMaterial.subSurface.scatterColor = Color3.FromArray(volume_info.interiorColor);
+                pbrMaterial.subSurface.scatterColor.clampToRef(0.01, 0.955, pbrMaterial.subSurface.tintColor);
+                // pbrMaterial.subSurface.scatterColor.
+                // vec3 clamped_color = clamp(vInteriorTransparency.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
+
                 // Conversion to distance is -ln(color) / density
                 // Factor of 100 is used to convert from cm to m.
-                pbrMaterial.subSurface.tintColorAtDistance = -Math.log(pbrMaterial.subSurface.scatterColor.toLuminance()) / (volume_info.density * 100);
+                // pbrMaterial.subSurface.tintColorAtDistance = -Math.log(volume_info.density) / 10;
+                pbrMaterial.subSurface.tintColorAtDistance = -Math.log(1.0 - pbrMaterial.subSurface.tintColor.toLuminance()) / (volume_info.density * 200);
             }
         }
         

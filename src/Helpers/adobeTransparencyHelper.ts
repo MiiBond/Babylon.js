@@ -332,6 +332,7 @@ export class AdobeTransparencyHelper {
         if (!material.subSurface.isRefractionEnabled) {
             material.subSurface.refractionIntensity = 0;
         }
+        material.subSurface.tintColorAtDistance *= this._options.sceneScale;
 
         cacheEntry.regularMaterial = material;
         const gbuffer_pass_1 = material.clone(`${mesh.material.name}_gbuffer1`);

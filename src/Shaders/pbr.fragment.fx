@@ -380,6 +380,22 @@ void main(void) {
                 vec2 refractionCoordsNoRefract = vNoRefractionUVW.xy / vNoRefractionUVW.z;
                 refractionCoordsNoRefract.y = 1.0 - refractionCoordsNoRefract.y;
                 vec4 refraction_clear = sampleRefraction(refractionSampler, refractionCoordsNoRefract).rgba;
+                #if defined(SS_VOLUME_THICKNESS)
+                    // To avoid artifacts from the lower-res refraction depth, we will take a bunch of samples and select the one
+                    // that gives the smallest thickness while still being positive.
+                    float offset = 1.0 / 1024.0; // TODO - use the actual resolution of the texture instead of 1024
+
+                    thickness = (1.0 - refraction_clear.a) - sceneDepth;
+                    for (float x = -1.0; x < 2.0; x++) {
+                        for (float y = -1.0; y < 2.0; y++) {
+                            float sample_refraction = sampleRefraction(refractionSampler, refractionCoordsNoRefract + vec2(x * offset, y * offset)).a;
+                            float sample_thickness = (1.0 - sample_refraction) - sceneDepth;
+                            if (sample_thickness > 0.0 && (sample_thickness < thickness || thickness < 0.0)) {
+                                thickness = sample_thickness;
+                            }
+                        }
+                    }
+                #endif
             #endif
         #endif
 
@@ -389,7 +405,7 @@ void main(void) {
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
         #elif defined(SS_VOLUME_THICKNESS) && defined(SS_DEPTHINREFRACTIONALPHA)
-            thickness = (1.0 - refraction_clear.a) - sceneDepth;
+            
             // If thickness is changing rapidly, set it to 0 to try to avoid ugly edges on objects.
             // if (abs(dFdx(thickness)) * 100.0 > 1.0) {
             //     thickness = 0.000001;
@@ -1079,8 +1095,10 @@ void main(void) {
             // Based on Volumetric Light Scattering Eq 1
             // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
             // environmentRefraction.rgb *= 1.0 / exp((absorption_coeff) * thickness_scale * TRANSPARENCY_SCENE_SCALE);
-            vec3 inter = vec3(4.09712) + 4.2 * vScatterColor - sqrt(vec3(9.5) + 41.6 * vScatterColor + vec3(17.7) * vScatterColor * vScatterColor);
-            vec3 singleScatterAlbedo = vec3(0.68) * vScatterColor; //inter;//vec3(1.0) - pow(inter, 2.0);
+            // vec3 inter = vec3(4.09712) + 4.20863 * vScatterColor - sqrt(vec3(9.59217) + 41.68086 * vScatterColor + vec3(17.7126) * vScatterColor * vScatterColor);
+            vec3 singleScatterAlbedo = vec3(0.68) * vScatterColor;
+            // vec3 singleScatterAlbedo = (1.0 - inter * inter) / (1.0 - anisotropy_for_volume * inter * inter);
+            // vec3 singleScatterAlbedo = vec3(0.6);
             
         #endif
 
@@ -1097,7 +1115,8 @@ void main(void) {
                 vec3 scatterCoeff = singleScatterAlbedo / vRefractionInfos.y;
                 // volumeAlbedo = volumeAlbedo * (1.0 - singleScatterAlbedo) / vRefractionInfos.y;
             #endif
-            refractionTransmittance *= cocaLambert(volumeAlbedo, thickness);
+            vec3 attenuation = cocaLambert(volumeAlbedo, thickness);
+            refractionTransmittance *= attenuation;
         #elif defined(SS_LINKREFRACTIONTOTRANSPARENCY)
             // Tint the material with albedo.
             float maxChannel = max(max(surfaceAlbedo.r, surfaceAlbedo.g), surfaceAlbedo.b);
@@ -1112,12 +1131,23 @@ void main(void) {
                 vec3 scatterCoeff = singleScatterAlbedo / vRefractionInfos.y;
                 // volumeAlbedo = volumeAlbedo * (vec3(1.0) - singleScatterAlbedo) / vRefractionInfos.y;
             #endif
-            refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
+            vec3 attenuation = cocaLambert(volumeAlbedo, vThicknessParam.y);
+            refractionTransmittance *= attenuation;
         #endif
 
         #ifdef SS_SCATTERING
-            vec3 scatterTransmittance = vec3(1.0) - cocaLambert(scatterCoeff, thickness);
-            scatterTransmittance /= scatterCoeff;
+            vec3 scatterTransmittance = vec3(1.0) - attenuation;
+            scatterTransmittance *= scatterCoeff;
+            vec3 scattered_refraction_color = vec3(1.0);
+            #ifdef SS_REFRACTIONMAP_3D
+                // float scattered_alphaG = convertRoughnessToAverageSlope(1.0);
+                float scattered_LOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, 1.0);
+                scattered_refraction_color = sampleRefractionLod(refractionSampler, refractionCoords, scattered_LOD).rgb;
+            #else
+                float scattered_LOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, 0.75);
+                scattered_refraction_color = sampleRefractionLod(refractionSampler, refractionCoords, scattered_LOD).rgb;
+            #endif
+            scatterTransmittance *= scattered_refraction_color; // this should be the scattered background light
             scatterTransmittance /= volumeAlbedo;
         #endif
 
@@ -1134,6 +1164,7 @@ void main(void) {
 
         #ifdef SS_LINKALPHAWITHCLEARREFRACTION
             refractionTransmittance = mix(clearRefraction, refractionTransmittance, alpha);
+            scatterTransmittance = mix(clearRefraction, scatterTransmittance, alpha);
         #endif
 
         // Decrease Albedo Contribution

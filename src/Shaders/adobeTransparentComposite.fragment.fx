@@ -67,8 +67,10 @@ void main(void) {
         vec2 norm = (misc.ba - vec2(0.5)) * 2.0;
         // vec3 normal_VS = vec3(norm.x, norm.y, 0.0);
         // normal_VS.z = sqrt(1.0 - dot(norm, norm));
+
+        // Unpack IOR and front-facing value (which are stored together)
         float ior = scatterColor.a;
-        if (ior > 0.5) {
+        if (ior > 0.502) {
             front_facing = 1.0;
             ior -= 0.5;
         }
@@ -109,19 +111,18 @@ void main(void) {
         
         // Interior calculation
         if (front_facing == 1.0) {
-            vec3 volumeAlbedo = -log(attenuationColor.rgb) / attenuationColor.w;
-            
             vec3 singleScatterAlbedo = vec3(0.68) * scatterColor.rgb;
-            vec3 scatterCoeff = volumeAlbedo * singleScatterAlbedo / ior;
-            volumeAlbedo = volumeAlbedo * (1.0 - singleScatterAlbedo) / ior;
-            // refraction_color *= exp(-volumeAlbedo * thickness);
-            // vec3 scatterTransmittance = vec3(1.0) - cocaLambert(scatterCoeff, thickness);
-            // refraction_color = mix(refraction_color.rgb, scatterTransmittance, dot(scatterTransmittance, vec3(0.333)));
-            // vec3 clamped_color = clamp(attenuationColor.rgb, vec3(0.000303527, 0.000303527, 0.000303527), vec3(0.991102, 0.991102, 0.991102));
-            // float density = scatterColor.r;
-            // vec3 absorption_coeff = -log((clamped_color));
-            // vec3 scattering_coeff = vec3(0.6931472);
-            // float thickness_scale = 4000.0 * thickness;
+            vec3 scatterCoeff = singleScatterAlbedo / ior;
+            vec3 extinctionCoeff = computeColorAtDistanceInMedia(attenuationColor.rgb, attenuationColor.w);
+            vec3 attenuation = cocaLambert(extinctionCoeff, thickness);
+            refraction_color *= attenuation;
+
+            vec3 scatterTransmittance = vec3(1.0) - attenuation;
+            scatterTransmittance *= scatterCoeff;
+            scatterTransmittance /= extinctionCoeff;
+            // scatterTransmittance *= colour.rgb;
+
+            refraction_color += clamp(scatterTransmittance, 0.0, 1.0);
             
             // // Based on Volumetric Light Scattering Eq 1
             // // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
