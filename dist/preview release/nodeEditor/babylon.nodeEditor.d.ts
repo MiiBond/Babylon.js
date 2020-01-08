@@ -63,7 +63,7 @@ declare module NODEEDITOR {
         private _globalState;
         private _onCandidateLinkMovedObserver;
         delegatedPort: BABYLON.Nullable<NodePort>;
-        readonly element: HTMLDivElement;
+        get element(): HTMLDivElement;
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
         dispose(): void;
@@ -84,6 +84,7 @@ declare module NODEEDITOR {
         color: number[];
         name: string;
         isCollapsed: boolean;
+        blocks: number[];
     }
     export interface IEditorData {
         locations: INodeLocationInfo[];
@@ -91,10 +92,38 @@ declare module NODEEDITOR {
         y: number;
         zoom: number;
         frames?: IFrameData[];
+        map?: {
+            [key: number]: number;
+        };
+    }
+}
+declare module NODEEDITOR {
+    export class SerializationTools {
+        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
+        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState, selectedBlocks?: BABYLON.NodeMaterialBlock[]): string;
+        static Deserialize(serializationObject: any, globalState: GlobalState): void;
+    }
+}
+declare module NODEEDITOR {
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Gets the base math type of node material block connection point.
+         * @param type Type to parse.
+         */
+        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
 declare module NODEEDITOR {
     export class GraphFrame {
+        private readonly CollapsedWidth;
+        private static _FrameCounter;
         private _name;
         private _color;
         private _x;
@@ -104,6 +133,7 @@ declare module NODEEDITOR {
         private _width;
         private _height;
         element: HTMLDivElement;
+        private _borderElement;
         private _headerElement;
         private _headerTextElement;
         private _headerCollapseElement;
@@ -119,18 +149,27 @@ declare module NODEEDITOR {
         private _isCollapsed;
         private _ports;
         private _controlledPorts;
+        private _id;
         private readonly CloseSVG;
         private readonly ExpandSVG;
         private readonly CollapseSVG;
-        isCollapsed: boolean;
+        get id(): number;
+        get isCollapsed(): boolean;
         private _createInputPort;
-        readonly nodes: GraphNode[];
-        name: string;
-        color: BABYLON.Color3;
-        x: number;
-        y: number;
-        width: number;
-        height: number;
+        set isCollapsed(value: boolean);
+        get nodes(): GraphNode[];
+        get name(): string;
+        set name(value: string);
+        get color(): BABYLON.Color3;
+        set color(value: BABYLON.Color3);
+        get x(): number;
+        set x(value: number);
+        get y(): number;
+        set y(value: number);
+        get width(): number;
+        set width(value: number);
+        get height(): number;
+        set height(value: number);
         constructor(candidate: BABYLON.Nullable<HTMLDivElement>, canvas: GraphCanvasComponent, doNotCaptureNodes?: boolean);
         refresh(): void;
         addNode(node: GraphNode): void;
@@ -138,12 +177,16 @@ declare module NODEEDITOR {
         syncNode(node: GraphNode): void;
         cleanAccumulation(): void;
         private _onDown;
+        move(newX: number, newY: number, align?: boolean): void;
         private _onUp;
         private _moveFrame;
         private _onMove;
         dispose(): void;
         serialize(): IFrameData;
-        static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent): GraphFrame;
+        export(): void;
+        static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
+            [key: number]: number;
+        }): GraphFrame;
     }
 }
 declare module NODEEDITOR {
@@ -158,11 +201,12 @@ declare module NODEEDITOR {
         private _onSelectionChangedObserver;
         private _isVisible;
         onDisposedObservable: BABYLON.Observable<NodeLink>;
-        isVisible: boolean;
-        readonly portA: NodePort;
-        readonly portB: NodePort | undefined;
-        readonly nodeA: GraphNode;
-        readonly nodeB: GraphNode | undefined;
+        get isVisible(): boolean;
+        set isVisible(value: boolean);
+        get portA(): NodePort;
+        get portB(): NodePort | undefined;
+        get nodeA(): GraphNode;
+        get nodeB(): GraphNode | undefined;
         update(endX?: number, endY?: number, straight?: boolean): void;
         constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode);
         onClick(): void;
@@ -206,21 +250,25 @@ declare module NODEEDITOR {
         private _ctrlKeyIsPressed;
         private _oldY;
         _frameIsMoving: boolean;
-        gridSize: number;
-        readonly globalState: GlobalState;
-        readonly nodes: GraphNode[];
-        readonly links: NodeLink[];
-        readonly frames: GraphFrame[];
-        zoom: number;
-        x: number;
-        y: number;
-        readonly selectedNodes: GraphNode[];
-        readonly selectedLink: BABYLON.Nullable<NodeLink>;
-        readonly selectedFrame: BABYLON.Nullable<GraphFrame>;
-        readonly canvasContainer: HTMLDivElement;
-        readonly svgCanvas: HTMLElement;
-        readonly selectionContainer: HTMLDivElement;
-        readonly frameContainer: HTMLDivElement;
+        get gridSize(): number;
+        set gridSize(value: number);
+        get globalState(): GlobalState;
+        get nodes(): GraphNode[];
+        get links(): NodeLink[];
+        get frames(): GraphFrame[];
+        get zoom(): number;
+        set zoom(value: number);
+        get x(): number;
+        set x(value: number);
+        get y(): number;
+        set y(value: number);
+        get selectedNodes(): GraphNode[];
+        get selectedLink(): BABYLON.Nullable<NodeLink>;
+        get selectedFrame(): BABYLON.Nullable<GraphFrame>;
+        get canvasContainer(): HTMLDivElement;
+        get svgCanvas(): HTMLElement;
+        get selectionContainer(): HTMLDivElement;
+        get frameContainer(): HTMLDivElement;
         constructor(props: IGraphCanvasComponentProps);
         getGridPosition(position: number, useCeil?: boolean): number;
         getGridPositionCeil(position: number): number;
@@ -756,7 +804,7 @@ declare module NODEEDITOR {
         isEmbedded: boolean;
         loadAsCubeTexture: boolean;
     }> {
-        readonly textureBlock: BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock;
+        get textureBlock(): BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock;
         constructor(props: IPropertyComponentProps);
         UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: {
             isEmbedded: boolean;
@@ -786,22 +834,6 @@ declare module NODEEDITOR {
         static RegisteredControls: {
             [key: string]: React.ComponentClass<IPropertyComponentProps>;
         };
-    }
-}
-declare module NODEEDITOR {
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
 declare module NODEEDITOR {
@@ -936,19 +968,23 @@ declare module NODEEDITOR {
         private _isSelected;
         private _displayManager;
         private _isVisible;
-        isVisible: boolean;
-        readonly outputPorts: NodePort[];
-        readonly inputPorts: NodePort[];
-        readonly links: NodeLink[];
-        readonly gridAlignedX: number;
-        readonly gridAlignedY: number;
-        x: number;
-        y: number;
-        readonly width: number;
-        readonly height: number;
-        readonly id: number;
-        readonly name: string;
-        isSelected: boolean;
+        get isVisible(): boolean;
+        set isVisible(value: boolean);
+        get outputPorts(): NodePort[];
+        get inputPorts(): NodePort[];
+        get links(): NodeLink[];
+        get gridAlignedX(): number;
+        get gridAlignedY(): number;
+        get x(): number;
+        set x(value: number);
+        get y(): number;
+        set y(value: number);
+        get width(): number;
+        get height(): number;
+        get id(): number;
+        get name(): string;
+        get isSelected(): boolean;
+        set isSelected(value: boolean);
         constructor(block: BABYLON.NodeMaterialBlock, globalState: GlobalState);
         isOverlappingFrame(frame: GraphFrame): boolean;
         getPortForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): BABYLON.Nullable<NodePort>;
@@ -986,7 +1022,7 @@ declare module NODEEDITOR {
         onDepthPrePassChanged: BABYLON.Observable<void>;
         onAnimationCommandActivated: BABYLON.Observable<void>;
         onCandidateLinkMoved: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector2>>;
-        onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
+        onSelectionBoxMoved: BABYLON.Observable<DOMRect | ClientRect>;
         onFrameCreated: BABYLON.Observable<GraphFrame>;
         onCandidatePortSelected: BABYLON.Observable<BABYLON.Nullable<NodePort>>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
@@ -1031,13 +1067,6 @@ declare module NODEEDITOR {
         constructor(props: INodeListComponentProps);
         filterContent(filter: string): void;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class SerializationTools {
-        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
-        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState): string;
-        static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }
 }
 declare module NODEEDITOR {
@@ -1145,6 +1174,7 @@ declare module NODEEDITOR {
         private _blocks;
         private _previewManager;
         private _copiedNodes;
+        private _copiedFrame;
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
@@ -1157,6 +1187,8 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
+        reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]): void;
+        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number): void;
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;
