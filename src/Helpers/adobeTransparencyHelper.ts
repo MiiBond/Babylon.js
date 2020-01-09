@@ -333,6 +333,9 @@ export class AdobeTransparencyHelper {
             material.subSurface.refractionIntensity = 0;
         }
         material.subSurface.tintColorAtDistance *= this._options.sceneScale;
+        if (material.subSurface.isScatteringEnabled) {
+            material.subSurface.scatteringIntensity /= this._options.sceneScale;
+        }
 
         cacheEntry.regularMaterial = material;
         const gbuffer_pass_1 = material.clone(`${mesh.material.name}_gbuffer1`);

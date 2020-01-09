@@ -77,11 +77,13 @@ void main(void) {
         ior *= 2.0;
         if (front_facing == 1.0) {
             float ior_inverse = max(1.0 - ior, 0.0);
-            thickness = max(pixel_depth - background_depth_no_refract, 0.0);
+            float pixel_depth_world = pixel_depth * depthValues.y - depthValues.x;
+            float background_depth_no_refract_world = background_depth_no_refract * depthValues.y - depthValues.x;
+            thickness = max(pixel_depth_world - background_depth_no_refract_world, 0.0);
             // Multiply thickness by camera range to get it back into world scale.
             // Temp clamp this to 1.0 to avoid washed-out colour for front faces with scattering over background.
             // Remove this clamp when we fix the calculation.
-            thickness = clamp(thickness * depthValues.y - depthValues.x, 0.0, 1.0);
+            // thickness = max(thickness * depthValues.y - depthValues.x, 0.0);
             // Can't just modify the UV like this. Need to know screen aspect ratio.
             // refractionCoords -= norm * 0.005 * REFRACTION_SCALE * ior_inverse;
             refractionLOD *= ior_inverse;
