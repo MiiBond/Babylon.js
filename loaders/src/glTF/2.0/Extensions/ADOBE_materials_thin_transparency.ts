@@ -117,9 +117,9 @@ export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
                 // Conversion to distance is -ln(color) / density
                 // Factor of 100 is used to convert from cm to m.
                 // pbrMaterial.subSurface.tintColorAtDistance = -Math.log(volume_info.density) / 10;
-                pbrMaterial.subSurface.tintColorAtDistance = -Math.log(1.0 - pbrMaterial.subSurface.tintColor.toLuminance()) / (volume_info.density * 100);
+                pbrMaterial.subSurface.tintColorAtDistance = -Math.log(1.0 - pbrMaterial.subSurface.tintColor.toLuminance()) / (volume_info.density * 35);
                 // pbrMaterial.subSurface.tintColorAtDistance *= pbrMaterial.subSurface.tintColorAtDistance;
-                pbrMaterial.subSurface.scatteringIntensity = 1.0 * (volume_info.density * 50);
+                pbrMaterial.subSurface.scatteringIntensity = Math.min(1.0 * (volume_info.density * 20), 1.0);
             }
         }
         

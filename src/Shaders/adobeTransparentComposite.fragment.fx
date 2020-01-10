@@ -77,8 +77,8 @@ void main(void) {
         ior *= 2.0;
         if (front_facing == 1.0) {
             float ior_inverse = max(1.0 - ior, 0.0);
-            float pixel_depth_world = pixel_depth * depthValues.y - depthValues.x;
-            float background_depth_no_refract_world = background_depth_no_refract * depthValues.y - depthValues.x;
+            float pixel_depth_world = (pixel_depth + 0.00001) * depthValues.y - depthValues.x;
+            float background_depth_no_refract_world = (background_depth_no_refract + 0.00001) * depthValues.y - depthValues.x;
             thickness = max(pixel_depth_world - background_depth_no_refract_world, 0.0);
             // Multiply thickness by camera range to get it back into world scale.
             // Temp clamp this to 1.0 to avoid washed-out colour for front faces with scattering over background.
@@ -114,15 +114,16 @@ void main(void) {
         // Interior calculation
         if (front_facing == 1.0) {
             vec3 singleScatterAlbedo = vec3(0.68) * scatterColor.rgb;
-            vec3 scatterCoeff = singleScatterAlbedo / ior;
+            vec3 scatterCoeff = singleScatterAlbedo * ior;
             vec3 extinctionCoeff = computeColorAtDistanceInMedia(attenuationColor.rgb, attenuationColor.w);
             vec3 attenuation = cocaLambert(extinctionCoeff, thickness);
+            // attenuation = attenuation * pow(scatterColor.rgb, vec3(scatterColor.rgb * 5.0));
             refraction_color *= attenuation;
 
             vec3 scatterTransmittance = vec3(1.0) - attenuation;
             scatterTransmittance *= scatterCoeff;
             scatterTransmittance /= extinctionCoeff;
-            // scatterTransmittance *= colour.rgb;
+            
 
             refraction_color += clamp(scatterTransmittance, 0.0, 1.0);
             

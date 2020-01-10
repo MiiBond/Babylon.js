@@ -381,29 +381,29 @@ void main(void) {
                 vec2 refractionCoordsNoRefract = vNoRefractionUVW.xy / vNoRefractionUVW.z;
                 refractionCoordsNoRefract.y = 1.0 - refractionCoordsNoRefract.y;
                 vec4 refraction_clear = sampleRefraction(refractionSampler, refractionCoordsNoRefract).rgba;
-                #if defined(SS_VOLUME_THICKNESS)
+                #if defined(SS_VOLUME_THICKNESS) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
                     // To avoid artifacts from the lower-res refraction depth, we will take a bunch of samples and select the one
                     // that gives the smallest thickness while still being positive.
                     float offset = 1.0 / 1024.0; // TODO - use the actual resolution of the texture instead of 1024
                     float refractionDepth = (1.0 - refraction_clear.a);
-                    thicknessNormalized = refractionDepth - sceneDepthNormalized;
-                    refractionDepth = (refractionDepth + 0.00001) * depthValues.y - depthValues.x;
-                    thickness = refractionDepth - sceneDepthWorld;
-                    // for (float x = -1.0; x < 2.0; x++) {
-                    //     for (float y = -1.0; y < 2.0; y++) {
-                    //         float sample_refraction = sampleRefraction(refractionSampler, refractionCoordsNoRefract + vec2(x * offset, y * offset)).a;
-                    //         float sampleRefractionDepth = 1.0 - sample_refraction;
-                    //         float sample_thickness = sampleRefractionDepth - sceneDepthNormalized;
-                    //         if (sample_thickness > 0.0 && (sample_thickness < thicknessNormalized || thicknessNormalized < 0.0)) {
-                    //             thicknessNormalized = sampleRefractionDepth - sceneDepthNormalized;
-                    //             sampleRefractionDepth = (sampleRefractionDepth + 0.00001) * depthValues.y - depthValues.x;
-                    //             thickness = sampleRefractionDepth - sceneDepthWorld;
-                    //             // thickness = sample_thickness;
-                    //         }
-                    //     }
-                    // }
+                    thicknessNormalized = clamp(refractionDepth - sceneDepthNormalized, 0.0, 1.0);
+                    // refractionDepth = (refractionDepth + 0.00001) * depthValues.y - depthValues.x;
+                    // thickness = refractionDepth - sceneDepthWorld;
+                    for (float x = -1.0; x < 2.0; x++) {
+                        for (float y = -1.0; y < 2.0; y++) {
+                            float sample_refraction = sampleRefraction(refractionSampler, refractionCoordsNoRefract + vec2(x * offset, y * offset)).a;
+                            float sampleRefractionDepth = 1.0 - sample_refraction;
+                            float sample_thickness = sampleRefractionDepth - sceneDepthNormalized;
+                            if (sample_thickness > 0.0 && (sample_thickness < thicknessNormalized || thicknessNormalized < 0.0)) {
+                                thicknessNormalized = sample_thickness;
+                                // sampleRefractionDepth = (sampleRefractionDepth + 0.00001) * depthValues.y - depthValues.x;
+                                // thickness = sampleRefractionDepth - sceneDepthWorld;
+                                // thickness = sample_thickness;
+                            }
+                        }
+                    }
                     // Convert thickness to be in world units.
-                    // thickness = (thicknessNormalized + 0.00001) * depthValues.y - depthValues.x;
+                    thickness = (thicknessNormalized + 0.00001) * depthValues.y - depthValues.x;
                 #endif
             #endif
         #endif
@@ -1121,7 +1121,7 @@ void main(void) {
             // float NdotRefract = dot(normalW, refractionVector);
             // thickness *= -NdotRefract;
             #ifdef SS_SCATTERING
-                vec3 scatterCoeff = singleScatterAlbedo / vRefractionInfos.y;
+                vec3 scatterCoeff = singleScatterAlbedo * vRefractionInfos.y;
             #endif
             vec3 attenuation = cocaLambert(volumeAlbedo, thickness);
             refractionTransmittance *= attenuation;
@@ -1136,8 +1136,7 @@ void main(void) {
             // Compute tint from min distance only.
             vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
             #ifdef SS_SCATTERING
-                vec3 scatterCoeff = singleScatterAlbedo / vRefractionInfos.y;
-                // volumeAlbedo = volumeAlbedo * (vec3(1.0) - singleScatterAlbedo) / vRefractionInfos.y;
+                vec3 scatterCoeff = singleScatterAlbedo * vRefractionInfos.y;
             #endif
             vec3 attenuation = cocaLambert(volumeAlbedo, vThicknessParam.y);
             refractionTransmittance *= attenuation;
@@ -1164,6 +1163,7 @@ void main(void) {
             refractionTransmittance *= surfaceAlbedo.rgb;
             #ifdef SS_SCATTERING
                 scatterTransmittance *= surfaceAlbedo.rgb;
+                refractionTransmittance = refractionTransmittance * pow(refractionTransmittance, vec3(5.0 * scatteringIntensity));
             #endif
         #endif
 
@@ -1485,7 +1485,7 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
         
         #ifdef SS_SCATTERING
             
-            gl_FragData[4] = vec4(vScatterColor, ior);
+            gl_FragData[4] = vec4(vScatterColor * vec3(scatteringIntensity), ior);
         #else
             
             gl_FragData[4] = vec4(vec3(1.0), ior);
