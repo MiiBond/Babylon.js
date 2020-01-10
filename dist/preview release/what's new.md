@@ -190,6 +190,7 @@
 - Teleportation allows selecting direction before teleporting when using thumbstick/touchpad. ([#7290](https://github.com/BabylonJS/Babylon.js/issues/7290)) ([RaananW](https://github.com/RaananW/))
 - It is now possible to force a certain profile type for the controllers ([#7348](https://github.com/BabylonJS/Babylon.js/issues/7375)) ([RaananW](https://github.com/RaananW/))
 - WebXR camera is initialized on the first frame ([#7389](https://github.com/BabylonJS/Babylon.js/issues/7389)) ([RaananW](https://github.com/RaananW/))
+- Selection has forcable gaze mode and touch-screen support ([#7395](https://github.com/BabylonJS/Babylon.js/issues/7395)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -284,6 +285,7 @@
 - Fix a bug when resizing a MRT ([Popov72](https://github.com/Popov72))
 - Fixed an infinite clone recursion bug in `InstancedMesh` due to `DeepCopier.DeepCopy` cloning `parent` ([Poolminer](https://github.com/Poolminer/))
 - Fixed an issue with multiview textures ([RaananW](https://github.com/RaananW/))
+- Screenshot height and width is now forced to be integers to prevent mismatch with openGL context ([jekelija](https://github.com/jekelija))
 
 ## Breaking changes
 
