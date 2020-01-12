@@ -944,10 +944,24 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
-     * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box
+     * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
+     * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
      * @returns the current mesh
      */
-    public normalizeToUnitCube(includeDescendants = true): AbstractMesh {
+    public normalizeToUnitCube(includeDescendants = true, ignoreRotation = false): AbstractMesh {
+        let storedRotation: Nullable<Vector3> = null;
+        let storedRotationQuaternion: Nullable<Quaternion> = null;
+
+        if (ignoreRotation) {
+            if (this.rotationQuaternion) {
+                storedRotationQuaternion = this.rotationQuaternion.clone();
+                this.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+            } else if (this.rotation) {
+                storedRotation = this.rotation.clone();
+                this.rotation.copyFromFloats(0, 0, 0);
+            }
+        }
+
         let boundingVectors = this.getHierarchyBoundingVectors(includeDescendants);
         let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
         let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
@@ -959,6 +973,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         let scale = 1 / maxDimension;
 
         this.scaling.scaleInPlace(scale);
+
+        if (ignoreRotation) {
+            if (this.rotationQuaternion && storedRotationQuaternion) {
+                this.rotationQuaternion.copyFrom(storedRotationQuaternion);
+            } else if (this.rotation && storedRotation) {
+                this.rotation.copyFrom(storedRotation);
+            }
+        }
 
         return this;
     }
@@ -1182,6 +1204,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
                 var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
 
+                this.skeleton.prepare();
                 var skeletonMatrices = this.skeleton.getTransformMatrices(this);
 
                 var tempVector = Tmp.Vector3[0];
@@ -1222,7 +1245,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _updateBoundingInfo(): AbstractMesh {
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
+        const effectiveMesh = this._effectiveMesh;
         if (this._boundingInfo) {
             this._boundingInfo.update(effectiveMesh.worldMatrixFromCache);
         }
@@ -1252,6 +1275,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     protected _afterComputeWorldMatrix(): void {
         // Bounding info
         this._updateBoundingInfo();
+    }
+
+    /** @hidden */
+    public get _effectiveMesh(): AbstractMesh {
+        return (this.skeleton && this.skeleton.overrideMesh) || this;
     }
 
     /**

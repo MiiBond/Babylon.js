@@ -13,6 +13,7 @@ import { Light } from "../Lights/light";
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for
@@ -34,7 +35,12 @@ export class MaterialHelper {
             effect.setVector3("vEyePosition", scene._forcedViewPosition);
             return;
         }
-        effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera!.globalPosition);
+        var globalPosition = scene.activeCamera!.globalPosition;
+        if (!globalPosition) {
+            // Use WebVRFreecamera's device position as global position is not it's actual position in babylon space
+            globalPosition = (scene.activeCamera! as WebVRFreeCamera).devicePosition;
+        }
+        effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
     }
 
     /**
@@ -220,6 +226,21 @@ export class MaterialHelper {
         }
 
         return true;
+    }
+
+    /**
+     * Prepares the defines related to multiview
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     */
+    public static PrepareDefinesForMultiview(scene: Scene, defines: any) {
+        if (scene.activeCamera) {
+            var previousMultiview = defines.MULTIVIEW;
+            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
+            if (defines.MULTIVIEW != previousMultiview) {
+                defines.markAsUnprocessed();
+            }
+        }
     }
 
     /**

@@ -16,6 +16,11 @@ uniform mat4 opacityMatrix;
 uniform vec2 vOpacityInfos;
 #endif
 
+#ifdef TRANSMISSION
+uniform mat4 transmissionMatrix;
+uniform vec2 vTransmissionInfos;
+#endif
+
 #ifdef EMISSIVE
 uniform vec2 vEmissiveInfos;
 uniform mat4 emissiveMatrix;
@@ -50,6 +55,10 @@ uniform float pointSize;
     uniform vec4 vRefractionInfos;
     uniform mat4 refractionMatrix;
     uniform vec3 vRefractionMicrosurfaceInfos;
+
+    #ifdef SCENETEXTURE
+        uniform mat4 sceneRefractionMatrix;
+    #endif
 #endif
 
 // Reflection

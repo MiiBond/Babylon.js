@@ -174,10 +174,10 @@ export class EngineCapabilities {
     public timerQuery: EXT_disjoint_timer_query;
     /** Defines if timestamp can be used with timer query */
     public canUseTimestampForTimerQuery: boolean;
+    /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
+    public multiview: any;
     /** Function used to let the system compiles shaders in background */
     public parallelShaderCompile: {
-        MAX_SHADER_COMPILER_THREADS_KHR: number;
-        maxShaderCompilerThreadsKHR: (thread: number) => void;
         COMPLETION_STATUS_KHR: number;
     };
 }
@@ -243,12 +243,17 @@ export interface IDisplayChangedEventArgs {
 export class Engine {
     /** Use this array to turn off some WebGL2 features on known buggy browsers version */
     public static ExceptionList = [
-        { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
-        { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
-        { key: "Firefox/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        { key: "Chrome\/63\.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
+        { key: "Firefox\/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        { key: "Firefox\/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
         { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         { key: "iPhone", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
-        { key: "iPad", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] }
+        { key: "iPad", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
+        { key: "Chrome\/72.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Chrome\/73.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Chrome\/74.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome\/71", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome\/72", capture: null, captureConstraint: null, targets: ["vao"] }
     ];
 
     /** Gets the list of created engines */
@@ -493,10 +498,18 @@ export class Engine {
     public static readonly SCALEMODE_CEILING = Constants.SCALEMODE_CEILING;
 
     /**
+     * Returns the current npm package of the sdk
+     */
+    // Not mixed with Version for tooling purpose.
+    public static get NpmPackage(): string {
+        return "babylonjs@4.0.0-alpha.33";
+    }
+
+    /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.29";
+        return "4.0.0-alpha.33";
     }
 
     /**
@@ -848,6 +861,11 @@ export class Engine {
         return this._performanceMonitor;
     }
 
+    /**
+     * Gets or sets a boolean indicating that vertex array object must be disabled even if they are supported
+     */
+    public disableVertexArrayObjects = false;
+
     // States
     /** @hidden */
     protected _depthCullingState = new _DepthCullingState();
@@ -1046,8 +1064,9 @@ export class Engine {
                 for (var exception of Engine.ExceptionList) {
                     let key = exception.key;
                     let targets = exception.targets;
+                    let check = new RegExp(key);
 
-                    if (ua.indexOf(key) > -1) {
+                    if (check.test(ua)) {
                         if (exception.capture && exception.captureConstraint) {
                             let capture = exception.capture;
                             let constraint = exception.captureConstraint;
@@ -1067,6 +1086,9 @@ export class Engine {
                             switch (target) {
                                 case "uniformBuffer":
                                     this.disableUniformBuffers = true;
+                                    break;
+                                case "vao":
+                                    this.disableVertexArrayObjects = true;
                                     break;
                                 case "textureBindingOptimization":
                                     this.disableTextureBindingOptimization = true;
@@ -1447,6 +1469,7 @@ export class Engine {
 
         this._caps.textureLOD = (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true : false;
 
+        this._caps.multiview = this._gl.getExtension('WEBGL_multiview');
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
@@ -1468,10 +1491,6 @@ export class Engine {
 
         // Shader compiler threads
         this._caps.parallelShaderCompile = this._gl.getExtension('KHR_parallel_shader_compile');
-        if (this._caps.parallelShaderCompile) {
-            const threads = this._gl.getParameter(this._caps.parallelShaderCompile.MAX_SHADER_COMPILER_THREADS_KHR);
-            this._caps.parallelShaderCompile.maxShaderCompilerThreadsKHR(threads);
-        }
 
         // Depth Texture
         if (this._webGLVersion > 1) {
@@ -1486,7 +1505,9 @@ export class Engine {
         }
 
         // Vertex array object
-        if (this._webGLVersion > 1) {
+        if (this.disableVertexArrayObjects) {
+            this._caps.vertexArrayObject = false;
+        } else if (this._webGLVersion > 1) {
             this._caps.vertexArrayObject = true;
         } else {
             var vertexArrayObjectExtension = this._gl.getExtension('OES_vertex_array_object');
@@ -1767,6 +1788,40 @@ export class Engine {
      */
     public setDepthFunctionToLess(): void {
         this._depthCullingState.depthFunc = this._gl.LESS;
+    }
+
+    private _cachedStencilBuffer: boolean;
+    private _cachedStencilFunction: number;
+    private _cachedStencilMask: number;
+    private _cachedStencilOperationPass: number;
+    private _cachedStencilOperationFail: number;
+    private _cachedStencilOperationDepthFail: number;
+    private _cachedStencilReference: number;
+
+    /**
+     * Caches the the state of the stencil buffer
+     */
+    public cacheStencilState() {
+        this._cachedStencilBuffer = this.getStencilBuffer();
+        this._cachedStencilFunction = this.getStencilFunction();
+        this._cachedStencilMask = this.getStencilMask();
+        this._cachedStencilOperationPass = this.getStencilOperationPass();
+        this._cachedStencilOperationFail = this.getStencilOperationFail();
+        this._cachedStencilOperationDepthFail = this.getStencilOperationDepthFail();
+        this._cachedStencilReference = this.getStencilFunctionReference();
+    }
+
+    /**
+     * Restores the state of the stencil buffer
+     */
+    public restoreStencilState() {
+        this.setStencilFunction(this._cachedStencilFunction);
+        this.setStencilMask(this._cachedStencilMask);
+        this.setStencilBuffer(this._cachedStencilBuffer);
+        this.setStencilOperationPass(this._cachedStencilOperationPass);
+        this.setStencilOperationFail(this._cachedStencilOperationFail);
+        this.setStencilOperationDepthFail(this._cachedStencilOperationDepthFail);
+        this.setStencilFunctionReference(this._cachedStencilReference);
     }
 
     /**
@@ -3372,13 +3427,6 @@ export class Engine {
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
 
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            let log = gl.getShaderInfoLog(shader);
-            if (log) {
-                throw new Error(log);
-            }
-        }
-
         return shader;
     }
 
@@ -3431,6 +3479,10 @@ export class Engine {
             throw new Error("Unable to create program");
         }
 
+        if (this._caps.parallelShaderCompile) {
+            shaderProgram.isParallelCompiled = true;
+        }
+
         context.attachShader(shaderProgram, vertexShader);
         context.attachShader(shaderProgram, fragmentShader);
 
@@ -3452,10 +3504,8 @@ export class Engine {
         shaderProgram.vertexShader = vertexShader;
         shaderProgram.fragmentShader = fragmentShader;
 
-        if (!this._caps.parallelShaderCompile) {
+        if (!shaderProgram.isParallelCompiled) {
             this._finalizeProgram(shaderProgram);
-        } else {
-            shaderProgram.isParallelCompiled = true;
         }
 
         return shaderProgram;
@@ -3468,7 +3518,24 @@ export class Engine {
 
         var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
-        if (!linked) {
+        if (!linked) { // Get more info
+
+            // Vertex
+            if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
+                let log = this._gl.getShaderInfoLog(vertexShader);
+                if (log) {
+                    throw new Error(log);
+                }
+            }
+
+            // Fragment
+            if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
+                let log = this._gl.getShaderInfoLog(fragmentShader);
+                if (log) {
+                    throw new Error(log);
+                }
+            }
+
             var error = context.getProgramInfoLog(shaderProgram);
             if (error) {
                 throw new Error(error);
@@ -5713,8 +5780,12 @@ export class Engine {
                 if (loader.supportCascades) {
                     this._cascadeLoadFiles(scene, onloaddata, files, onError);
                 }
-                else if (onError) {
-                    onError("Textures type does not support cascades.");
+                else {
+                    if (onError) {
+                        onError("Textures type does not support cascades.");
+                    } else {
+                        Logger.Warn("Texture loader does not support cascades.");
+                    }
                 }
             }
             else {
@@ -6422,7 +6493,12 @@ export class Engine {
 
             this._activateCurrentTexture();
 
-            this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+            if (texture && texture.isMultiview) {
+                this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
+            } else {
+                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+            }
+
             this._boundTexturesCache[this._activeChannel] = texture;
 
             if (texture) {
@@ -6613,8 +6689,11 @@ export class Engine {
         }
 
         this._activeChannel = channel;
-
-        if (internalTexture && internalTexture.is3D) {
+        if (internalTexture && internalTexture.isMultiview) {
+            if (needToBind) {
+                this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, internalTexture, isPartOfTextureArray);
+            }
+        } else if (internalTexture && internalTexture.is3D) {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
             }

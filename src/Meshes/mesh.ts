@@ -1296,7 +1296,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate = false): Mesh {
+    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
             return this;
         }
@@ -1318,23 +1318,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
 
-        if (scene._isAlternateRenderingEnabled && !alternate) {
-            let effect = subMesh.effect || this._effectiveMaterial.getEffect();
-            if (!effect || !scene.activeCamera) {
-                return this;
-            }
-            scene._switchToAlternateCameraConfiguration(true);
-            this._effectiveMaterial.bindView(effect);
-            this._effectiveMaterial.bindViewProjection(effect);
-
-            engine.setViewport(scene.activeCamera._alternateCamera.viewport);
-            this._draw(subMesh, fillMode, instancesCount, true);
-            engine.setViewport(scene.activeCamera.viewport);
-
-            scene._switchToAlternateCameraConfiguration(false);
-            this._effectiveMaterial.bindView(effect);
-            this._effectiveMaterial.bindViewProjection(effect);
-        }
         return this;
     }
 
@@ -1442,9 +1425,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var offset = 0;
         var instancesCount = 0;
 
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
-
-        var world = effectiveMesh.getWorldMatrix();
+        var world = this._effectiveMesh.getWorldMatrix();
         if (batch.renderSelf[subMesh._id]) {
             world.copyToArray(instanceStorage.instancesData, offset);
             offset += 16;
@@ -1488,7 +1469,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh {
         var scene = this.getScene();
         var engine = scene.getEngine();
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
 
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
@@ -1496,7 +1476,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
                 if (onBeforeDraw) {
-                    onBeforeDraw(false, effectiveMesh.getWorldMatrix(), effectiveMaterial);
+                    onBeforeDraw(false, this._effectiveMesh.getWorldMatrix(), effectiveMaterial);
                 }
 
                 this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
@@ -1590,7 +1570,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
+        const effectiveMesh = this._effectiveMesh;
 
         var sideOrientation = this.overrideMaterialSideOrientation;
         if (sideOrientation == null) {
@@ -2401,6 +2381,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Increase the number of facets and hence vertices in a mesh
+     * Vertex normals are interpolated from existing vertex normals
      * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
      * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
      */
@@ -2478,22 +2459,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         len = side[a][b].length;
                         for (var idx = 0; idx < len; idx++) {
                             side[b][a][idx] = side[a][b][len - 1 - idx];
-                        }
-                    }
-                    else {
-                        if (side[a][b] === undefined) {
-                            side[a][b] = new Array();
-                            len = side[b][a].length;
-                            for (var idx = 0; idx < len; idx++) {
-                                side[a][b][idx] = side[b][a][len - 1 - idx];
-                            }
-                        }
-                        if (side[b][a] === undefined) {
-                            side[b][a] = new Array();
-                            len = side[a][b].length;
-                            for (var idx = 0; idx < len; idx++) {
-                                side[b][a][idx] = side[a][b][len - 1 - idx];
-                            }
                         }
                     }
                 }
@@ -3263,6 +3228,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
       * @returns a new Mesh
       */
     public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+        throw _DevTools.WarnImport("MeshBuilder");
+    }
+
+    /**
+      * Creates a hemisphere mesh. Please consider using the same method from the MeshBuilder class instead
+      * @param name defines the name of the mesh to create
+      * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
+      * @param diameter sets the diameter size (float) of the sphere (default 1)
+      * @param scene defines the hosting scene
+      * @returns a new Mesh
+      */
+    public static CreateHemisphere(name: string, segments: number, diameter: number, scene?: Scene): Mesh {
         throw _DevTools.WarnImport("MeshBuilder");
     }
 

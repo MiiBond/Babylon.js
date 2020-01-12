@@ -3574,4 +3574,4 @@ declare module BABYLON.GUI {
         constructor(isVertical?: boolean);
         protected _arrangeChildren(): void;
     }
-}
+}

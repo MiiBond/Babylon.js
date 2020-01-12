@@ -3,7 +3,7 @@ import { Observer } from "../../Misc/observable";
 import { IAnimatable } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
-import { TextureTools } from "../../Misc/textureTools";
+import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
@@ -39,9 +39,9 @@ import "../../Shaders/pbr.vertex";
 
 /**
  * Manages the defines for the PBR Material.
- * @hiddenChildren
+ * @hidden
  */
-class PBRMaterialDefines extends MaterialDefines
+export class PBRMaterialDefines extends MaterialDefines
     implements IImageProcessingConfigurationDefines,
     IMaterialClearCoatDefines,
     IMaterialAnisotropicDefines,
@@ -96,6 +96,7 @@ class PBRMaterialDefines extends MaterialDefines
     public METALLNESSSTOREINMETALMAPBLUE = false;
     public AOSTOREINMETALMAPRED = false;
     public ENVIRONMENTBRDF = false;
+    public ENVIRONMENTBRDF_RGBD = false;
 
     public NORMAL = false;
     public TANGENT = false;
@@ -126,6 +127,7 @@ class PBRMaterialDefines extends MaterialDefines
     public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
     public INVERTCUBICMAP = false;
     public USESPHERICALFROMREFLECTIONMAP = false;
+    public SPHERICAL_HARMONICS = false;
     public USESPHERICALINVERTEX = false;
     public REFLECTIONMAP_OPPOSITEZ = false;
     public LODINREFLECTIONALPHA = false;
@@ -169,6 +171,7 @@ class PBRMaterialDefines extends MaterialDefines
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
+    public MULTIVIEW = false;
 
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
@@ -207,6 +210,14 @@ class PBRMaterialDefines extends MaterialDefines
     public SHEEN_TEXTURE = false;
     public SHEEN_TEXTUREDIRECTUV = 0;
     public SHEEN_LINKWITHALBEDO = false;
+
+    public ADOBETRANSPARENCY = false;
+    public SCENETEXTURE = false;
+    public SCENEDEPTHTEXTURE = false;
+    public TRANSMISSION = false;
+    public TRANSMISSIONRGB = false;
+    public TRANSMISSIONDIRECTUV = 0;
+    public INTERIORCOLOR = false;
 
     public UNLIT = false;
 
@@ -344,6 +355,31 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     protected _opacityTexture: BaseTexture;
 
     /**
+     * Stuff
+     */
+    protected _transmissionTexture: BaseTexture;
+
+    /**
+     * Stuff
+     */
+    protected _sceneTexture: RenderTargetTexture;
+
+    /**
+     * Stuff
+     */
+    protected _sceneDepthTexture: RenderTargetTexture;
+
+    /**
+     * Stuff
+     */
+    protected _interiorColor: Color3 = new Color3(1, 1, 1);
+
+    /**
+     * Stuff
+     */
+    protected _interiorDensity: number = 0.0;
+
+    /**
      * Stores the reflection values in a texture.
      */
     protected _reflectionTexture: BaseTexture;
@@ -405,6 +441,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * AKA Diffuse Color in other nomenclature.
      */
     protected _albedoColor = new Color3(1, 1, 1);
+
+    /**
+     * Stuff
+     */
+    protected _opticalTransmission = 0;
 
     /**
      * AKA Specular Color in other nomenclature.
@@ -724,6 +765,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly sheen = new PBRSheenConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     /**
+     * Custom callback helping to override the default shader used in the material.
+     */
+    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
+
+    /**
      * Instantiates a new PBRMaterial instance.
      *
      * @param name The material name
@@ -749,7 +795,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return this._renderTargets;
         };
 
-        this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
     }
 
     /**
@@ -845,7 +891,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param mesh - BJS mesh.
      */
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-        if (this._disableAlphaBlending) {
+        if (this._disableAlphaBlending && mesh.visibility >= 1.0) {
             return false;
         }
 
@@ -925,6 +971,24 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                     if (!this._opacityTexture.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
+
+                if (this._sceneTexture) {
+                    if (!this._sceneTexture.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
+
+                if (this._sceneDepthTexture) {
+                    if (!this._sceneDepthTexture.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
+
+                if (this._transmissionTexture) {
+                    if (!this._transmissionTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
                 }
@@ -1050,6 +1114,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         return false;
     }
 
+    /**
+     * Stuff
+     * @returns Whether the material uses transparency from the Adobe standard material.
+     */
+    public useAdobeTransparency(): boolean {
+        return false;
+    }
+
     private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): Nullable<Effect> {
         this._prepareDefines(mesh, defines, useInstances, useClipPlane);
         if (!defines.isDirty) {
@@ -1141,6 +1213,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "MORPHTARGETS");
         }
 
+        if (defines.MULTIVIEW) {
+            fallbacks.addFallback(0, "MULTIVIEW");
+        }
+
         //Attributes
         var attribs = [VertexBuffer.PositionKind];
 
@@ -1168,24 +1244,31 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
-        var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
+        var shaderName = "pbr";
+
+        var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "visibility", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
-            "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
-            "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
+            "opticalTransmission", "interiorColor", "interiorDensity",
+            "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vTransmissionInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
+            "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos", "vSceneRefractionInfos",
             "mBones",
-            "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "normalMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+            "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "albedoMatrix", "ambientMatrix", "opacityMatrix", "transmissionMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "normalMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix", "sceneRefractionMatrix",
+            "cameraMinMaxZ",
             "vLightingIntensity",
             "logarithmicDepthConstant",
             "vSphericalX", "vSphericalY", "vSphericalZ",
-            "vSphericalXX", "vSphericalYY", "vSphericalZZ",
+            "vSphericalXX_ZZ", "vSphericalYY_ZZ", "vSphericalZZ",
             "vSphericalXY", "vSphericalYZ", "vSphericalZX",
-            "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos",
+            "vSphericalL00",
+            "vSphericalL1_1", "vSphericalL10", "vSphericalL11",
+            "vSphericalL2_2", "vSphericalL2_1", "vSphericalL20", "vSphericalL21", "vSphericalL22",
+            "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos", "vSceneRefractionMicrosurfaceInfos",
             "vTangentSpaceParams", "boneTextureWidth",
             "vDebugMode"
         ];
 
         var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
-            "bumpSampler", "lightmapSampler", "opacitySampler",
+            "bumpSampler", "lightmapSampler", "opacitySampler", "sceneSampler", "sceneDepthSampler", "transmissionSampler",
             "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh",
             "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh",
             "microSurfaceSampler", "environmentBrdfSampler", "boneSampler"];
@@ -1214,8 +1297,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             maxSimultaneousLights: this._maxSimultaneousLights
         });
 
+        if (this.customShaderNameResolve) {
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
+        }
+
         var join = defines.toString();
-        return engine.createEffect("pbr", <EffectCreationOptions>{
+        return engine.createEffect(shaderName, <EffectCreationOptions>{
             attributes: attribs,
             uniformsNames: uniforms,
             uniformBuffersNames: uniformBuffers,
@@ -1236,8 +1323,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
 
+        // Multiview
+        MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
+        defines.ADOBETRANSPARENCY = this.useAdobeTransparency();
+        defines.INTERIORCOLOR = this._interiorDensity > 0;
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
             if (scene.texturesEnabled) {
@@ -1263,6 +1355,25 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
                 } else {
                     defines.OPACITY = false;
+                }
+
+                if (this._sceneTexture) {
+                    defines.SCENETEXTURE = true;
+                    if (this._sceneDepthTexture) {
+                        defines.SCENEDEPTHTEXTURE = true;
+                    } else {
+                        defines.SCENEDEPTHTEXTURE = false;
+                    }
+                } else {
+                    defines.SCENETEXTURE = false;
+                    defines.SCENEDEPTHTEXTURE = false;
+                }
+
+                if (this._transmissionTexture && this._opticalTransmission > 0) {
+                    MaterialHelper.PrepareDefinesForMergedUV(this._transmissionTexture, defines, "TRANSMISSION");
+                    defines.TRANSMISSIONRGB = this._transmissionTexture.getAlphaFromRGB;
+                } else {
+                    defines.TRANSMISSION = false;
                 }
 
                 var reflectionTexture = this._getReflectionTexture();
@@ -1434,8 +1545,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                     defines.ENVIRONMENTBRDF = true;
+                    // Not actual true RGBD, only the B chanel is encoded as RGBD for sheen.
+                    defines.ENVIRONMENTBRDF_RGBD = this._environmentBRDFTexture.isRGBD;
                 } else {
                     defines.ENVIRONMENTBRDF = false;
+                    defines.ENVIRONMENTBRDF_RGBD = false;
                 }
 
                 if (this._shouldUseAlphaFromAlbedoTexture()) {
@@ -1540,11 +1654,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("vAlbedoInfos", 2);
         this._uniformBuffer.addUniform("vAmbientInfos", 4);
         this._uniformBuffer.addUniform("vOpacityInfos", 2);
+        this._uniformBuffer.addUniform("vTransmissionInfos", 2);
         this._uniformBuffer.addUniform("vEmissiveInfos", 2);
         this._uniformBuffer.addUniform("vLightmapInfos", 2);
         this._uniformBuffer.addUniform("vReflectivityInfos", 3);
         this._uniformBuffer.addUniform("vMicroSurfaceSamplerInfos", 2);
         this._uniformBuffer.addUniform("vRefractionInfos", 4);
+        this._uniformBuffer.addUniform("vSceneRefractionInfos", 4);
         this._uniformBuffer.addUniform("vReflectionInfos", 2);
         this._uniformBuffer.addUniform("vReflectionPosition", 3);
         this._uniformBuffer.addUniform("vReflectionSize", 3);
@@ -1553,6 +1669,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("ambientMatrix", 16);
         this._uniformBuffer.addUniform("opacityMatrix", 16);
         this._uniformBuffer.addUniform("emissiveMatrix", 16);
+        this._uniformBuffer.addUniform("transmissionMatrix", 16);
         this._uniformBuffer.addUniform("lightmapMatrix", 16);
         this._uniformBuffer.addUniform("reflectivityMatrix", 16);
         this._uniformBuffer.addUniform("microSurfaceSamplerMatrix", 16);
@@ -1564,13 +1681,20 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("vReflectionColor", 3);
         this._uniformBuffer.addUniform("vAlbedoColor", 4);
         this._uniformBuffer.addUniform("vLightingIntensity", 4);
+        this._uniformBuffer.addUniform("sceneRefractionMatrix", 16);
+        this._uniformBuffer.addUniform("cameraMinMaxZ", 2);
 
         this._uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 3);
+        this._uniformBuffer.addUniform("vSceneRefractionMicrosurfaceInfos", 3);
         this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
+        this._uniformBuffer.addUniform("pointSize", 1);
         this._uniformBuffer.addUniform("vReflectivityColor", 4);
         this._uniformBuffer.addUniform("vEmissiveColor", 3);
 
-        this._uniformBuffer.addUniform("pointSize", 1);
+        this._uniformBuffer.addUniform("opticalTransmission", 1);
+        this._uniformBuffer.addUniform("interiorColor", 3);
+        this._uniformBuffer.addUniform("interiorDensity", 1);
+        this._uniformBuffer.addUniform("visibility", 1);
 
         PBRClearCoatConfiguration.PrepareUniformBuffer(this._uniformBuffer);
         PBRAnisotropicConfiguration.PrepareUniformBuffer(this._uniformBuffer);
@@ -1658,6 +1782,16 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
                     }
 
+                    if (this._transmissionTexture) {
+                        this._uniformBuffer.updateFloat2("vTransmissionInfos", this._transmissionTexture.coordinatesIndex, this._transmissionTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._transmissionTexture, this._uniformBuffer, "transmission");
+                    }
+
+                    // if (this._sceneTexture) {
+                    //     const engine = this.getScene().getEngine();
+                    //     this._uniformBuffer.updateFloat2("sceneTextureSize", engine.getRenderWidth(), engine.getRenderHeight());
+                    // }
+
                     if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                         this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                         this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
@@ -1671,19 +1805,33 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                         var polynomials = reflectionTexture.sphericalPolynomial;
                         if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {
-                            this._activeEffect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
-                            this._activeEffect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
-                            this._activeEffect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
-                            this._activeEffect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
-                                polynomials.xx.y - polynomials.zz.y,
-                                polynomials.xx.z - polynomials.zz.z);
-                            this._activeEffect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
-                                polynomials.yy.y - polynomials.zz.y,
-                                polynomials.yy.z - polynomials.zz.z);
-                            this._activeEffect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
-                            this._activeEffect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
-                            this._activeEffect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
-                            this._activeEffect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+                            if (defines.SPHERICAL_HARMONICS) {
+                                const preScaledHarmonics = polynomials.preScaledHarmonics;
+                                this._activeEffect.setVector3("vSphericalL00", preScaledHarmonics.l00);
+                                this._activeEffect.setVector3("vSphericalL1_1", preScaledHarmonics.l1_1);
+                                this._activeEffect.setVector3("vSphericalL10", preScaledHarmonics.l10);
+                                this._activeEffect.setVector3("vSphericalL11", preScaledHarmonics.l11);
+                                this._activeEffect.setVector3("vSphericalL2_2", preScaledHarmonics.l2_2);
+                                this._activeEffect.setVector3("vSphericalL2_1", preScaledHarmonics.l2_1);
+                                this._activeEffect.setVector3("vSphericalL20", preScaledHarmonics.l20);
+                                this._activeEffect.setVector3("vSphericalL21", preScaledHarmonics.l21);
+                                this._activeEffect.setVector3("vSphericalL22", preScaledHarmonics.l22);
+                            }
+                            else {
+                                this._activeEffect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                                this._activeEffect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                                this._activeEffect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                                this._activeEffect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
+                                    polynomials.xx.y - polynomials.zz.y,
+                                    polynomials.xx.z - polynomials.zz.z);
+                                this._activeEffect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
+                                    polynomials.yy.y - polynomials.zz.y,
+                                    polynomials.yy.z - polynomials.zz.z);
+                                this._activeEffect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                                this._activeEffect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                                this._activeEffect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                                this._activeEffect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+                            }
                         }
 
                         this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos",
@@ -1732,6 +1880,27 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                         this._uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
 
+                        if (this._sceneTexture) {
+                            this._uniformBuffer.updateMatrix("sceneRefractionMatrix", this._sceneTexture.getReflectionTextureMatrix());
+                            if (this.getScene().activeCamera) {
+                                const camera = this.getScene().activeCamera;
+                                if (camera) {
+                                    this._uniformBuffer.updateFloat2("cameraMinMaxZ", camera.minZ, camera.maxZ);
+                                }
+                            }
+                            var depth = 1.0;
+                            if (!this._sceneTexture.isCube) {
+                                if ((<any>this._sceneTexture).depth) {
+                                    depth = (<any>this._sceneTexture).depth;
+                                }
+                            }
+                            this._uniformBuffer.updateFloat4("vSceneRefractionInfos", this._sceneTexture.level, this._indexOfRefraction, depth, this._invertRefractionY ? -1 : 1);
+                            this._uniformBuffer.updateFloat3("vSceneRefractionMicrosurfaceInfos",
+                                this._sceneTexture.getSize().width,
+                                this._sceneTexture.lodGenerationScale,
+                                this._sceneTexture.lodGenerationOffset);
+                        }
+
                         var depth = 1.0;
                         if (!refractionTexture.isCube) {
                             if ((<any>refractionTexture).depth) {
@@ -1763,7 +1932,17 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 this._uniformBuffer.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
-                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha * mesh.visibility);
+                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
+
+                const alpha = this._disableAlphaBlending ? mesh.visibility : this.alpha * mesh.visibility;
+                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, alpha);
+                this._uniformBuffer.updateFloat("opticalTransmission", this._opticalTransmission);
+                if (defines.INTERIORCOLOR) {
+                    this._uniformBuffer.updateColor3("interiorColor", this._interiorColor);
+                    this._uniformBuffer.updateFloat("interiorDensity", this._interiorDensity);
+                }
+                // Visibility
+                this._uniformBuffer.updateFloat("visibility", mesh.visibility);
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
@@ -1786,6 +1965,17 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                     this._uniformBuffer.setTexture("opacitySampler", this._opacityTexture);
+                }
+
+                if (this._sceneTexture) {
+                    this._uniformBuffer.setTexture("sceneSampler", this._sceneTexture);
+                    if (this._sceneDepthTexture) {
+                        this._uniformBuffer.setTexture("sceneDepthSampler", this._sceneDepthTexture);
+                    }
+                }
+
+                if (this._transmissionTexture) {
+                    this._uniformBuffer.setTexture("transmissionSampler", this._transmissionTexture);
                 }
 
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
@@ -1910,6 +2100,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         if (this._opacityTexture && this._opacityTexture.animations && this._opacityTexture.animations.length > 0) {
             results.push(this._opacityTexture);
+        }
+
+        if (this._transmissionTexture && this._transmissionTexture.animations && this._transmissionTexture.animations.length > 0) {
+            results.push(this._transmissionTexture);
         }
 
         if (this._reflectionTexture && this._reflectionTexture.animations && this._reflectionTexture.animations.length > 0) {
@@ -2103,11 +2297,23 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._opacityTexture.dispose();
             }
 
+            if (this._transmissionTexture) {
+                this._transmissionTexture.dispose();
+            }
+
+            if (this._sceneTexture) {
+                this._sceneTexture.dispose();
+            }
+
+            if (this._sceneDepthTexture) {
+                this._sceneDepthTexture.dispose();
+            }
+
             if (this._reflectionTexture) {
                 this._reflectionTexture.dispose();
             }
 
-            if (this._environmentBRDFTexture && this.getScene()._environmentBRDFTexture !== this._environmentBRDFTexture) {
+            if (this._environmentBRDFTexture && this.getScene().environmentBRDFTexture !== this._environmentBRDFTexture) {
                 this._environmentBRDFTexture.dispose();
             }
 

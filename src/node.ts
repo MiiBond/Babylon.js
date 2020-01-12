@@ -124,8 +124,8 @@ export class Node implements IBehaviorAware<Node> {
     private _isReady = true;
     /** @hidden */
     public _currentRenderId = -1;
-    private _parentRenderId = -1;
-    protected _childRenderId = -1;
+    private _parentUpdateId = -1;
+    protected _childUpdateId = -1;
 
     /** @hidden */
     public _waitingParentId: Nullable<string>;
@@ -154,7 +154,8 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * Gets or sets the parent of the node
+     * Gets or sets the parent of the node (without keeping the current position in the scene)
+     * @see https://doc.babylonjs.com/how_to/parenting
      */
     public set parent(parent: Nullable<Node>) {
         if (this._parentNode === parent) {
@@ -434,7 +435,7 @@ export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public _markSyncedWithParent() {
         if (this._parentNode) {
-            this._parentRenderId = this._parentNode._childRenderId;
+            this._parentUpdateId = this._parentNode._childUpdateId;
         }
     }
 
@@ -444,7 +445,7 @@ export class Node implements IBehaviorAware<Node> {
             return true;
         }
 
-        if (this._parentRenderId !== this._parentNode._childRenderId) {
+        if (this._parentUpdateId !== this._parentNode._childUpdateId) {
             return false;
         }
 

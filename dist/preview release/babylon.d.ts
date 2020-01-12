@@ -5751,9 +5751,113 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class representing spherical harmonics coefficients to the 3rd degree
+     */
+    export class SphericalHarmonics {
+        /**
+         * Defines whether or not the harmonics have been prescaled for rendering.
+         */
+        preScaled: boolean;
+        /**
+         * The l0,0 coefficients of the spherical harmonics
+         */
+        l00: Vector3;
+        /**
+         * The l1,-1 coefficients of the spherical harmonics
+         */
+        l1_1: Vector3;
+        /**
+         * The l1,0 coefficients of the spherical harmonics
+         */
+        l10: Vector3;
+        /**
+         * The l1,1 coefficients of the spherical harmonics
+         */
+        l11: Vector3;
+        /**
+         * The l2,-2 coefficients of the spherical harmonics
+         */
+        l2_2: Vector3;
+        /**
+         * The l2,-1 coefficients of the spherical harmonics
+         */
+        l2_1: Vector3;
+        /**
+         * The l2,0 coefficients of the spherical harmonics
+         */
+        l20: Vector3;
+        /**
+         * The l2,1 coefficients of the spherical harmonics
+         */
+        l21: Vector3;
+        /**
+         * The l2,2 coefficients of the spherical harmonics
+         */
+        l22: Vector3;
+        /**
+         * Adds a light to the spherical harmonics
+         * @param direction the direction of the light
+         * @param color the color of the light
+         * @param deltaSolidAngle the delta solid angle of the light
+         */
+        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
+        /**
+         * Scales the spherical harmonics by the given amount
+         * @param scale the amount to scale
+         */
+        scaleInPlace(scale: number): void;
+        /**
+         * Convert from incident radiance (Li) to irradiance (E) by applying convolution with the cosine-weighted hemisphere.
+         *
+         * ```
+         * E_lm = A_l * L_lm
+         * ```
+         *
+         * In spherical harmonics this convolution amounts to scaling factors for each frequency band.
+         * This corresponds to equation 5 in "An Efficient Representation for Irradiance Environment Maps", where
+         * the scaling factors are given in equation 9.
+         */
+        convertIncidentRadianceToIrradiance(): void;
+        /**
+         * Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
+         *
+         * ```
+         * L = (1/pi) * E * rho
+         * ```
+         *
+         * This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
+         */
+        convertIrradianceToLambertianRadiance(): void;
+        /**
+         * Integrates the reconstruction coefficients directly in to the SH preventing further
+         * required operations at run time.
+         *
+         * This is simply done by scaling back the SH with Ylm constants parameter.
+         * The trigonometric part being applied by the shader at run time.
+         */
+        preScaleForRendering(): void;
+        /**
+         * Constructs a spherical harmonics from an array.
+         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
+         * @returns the spherical harmonics
+         */
+        static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
+        /**
+         * Gets the spherical harmonics from polynomial
+         * @param polynomial the spherical polynomial
+         * @returns the spherical harmonics
+         */
+        static FromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
+    }
+    /**
      * Class representing spherical polynomial coefficients to the 3rd degree
      */
     export class SphericalPolynomial {
+        private _harmonics;
+        /**
+         * The spherical harmonics used to create the polynomials.
+         */
+        readonly preScaledHarmonics: SphericalHarmonics;
         /**
          * The x coefficients of the spherical polynomial
          */
@@ -5799,7 +5903,7 @@ declare module BABYLON {
          * Scales the spherical polynomial by the given amount
          * @param scale the amount to scale
          */
-        scale(scale: number): void;
+        scaleInPlace(scale: number): void;
         /**
          * Gets the spherical polynomial from harmonics
          * @param harmonics the spherical harmonics
@@ -5812,93 +5916,6 @@ declare module BABYLON {
          * @returns the spherical polynomial
          */
         static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalPolynomial;
-    }
-    /**
-     * Class representing spherical harmonics coefficients to the 3rd degree
-     */
-    export class SphericalHarmonics {
-        /**
-         * The l0,0 coefficients of the spherical harmonics
-         */
-        l00: Vector3;
-        /**
-         * The l1,-1 coefficients of the spherical harmonics
-         */
-        l1_1: Vector3;
-        /**
-         * The l1,0 coefficients of the spherical harmonics
-         */
-        l10: Vector3;
-        /**
-         * The l1,1 coefficients of the spherical harmonics
-         */
-        l11: Vector3;
-        /**
-         * The l2,-2 coefficients of the spherical harmonics
-         */
-        l2_2: Vector3;
-        /**
-         * The l2,-1 coefficients of the spherical harmonics
-         */
-        l2_1: Vector3;
-        /**
-         * The l2,0 coefficients of the spherical harmonics
-         */
-        l20: Vector3;
-        /**
-         * The l2,1 coefficients of the spherical harmonics
-         */
-        l21: Vector3;
-        /**
-         * The l2,2 coefficients of the spherical harmonics
-         */
-        lL22: Vector3;
-        /**
-         * Adds a light to the spherical harmonics
-         * @param direction the direction of the light
-         * @param color the color of the light
-         * @param deltaSolidAngle the delta solid angle of the light
-         */
-        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
-        /**
-         * Scales the spherical harmonics by the given amount
-         * @param scale the amount to scale
-         */
-        scale(scale: number): void;
-        /**
-         * Convert from incident radiance (Li) to irradiance (E) by applying convolution with the cosine-weighted hemisphere.
-         *
-         * ```
-         * E_lm = A_l * L_lm
-         * ```
-         *
-         * In spherical harmonics this convolution amounts to scaling factors for each frequency band.
-         * This corresponds to equation 5 in "An Efficient Representation for Irradiance Environment Maps", where
-         * the scaling factors are given in equation 9.
-         */
-        convertIncidentRadianceToIrradiance(): void;
-        /**
-         * Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
-         *
-         * ```
-         * L = (1/pi) * E * rho
-         * ```
-         *
-         * This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
-         */
-        convertIrradianceToLambertianRadiance(): void;
-        /**
-         * Gets the spherical harmonics from polynomial
-         * @param polynomial the spherical polynomial
-         * @returns the spherical harmonics
-         */
-        static FromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
-        /**
-         * Constructs a spherical harmonics from an array.
-         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
-         * @returns the spherical harmonics
-         */
-        static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
     }
 }
 declare module BABYLON {
@@ -6257,6 +6274,10 @@ declare module BABYLON {
          */
         is3D: boolean;
         /**
+         * Defines if the texture contains multiview data
+         */
+        isMultiview: boolean;
+        /**
          * Gets the URL used to load this texture
          */
         url: string;
@@ -6382,6 +6403,10 @@ declare module BABYLON {
         _lodGenerationScale: number;
         /** @hidden */
         _lodGenerationOffset: number;
+        /** @hidden */
+        _colorTextureArray: Nullable<WebGLTexture>;
+        /** @hidden */
+        _depthStencilTextureArray: Nullable<WebGLTexture>;
         /** @hidden */
         _lodTextureHigh: BaseTexture;
         /** @hidden */
@@ -7734,6 +7759,7 @@ declare module BABYLON {
         /**
          * Defines the passed node as the parent of the current node.
          * The node will remain exactly where it is and its position / rotation will be updated accordingly
+         * @see https://doc.babylonjs.com/how_to/parenting
          * @param node the node ot set as the parent
          * @returns this TransformNode.
          */
@@ -9184,6 +9210,12 @@ declare module BABYLON {
          * @returns false if defines are considered not dirty and have not been checked
          */
         static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets?: boolean, useVertexAlpha?: boolean): boolean;
+        /**
+         * Prepares the defines related to multiview
+         * @param scene The scene we are intending to draw
+         * @param defines The defines to update
+         */
+        static PrepareDefinesForMultiview(scene: Scene, defines: any): void;
         /**
          * Prepares the defines related to the light information passed in parameter
          * @param scene The scene we are intending to draw
@@ -11457,8 +11489,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Serializes the component data to the specified json object
          * @param serializationObject The object to serialize to
@@ -12071,6 +12104,18 @@ declare module BABYLON {
         private _observer;
         private previousPosition;
         /**
+         * Observable for when a pointer move event occurs containing the move offset
+         */
+        onPointerMovedObservable: Observable<{
+            offsetX: number;
+            offsetY: number;
+        }>;
+        /**
+         * @hidden
+         * If the camera should be rotated automatically based on pointer movement
+         */
+        _allowCameraRotation: boolean;
+        /**
          * Manage the mouse inputs to control the movement of a free camera.
          * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
          * @param touchEnabled Defines if touch is enabled or not
@@ -12170,6 +12215,14 @@ declare module BABYLON {
      */
     export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
         /**
+         * @hidden
+         */
+        _keyboardInput: Nullable<FreeCameraKeyboardMoveInput>;
+        /**
+         * @hidden
+         */
+        _mouseInput: Nullable<FreeCameraMouseInput>;
+        /**
          * Instantiates a new FreeCameraInputsManager.
          * @param camera Defines the camera the inputs belong to
          */
@@ -12185,6 +12238,11 @@ declare module BABYLON {
          * @returns the current input manager
          */
         addMouse(touchEnabled?: boolean): FreeCameraInputsManager;
+        /**
+         * Removes the mouse input support from the manager
+         * @returns the current input manager
+         */
+        removeMouse(): FreeCameraInputsManager;
         /**
          * Add touch input support to the input manager.
          * @returns the current input manager
@@ -12875,6 +12933,104 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var vrMultiviewToSingleviewPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Renders to multiple views with a single draw call
+     * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
+     */
+    export class MultiviewRenderTarget extends RenderTargetTexture {
+        /**
+         * Creates a multiview render target
+         * @param scene scene used with the render target
+         * @param size the size of the render target (used for each view)
+         */
+        constructor(scene: Scene, size?: number | {
+            width: number;
+            height: number;
+        } | {
+            ratio: number;
+        });
+        /**
+         * @hidden
+         * @param faceIndex the face index, if its a cube texture
+         */
+        _bindFrameBuffer(faceIndex?: number): void;
+        /**
+         * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+         * @returns the view count
+         */
+        getViewCount(): number;
+    }
+}
+declare module BABYLON {
+        interface Engine {
+            /**
+             * Creates a new multiview render target
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @returns the created multiview texture
+             */
+            createMultiviewRenderTargetTexture(width: number, height: number): InternalTexture;
+            /**
+             * Binds a multiview framebuffer to be drawn to
+             * @param multiviewTexture texture to bind
+             */
+            bindMultiviewFramebuffer(multiviewTexture: InternalTexture): void;
+        }
+        interface Camera {
+            /**
+             * @hidden
+             * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+             */
+            _useMultiviewToSingleView: boolean;
+            /**
+             * @hidden
+             * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+             */
+            _multiviewTexture: Nullable<RenderTargetTexture>;
+            /**
+             * @hidden
+             * ensures the multiview texture of the camera exists and has the specified width/height
+             * @param width height to set on the multiview texture
+             * @param height width to set on the multiview texture
+             */
+            _resizeOrCreateMultiviewTexture(width: number, height: number): void;
+        }
+        interface Scene {
+            /** @hidden */
+            _transformMatrixR: Matrix;
+            /** @hidden */
+            _multiviewSceneUbo: Nullable<UniformBuffer>;
+            /** @hidden */
+            _createMultiviewUbo(): void;
+            /** @hidden */
+            _updateMultiviewUbo(viewR?: Matrix, projectionR?: Matrix): void;
+            /** @hidden */
+            _renderMultiviewToSingleView(camera: Camera): void;
+        }
+}
+declare module BABYLON {
+    /**
+     * VRMultiviewToSingleview used to convert multiview texture arrays to standard textures for scenarios such as webVR
+     * This will not be used for webXR as it supports displaying texture arrays directly
+     */
+    export class VRMultiviewToSingleviewPostProcess extends PostProcess {
+        /**
+         * Initializes a VRMultiviewToSingleview
+         * @param name name of the post process
+         * @param camera camera to be applied to
+         * @param scaleFactor scaling factor to the size of the output texture
+         */
+        constructor(name: string, camera: Camera, scaleFactor: number);
+    }
+}
+declare module BABYLON {
     /**
      * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
      * IMPORTANT!! The data is right-hand data.
@@ -12983,6 +13139,10 @@ declare module BABYLON {
          * To change the default offset from the ground to account for user's height in meters. Will be scaled by positionScale. (default: 1.7)
          */
         defaultHeight?: number;
+        /**
+         * If multiview should be used if availible (default: false)
+         */
+        useMultiview?: boolean;
     }
     /**
      * This represents a WebVR camera.
@@ -16704,6 +16864,14 @@ declare module BABYLON {
         setArray3(name: string, value: number[]): ShaderMaterial;
         private _checkCache;
         /**
+         * Specifies that the submesh is ready to be used
+         * @param mesh defines the mesh to check
+         * @param subMesh defines which submesh to check
+         * @param useInstances specifies that instances should be used
+         * @returns a boolean indicating that the submesh is ready or not
+         */
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        /**
          * Checks if the material is ready to render the requested mesh
          * @param mesh Define the mesh to render
          * @param useInstances Define whether or not the material is used with instances
@@ -17583,6 +17751,11 @@ declare module BABYLON {
          */
         render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
         private _bestReflectionRenderTargetDimension;
+        /**
+         * @hidden
+         * @param faceIndex face index to bind to if this is a cubetexture
+         */
+        _bindFrameBuffer(faceIndex?: number): void;
         protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
         private renderToTarget;
         /**
@@ -17626,6 +17799,11 @@ declare module BABYLON {
          * Clear the info related to rendering groups preventing retention point in material dispose.
          */
         freeRenderingGroups(): void;
+        /**
+         * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+         * @returns the view count
+         */
+        getViewCount(): number;
     }
 }
 declare module BABYLON {
@@ -18603,6 +18781,7 @@ declare module BABYLON {
         private _ranges;
         private _lastAbsoluteTransformsUpdateId;
         private _canUseTextureForBones;
+        private _uniqueId;
         /** @hidden */
         _numBonesWithLinkedTransformNode: number;
         /**
@@ -18633,6 +18812,10 @@ declare module BABYLON {
          * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
          */
         readonly isUsingTextureForMatrices: boolean;
+        /**
+         * Gets the unique ID of this skeleton
+         */
+        readonly uniqueId: number;
         /**
          * Creates a new skeleton
          * @param name defines the skeleton name
@@ -19491,6 +19674,8 @@ declare module BABYLON {
         setBodyVelocityIterations?(impostor: PhysicsImpostor, velocityIterations: number): void;
         getBodyPositionIterations?(impostor: PhysicsImpostor): number;
         setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
+        appendAnchor?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
+        appendHook?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
         sleepBody(impostor: PhysicsImpostor): void;
         wakeUpBody(impostor: PhysicsImpostor): void;
         raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
@@ -19660,6 +19845,14 @@ declare module BABYLON {
          * The collision margin around a soft object
          */
         damping?: number;
+        /**
+         * The path for a rope based on an extrusion
+         */
+        path?: any;
+        /**
+         * The shape of an extrusion used for a rope based on an extrusion
+         */
+        shape?: any;
     }
     /**
      * Interface for a physics-enabled object
@@ -19800,6 +19993,8 @@ declare module BABYLON {
         private _deltaPosition;
         private _deltaRotation;
         private _deltaRotationConjugated;
+        /** hidden */
+        _isFromLine: boolean;
         private _parent;
         private _isDisposed;
         private static _tmpVecs;
@@ -20066,6 +20261,25 @@ declare module BABYLON {
          * @returns The physics imposter
          */
         addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
+        /**
+         * Add an anchor to a cloth impostor
+         * @param otherImpostor rigid impostor to anchor to
+         * @param width ratio across width from 0 to 1
+         * @param height ratio up height from 0 to 1
+         * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between cloth impostor and anchor are ignored; default false
+         * @returns impostor the soft imposter
+         */
+        addAnchor(otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor;
+        /**
+         * Add a hook to a rope impostor
+         * @param otherImpostor rigid impostor to anchor to
+         * @param length ratio across rope from 0 to 1
+         * @param influence the elasticity between rope impostor and anchor from 0, very stretchy to 1, little strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+         * @returns impostor the rope imposter
+         */
+        addHook(otherImpostor: PhysicsImpostor, length: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor;
         /**
          * Will keep this body still, in a sleep mode.
          * @returns the physics imposter
@@ -20693,7 +20907,7 @@ declare module BABYLON {
         /** @hidden */
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
-        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate?: boolean): Mesh;
+        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh;
         /**
          * Registers for this mesh a javascript function called just before the rendering process
          * @param func defines the function to call before rendering this mesh
@@ -20867,6 +21081,7 @@ declare module BABYLON {
         flipFaces(flipNormals?: boolean): Mesh;
         /**
          * Increase the number of facets and hence vertices in a mesh
+         * Vertex normals are interpolated from existing vertex normals
          * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
          * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
          */
@@ -20966,6 +21181,15 @@ declare module BABYLON {
           * @returns a new Mesh
           */
         static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        /**
+          * Creates a hemisphere mesh. Please consider using the same method from the MeshBuilder class instead
+          * @param name defines the name of the mesh to create
+          * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
+          * @param diameter sets the diameter size (float) of the sphere (default 1)
+          * @param scene defines the hosting scene
+          * @returns a new Mesh
+          */
+        static CreateHemisphere(name: string, segments: number, diameter: number, scene?: Scene): Mesh;
         /**
          * Creates a cylinder or a cone mesh. Please consider using the same method from the MeshBuilder class instead
          * @param name defines the name of the mesh to create
@@ -24025,10 +24249,11 @@ declare module BABYLON {
         getBoundingInfo(): BoundingInfo;
         /**
          * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
-         * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box
+         * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
+         * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
          * @returns the current mesh
          */
-        normalizeToUnitCube(includeDescendants?: boolean): AbstractMesh;
+        normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean): AbstractMesh;
         /**
          * Overwrite the current bounding info
          * @param boundingInfo defines the new bounding info
@@ -24115,6 +24340,8 @@ declare module BABYLON {
         _updateSubMeshesBoundingInfo(matrix: DeepImmutable<Matrix>): AbstractMesh;
         /** @hidden */
         protected _afterComputeWorldMatrix(): void;
+        /** @hidden */
+        readonly _effectiveMesh: AbstractMesh;
         /**
          * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
          * A mesh is in the frustum if its bounding box intersects the frustum
@@ -24602,8 +24829,8 @@ declare module BABYLON {
         private _isReady;
         /** @hidden */
         _currentRenderId: number;
-        private _parentRenderId;
-        protected _childRenderId: number;
+        private _parentUpdateId;
+        protected _childUpdateId: number;
         /** @hidden */
         _waitingParentId: Nullable<string>;
         /** @hidden */
@@ -24624,7 +24851,8 @@ declare module BABYLON {
          */
         isDisposed(): boolean;
         /**
-         * Gets or sets the parent of the node
+         * Gets or sets the parent of the node (without keeping the current position in the scene)
+         * @see https://doc.babylonjs.com/how_to/parenting
          */
         parent: Nullable<Node>;
         private addToSceneRootNodes;
@@ -26586,10 +26814,10 @@ declare module BABYLON {
         timerQuery: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         canUseTimestampForTimerQuery: boolean;
+        /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
+        multiview: any;
         /** Function used to let the system compiles shaders in background */
         parallelShaderCompile: {
-            MAX_SHADER_COMPILER_THREADS_KHR: number;
-            maxShaderCompilerThreadsKHR: (thread: number) => void;
             COMPLETION_STATUS_KHR: number;
         };
     }
@@ -26871,6 +27099,10 @@ declare module BABYLON {
         /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
         static readonly SCALEMODE_CEILING: number;
         /**
+         * Returns the current npm package of the sdk
+         */
+        static readonly NpmPackage: string;
+        /**
          * Returns the current version of the framework
          */
         static readonly Version: string;
@@ -27116,6 +27348,10 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
          */
         readonly performanceMonitor: PerformanceMonitor;
+        /**
+         * Gets or sets a boolean indicating that vertex array object must be disabled even if they are supported
+         */
+        disableVertexArrayObjects: boolean;
         /** @hidden */
         protected _depthCullingState: _DepthCullingState;
         /** @hidden */
@@ -27337,6 +27573,21 @@ declare module BABYLON {
          * Sets the current depth function to LESS
          */
         setDepthFunctionToLess(): void;
+        private _cachedStencilBuffer;
+        private _cachedStencilFunction;
+        private _cachedStencilMask;
+        private _cachedStencilOperationPass;
+        private _cachedStencilOperationFail;
+        private _cachedStencilOperationDepthFail;
+        private _cachedStencilReference;
+        /**
+         * Caches the the state of the stencil buffer
+         */
+        cacheStencilState(): void;
+        /**
+         * Restores the state of the stencil buffer
+         */
+        restoreStencilState(): void;
         /**
          * Sets the current depth function to LEQUAL
          */
@@ -29740,6 +29991,7 @@ declare module BABYLON {
     export function serializeAsColor4(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     export function serializeAsImageProcessingConfiguration(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     export function serializeAsQuaternion(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsMatrix(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     /**
      * Decorator used to define property that can be serialized as reference to a camera
      * @param sourceName defines the name of the property to decorate
@@ -29861,11 +30113,6 @@ declare module BABYLON {
          * Defines if by default attaching controls should prevent the default javascript event to continue.
          */
         static ForceAttachControlToAlwaysPreventDefault: boolean;
-        /**
-         * @hidden
-         * Might be removed once multiview will be a thing
-         */
-        static UseAlternateWebVRRendering: boolean;
         /**
          * Define the input manager associated with the camera.
          */
@@ -29994,8 +30241,6 @@ declare module BABYLON {
         protected _webvrViewMatrix: Matrix;
         /** @hidden */
         _skipRendering: boolean;
-        /** @hidden */
-        _alternateCamera: Camera;
         /** @hidden */
         _projectionMatrix: Matrix;
         /** @hidden */
@@ -30694,8 +30939,17 @@ declare module BABYLON {
          * @param scriptUrl defines the url of the script to laod
          * @param onSuccess defines the callback called when the script is loaded
          * @param onError defines the callback to call if an error occurs
+         * @param scriptId defines the id of the script element
          */
-        static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void): void;
+        static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string): void;
+        /**
+         * Load an asynchronous script (identified by an url). When the url returns, the
+         * content of this file is added into a new script element, attached to the DOM (body element)
+         * @param scriptUrl defines the url of the script to laod
+         * @param scriptId defines the id of the script element
+         * @returns a promise request object
+         */
+        static LoadScriptAsync(scriptUrl: string, scriptId?: string): Nullable<Promise<boolean>>;
         /**
          * Loads a file from a blob
          * @param fileToLoad defines the blob to use
@@ -30747,6 +31001,13 @@ declare module BABYLON {
          * @returns true if object has no own property
          */
         static IsEmpty(obj: any): boolean;
+        /**
+         * Checks for a matching suffix at the end of a string (for ES5 and lower)
+         * @param str Source string
+         * @param suffix Suffix to search for in the source string
+         * @returns Boolean indicating whether the suffix was found (true) or not (false)
+         */
+        static EndsWith(str: string, suffix: string): boolean;
         /**
          * Function used to register events at window level
          * @param events defines the events to register
@@ -31433,8 +31694,15 @@ declare module BABYLON {
          * Defines the color used to simulate the ambient color (Default is (0, 0, 0))
          */
         ambientColor: Color3;
-        /** @hidden */
-        _environmentBRDFTexture: BaseTexture;
+        /**
+         * This is use to store the default BRDF lookup for PBR materials in your scene.
+         * It should only be one of the following (if not the default embedded one):
+         * * For uncorrelated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = false) : https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
+         * * For correlated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedBRDF.dds
+         * * For correlated multi scattering BRDF (pbr.brdf.useEnergyConservation = true and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
+         * The material properties need to be setup according to the type of texture in use.
+         */
+        environmentBRDFTexture: BaseTexture;
         /** @hidden */
         protected _environmentTexture: Nullable<BaseTexture>;
         /**
@@ -31886,7 +32154,8 @@ declare module BABYLON {
         lightsEnabled: boolean;
         /** All of the active cameras added to this scene. */
         activeCameras: Camera[];
-        private _activeCamera;
+        /** @hidden */
+        _activeCamera: Nullable<Camera>;
         /** Gets or sets the current active camera */
         activeCamera: Nullable<Camera>;
         private _defaultMaterial;
@@ -32011,8 +32280,6 @@ declare module BABYLON {
         private _intermediateRendering;
         private _viewUpdateFlag;
         private _projectionUpdateFlag;
-        private _alternateViewUpdateFlag;
-        private _alternateProjectionUpdateFlag;
         /** @hidden */
         _toBeDisposed: Nullable<IDisposable>[];
         private _activeRequests;
@@ -32036,20 +32303,14 @@ declare module BABYLON {
         _activeAnimatables: Animatable[];
         private _transformMatrix;
         private _sceneUbo;
-        private _alternateSceneUbo;
-        private _viewMatrix;
+        /** @hidden */
+        _viewMatrix: Matrix;
         private _projectionMatrix;
-        private _alternateViewMatrix;
-        private _alternateProjectionMatrix;
-        private _alternateTransformMatrix;
-        private _useAlternateCameraConfiguration;
-        private _alternateRendering;
         private _wheelEventName;
         /** @hidden */
         _forcedViewPosition: Nullable<Vector3>;
         /** @hidden */
-        readonly _isAlternateRenderingEnabled: boolean;
-        private _frustumPlanes;
+        _frustumPlanes: Plane[];
         /**
          * Gets the list of frustum planes (built from the active camera)
          */
@@ -32216,6 +32477,11 @@ declare module BABYLON {
          * @param options defines the scene options
          */
         constructor(engine: Engine, options?: SceneOptions);
+        /**
+         * Gets a string idenfifying the name of the class
+         * @returns "Scene" string
+         */
+        getClassName(): string;
         private _defaultMeshCandidates;
         /**
          * @hidden
@@ -32336,7 +32602,6 @@ declare module BABYLON {
         incrementRenderId(): void;
         private _updatePointerPosition;
         private _createUbo;
-        private _createAlternateUbo;
         private _setRayOnPointerInfo;
         /**
          * Use this method to simulate a pointer move on a mesh
@@ -32455,8 +32720,6 @@ declare module BABYLON {
          * Useful to override when animations start running when loading a scene for the first time.
          */
         resetLastAnimationTimeFrame(): void;
-        /** @hidden */
-        _switchToAlternateCameraConfiguration(active: boolean): void;
         /**
          * Gets the current view matrix
          * @returns a Matrix
@@ -32474,12 +32737,12 @@ declare module BABYLON {
         getTransformMatrix(): Matrix;
         /**
          * Sets the current transform matrix
-         * @param view defines the View matrix to use
-         * @param projection defines the Projection matrix to use
+         * @param viewL defines the View matrix to use
+         * @param projectionL defines the Projection matrix to use
+         * @param viewR defines the right View matrix to use (if provided)
+         * @param projectionR defines the right Projection matrix to use (if provided)
          */
-        setTransformMatrix(view: Matrix, projection: Matrix): void;
-        /** @hidden */
-        _setAlternateTransformMatrix(view: Matrix, projection: Matrix): void;
+        setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void;
         /**
          * Gets the uniform buffer used to store scene data
          * @returns a UniformBuffer
@@ -32669,6 +32932,12 @@ declare module BABYLON {
          */
         getAnimationGroupByName(name: string): Nullable<AnimationGroup>;
         /**
+         * Get a material using its unique id
+         * @param uniqueId defines the material's unique id
+         * @return the material or null if none found.
+         */
+        getMaterialByUniqueID(uniqueId: number): Nullable<Material>;
+        /**
          * get a material using its id
          * @param id defines the material's ID
          * @return the material or null if none found.
@@ -32778,6 +33047,12 @@ declare module BABYLON {
          */
         getTransformNodeByID(id: string): Nullable<TransformNode>;
         /**
+         * Gets a transform node with its auto-generated unique id
+         * @param uniqueId efines the unique id to search for
+         * @return the found transform node or null if not found at all.
+         */
+        getTransformNodeByUniqueID(uniqueId: number): Nullable<TransformNode>;
+        /**
          * Gets a list of transform nodes using their id
          * @param id defines the id to search for
          * @returns a list of transform nodes
@@ -32831,6 +33106,12 @@ declare module BABYLON {
          * @return the found skeleton or null if not found at all.
          */
         getLastSkeletonByID(id: string): Nullable<Skeleton>;
+        /**
+         * Gets a skeleton using a given auto generated unique id
+         * @param  uniqueId defines the unique id to search for
+         * @return the found skeleton or null if not found at all.
+         */
+        getSkeletonByUniqueId(uniqueId: number): Nullable<Skeleton>;
         /**
          * Gets a skeleton using a given id (if many are found, this function will pick the first one)
          * @param id defines the id to search for
@@ -32949,14 +33230,11 @@ declare module BABYLON {
          * @param force defines a boolean used to force the update even if cache is up to date
          */
         updateTransformMatrix(force?: boolean): void;
-        /**
-         * Defines an alternate camera (used mostly in VR-like scenario where two cameras can render the same scene from a slightly different point of view)
-         * @param alternateCamera defines the camera to use
-         */
-        updateAlternateTransformMatrix(alternateCamera: Camera): void;
+        private _bindFrameBuffer;
         /** @hidden */
         _allowPostProcessClearColor: boolean;
-        private _renderForCamera;
+        /** @hidden */
+        _renderForCamera(camera: Camera, rigParent?: Camera): void;
         private _processSubCameras;
         private _checkIntersections;
         /** @hidden */
@@ -33343,6 +33621,10 @@ declare module BABYLON {
          * Textures to keep.
          */
         textures: BaseTexture[];
+        /**
+         * Environment texture for the scene
+         */
+        environmentTexture: Nullable<BaseTexture>;
     }
 }
 declare module BABYLON {
@@ -33895,8 +34177,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Disposes the component and the associated ressources.
          */
@@ -34543,6 +34826,7 @@ declare module BABYLON {
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
+        private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param element Defines the element the controls should be listened from
@@ -34898,9 +35182,8 @@ declare module BABYLON {
         protected _checkLimits(): void;
         /**
          * Rebuilds angles (alpha, beta) and radius from the give position and target
-         * @param updateView defines a boolean forcing the camera to update its position with a view matrix computation first (default is true)
          */
-        rebuildAnglesAndRadius(updateView?: boolean): void;
+        rebuildAnglesAndRadius(): void;
         /**
          * Use a position to define the current camera related information like aplha, beta and radius
          * @param position Defines the position to set the camera at
@@ -36566,6 +36849,10 @@ declare module BABYLON {
 declare module BABYLON {
         interface FreeCameraInputsManager {
             /**
+             * @hidden
+             */
+            _deviceOrientationInput: Nullable<FreeCameraDeviceOrientationInput>;
+            /**
              * Add orientation input support to the input manager.
              * @returns the current input manager
              */
@@ -36584,6 +36871,10 @@ declare module BABYLON {
         private _alpha;
         private _beta;
         private _gamma;
+        /**
+         * @hidden
+         */
+        _onDeviceOrientationChangedObservable: Observable<void>;
         /**
          * Instantiates a new input
          * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -36880,6 +37171,7 @@ declare module BABYLON {
     export class DeviceOrientationCamera extends FreeCamera {
         private _initialQuaternion;
         private _quaternionCache;
+        private _tmpDragQuaternion;
         /**
          * Creates a new device orientation camera
          * @param name The name of the camera
@@ -36887,6 +37179,16 @@ declare module BABYLON {
          * @param scene The scene the camera belongs to
          */
         constructor(name: string, position: Vector3, scene: Scene);
+        /**
+         * Disabled pointer input on first orientation sensor update (Default: true)
+         */
+        disablePointerInputWhenUsingDeviceOrientation: boolean;
+        private _dragFactor;
+        /**
+         * Enabled turning on the y axis when the orientation sensor is active
+         * @param dragFactor the factor that controls the turn speed (default: 1/300)
+         */
+        enableHorizontalDragging(dragFactor?: number): void;
         /**
          * Gets the current instance class name ("DeviceOrientationCamera").
          * This helps avoiding instanceof at run time.
@@ -37337,6 +37639,10 @@ declare module BABYLON {
          * Define if the current vr camera should compensate the distortion of the lense or not.
          */
         compensateDistortion: boolean;
+        /**
+         * Defines if multiview should be enabled when rendering (Default: false)
+         */
+        multiviewEnabled: boolean;
         /**
          * Gets the rendering aspect ratio based on the provided resolutions.
          */
@@ -38076,6 +38382,7 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        MULTIVIEW: boolean;
         /**
          * If the reflection texture on this material is in linear color space
          * @hidden
@@ -40042,85 +40349,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class containing static functions to help procedurally build meshes
-     */
-    export class LinesBuilder {
-        /**
-         * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
-         * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function
-         * * The parameter `lines` is an array of lines, each line being an array of successive Vector3
-         * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
-         * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
-         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
-         * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
-         * @param name defines the name of the new line system
-         * @param options defines the options used to create the line system
-         * @param scene defines the hosting scene
-         * @returns a new line system mesh
-         */
-        static CreateLineSystem(name: string, options: {
-            lines: Vector3[][];
-            updatable?: boolean;
-            instance?: Nullable<LinesMesh>;
-            colors?: Nullable<Color4[][]>;
-            useVertexAlpha?: boolean;
-        }, scene: Nullable<Scene>): LinesMesh;
-        /**
-         * Creates a line mesh
-         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
-         * * The parameter `points` is an array successive Vector3
-         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * The optional parameter `colors` is an array of successive Color4, one per line point
-         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
-         * * When updating an instance, remember that only point positions can change, not the number of points
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
-         * @param name defines the name of the new line system
-         * @param options defines the options used to create the line system
-         * @param scene defines the hosting scene
-         * @returns a new line mesh
-         */
-        static CreateLines(name: string, options: {
-            points: Vector3[];
-            updatable?: boolean;
-            instance?: Nullable<LinesMesh>;
-            colors?: Color4[];
-            useVertexAlpha?: boolean;
-        }, scene?: Nullable<Scene>): LinesMesh;
-        /**
-         * Creates a dashed line mesh
-         * * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
-         * * The parameter `points` is an array successive Vector3
-         * * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200)
-         * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
-         * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
-         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * When updating an instance, remember that only point positions can change, not the number of points
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the dashed line mesh
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
-         */
-        static CreateDashedLines(name: string, options: {
-            points: Vector3[];
-            dashSize?: number;
-            gapSize?: number;
-            dashNb?: number;
-            updatable?: boolean;
-            instance?: LinesMesh;
-        }, scene?: Nullable<Scene>): LinesMesh;
-    }
-}
-declare module BABYLON {
-    /**
      * Renders a layer on top of an existing scene
      */
     export class UtilityLayerRenderer implements IDisposable {
@@ -40130,6 +40358,12 @@ declare module BABYLON {
         private _lastPointerEvents;
         private static _DefaultUtilityLayer;
         private static _DefaultKeepDepthUtilityLayer;
+        private _sharedGizmoLight;
+        /**
+         * @hidden
+         * Light which used by gizmos to get light shading
+         */
+        _getSharedGizmoLight(): HemisphericLight;
         /**
          * If the picking should be done on the utility layer prior to the actual scene (Default: true)
          */
@@ -40613,6 +40847,7 @@ declare module BABYLON.Debug {
         private _debugBoxMesh;
         private _debugSphereMesh;
         private _debugMaterial;
+        private _debugMeshMeshes;
         /**
          * Creates a new PhysicsViewer
          * @param scene defines the hosting scene
@@ -40623,9 +40858,10 @@ declare module BABYLON.Debug {
         /**
          * Renders a specified physic impostor
          * @param impostor defines the impostor to render
+         * @param targetMesh defines the mesh represented by the impostor
          * @returns the new debug mesh used to render the impostor
          */
-        showImpostor(impostor: PhysicsImpostor): Nullable<AbstractMesh>;
+        showImpostor(impostor: PhysicsImpostor, targetMesh?: Mesh): Nullable<AbstractMesh>;
         /**
          * Hides a specified physic impostor
          * @param impostor defines the impostor to hide
@@ -40634,9 +40870,89 @@ declare module BABYLON.Debug {
         private _getDebugMaterial;
         private _getDebugBoxMesh;
         private _getDebugSphereMesh;
+        private _getDebugMeshMesh;
         private _getDebugMesh;
         /** Releases all resources */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class LinesBuilder {
+        /**
+         * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
+         * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function
+         * * The parameter `lines` is an array of lines, each line being an array of successive Vector3
+         * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
+         * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
+         * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
+         * @param name defines the name of the new line system
+         * @param options defines the options used to create the line system
+         * @param scene defines the hosting scene
+         * @returns a new line system mesh
+         */
+        static CreateLineSystem(name: string, options: {
+            lines: Vector3[][];
+            updatable?: boolean;
+            instance?: Nullable<LinesMesh>;
+            colors?: Nullable<Color4[][]>;
+            useVertexAlpha?: boolean;
+        }, scene: Nullable<Scene>): LinesMesh;
+        /**
+         * Creates a line mesh
+         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
+         * * The parameter `points` is an array successive Vector3
+         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * The optional parameter `colors` is an array of successive Color4, one per line point
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
+         * * When updating an instance, remember that only point positions can change, not the number of points
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
+         * @param name defines the name of the new line system
+         * @param options defines the options used to create the line system
+         * @param scene defines the hosting scene
+         * @returns a new line mesh
+         */
+        static CreateLines(name: string, options: {
+            points: Vector3[];
+            updatable?: boolean;
+            instance?: Nullable<LinesMesh>;
+            colors?: Color4[];
+            useVertexAlpha?: boolean;
+        }, scene?: Nullable<Scene>): LinesMesh;
+        /**
+         * Creates a dashed line mesh
+         * * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
+         * * The parameter `points` is an array successive Vector3
+         * * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200)
+         * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
+         * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
+         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * When updating an instance, remember that only point positions can change, not the number of points
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the dashed line mesh
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
+         */
+        static CreateDashedLines(name: string, options: {
+            points: Vector3[];
+            dashSize?: number;
+            gapSize?: number;
+            dashNb?: number;
+            updatable?: boolean;
+            instance?: LinesMesh;
+        }, scene?: Nullable<Scene>): LinesMesh;
     }
 }
 declare module BABYLON {
@@ -42249,10 +42565,286 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A directional light is defined by a direction (what a surprise!).
+     * The light is emitted from everywhere in the specified direction, and has an infinite range.
+     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
+    export class DirectionalLight extends ShadowLight {
+        private _shadowFrustumSize;
+        /**
+         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
+         */
+        /**
+        * Specifies a fix frustum size for the shadow generation.
+        */
+        shadowFrustumSize: number;
+        private _shadowOrthoScale;
+        /**
+         * Gets the shadow projection scale against the optimal computed one.
+         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+         * This does not impact in fixed frustum size (shadowFrustumSize being set)
+         */
+        /**
+        * Sets the shadow projection scale against the optimal computed one.
+        * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+        * This does not impact in fixed frustum size (shadowFrustumSize being set)
+        */
+        shadowOrthoScale: number;
+        /**
+         * Automatically compute the projection matrix to best fit (including all the casters)
+         * on each frame.
+         */
+        autoUpdateExtends: boolean;
+        private _orthoLeft;
+        private _orthoRight;
+        private _orthoTop;
+        private _orthoBottom;
+        /**
+         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
+         * The directional light is emitted from everywhere in the given direction.
+         * It can cast shadows.
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
+         * @param name The friendly name of the light
+         * @param direction The direction of the light
+         * @param scene The scene the light belongs to
+         */
+        constructor(name: string, direction: Vector3, scene: Scene);
+        /**
+         * Returns the string "DirectionalLight".
+         * @return The class name
+         */
+        getClassName(): string;
+        /**
+         * Returns the integer 1.
+         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        /**
+         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void;
+        /**
+         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        protected _buildUniformLayout(): void;
+        /**
+         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The directional light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         *
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera The camera we are returning the min for
+         * @returns the depth min z
+         */
+        getDepthMinZ(activeCamera: Camera): number;
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         *
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera The camera we are returning the max for
+         * @returns the depth max z
+         */
+        getDepthMaxZ(activeCamera: Camera): number;
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class HemisphereBuilder {
+        /**
+         * Creates a hemisphere mesh
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the hemisphere mesh
+         */
+        static CreateHemisphere(name: string, options: {
+            segments?: number;
+            diameter?: number;
+            sideOrientation?: number;
+        }, scene: any): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * A spot light is defined by a position, a direction, an angle, and an exponent.
+     * These values define a cone of light starting from the position, emitting toward the direction.
+     * The angle, in radians, defines the size (field of illumination) of the spotlight's conical beam,
+     * and the exponent defines the speed of the decay of the light with distance (reach).
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
+    export class SpotLight extends ShadowLight {
+        private _angle;
+        private _innerAngle;
+        private _cosHalfAngle;
+        private _lightAngleScale;
+        private _lightAngleOffset;
+        /**
+         * Gets the cone angle of the spot light in Radians.
+         */
+        /**
+        * Sets the cone angle of the spot light in Radians.
+        */
+        angle: number;
+        /**
+         * Only used in gltf falloff mode, this defines the angle where
+         * the directional falloff will start before cutting at angle which could be seen
+         * as outer angle.
+         */
+        /**
+        * Only used in gltf falloff mode, this defines the angle where
+        * the directional falloff will start before cutting at angle which could be seen
+        * as outer angle.
+        */
+        innerAngle: number;
+        private _shadowAngleScale;
+        /**
+         * Allows scaling the angle of the light for shadow generation only.
+         */
+        /**
+        * Allows scaling the angle of the light for shadow generation only.
+        */
+        shadowAngleScale: number;
+        /**
+         * The light decay speed with the distance from the emission spot.
+         */
+        exponent: number;
+        private _projectionTextureMatrix;
+        /**
+        * Allows reading the projecton texture
+        */
+        readonly projectionTextureMatrix: Matrix;
+        protected _projectionTextureLightNear: number;
+        /**
+         * Gets the near clip of the Spotlight for texture projection.
+         */
+        /**
+        * Sets the near clip of the Spotlight for texture projection.
+        */
+        projectionTextureLightNear: number;
+        protected _projectionTextureLightFar: number;
+        /**
+         * Gets the far clip of the Spotlight for texture projection.
+         */
+        /**
+        * Sets the far clip of the Spotlight for texture projection.
+        */
+        projectionTextureLightFar: number;
+        protected _projectionTextureUpDirection: Vector3;
+        /**
+         * Gets the Up vector of the Spotlight for texture projection.
+         */
+        /**
+        * Sets the Up vector of the Spotlight for texture projection.
+        */
+        projectionTextureUpDirection: Vector3;
+        private _projectionTexture;
+        /**
+         * Gets the projection texture of the light.
+        */
+        /**
+        * Sets the projection texture of the light.
+        */
+        projectionTexture: Nullable<BaseTexture>;
+        private _projectionTextureViewLightDirty;
+        private _projectionTextureProjectionLightDirty;
+        private _projectionTextureDirty;
+        private _projectionTextureViewTargetVector;
+        private _projectionTextureViewLightMatrix;
+        private _projectionTextureProjectionLightMatrix;
+        private _projectionTextureScalingMatrix;
+        /**
+         * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
+         * It can cast shadows.
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
+         * @param name The light friendly name
+         * @param position The position of the spot light in the scene
+         * @param direction The direction of the light in the scene
+         * @param angle The cone angle of the light in Radians
+         * @param exponent The light decay speed with the distance from the emission spot
+         * @param scene The scene the lights belongs to
+         */
+        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
+        /**
+         * Returns the string "SpotLight".
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Returns the integer 2.
+         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Overrides the direction setter to recompute the projection texture view light Matrix.
+         */
+        protected _setDirection(value: Vector3): void;
+        /**
+         * Overrides the position setter to recompute the projection texture view light Matrix.
+         */
+        protected _setPosition(value: Vector3): void;
+        /**
+         * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.
+         * Returns the SpotLight.
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        protected _computeProjectionTextureViewLightMatrix(): void;
+        protected _computeProjectionTextureProjectionLightMatrix(): void;
+        /**
+         * Main function for light texture projection matrix computing.
+         */
+        protected _computeProjectionTextureMatrix(): void;
+        protected _buildUniformLayout(): void;
+        private _computeAngleValues;
+        /**
+         * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The spot light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): SpotLight;
+        /**
+         * Disposes the light and the associated resources.
+         */
+        dispose(): void;
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Gizmo that enables viewing a light
      */
     export class LightGizmo extends Gizmo {
-        private _box;
+        private _lightMesh;
+        private _material;
         /**
          * Creates a LightGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -42268,6 +42860,15 @@ declare module BABYLON {
          * Updates the gizmo to match the attached mesh's position/rotation
          */
         protected _update(): void;
+        private static _Scale;
+        /**
+         * Creates the lines for a light mesh
+         */
+        private static _createLightLines;
+        private static _CreateHemisphericLightMesh;
+        private static _CreatePointLightMesh;
+        private static _CreateSpotLightMesh;
+        private static _CreateDirectionalLightMesh;
     }
 }
 declare module BABYLON {
@@ -42989,16 +43590,12 @@ declare module BABYLON {
     /**
      * Class used to host texture specific utilities
      */
-    export class TextureTools {
+    export class BRDFTextureTools {
         /**
-         * Uses the GPU to create a copy texture rescaled at a given size
-         * @param texture Texture to copy from
-         * @param width defines the desired width
-         * @param height defines the desired height
-         * @param useBilinearMode defines if bilinear mode has to be used
-         * @return the generated texture
+         * Expand the BRDF Texture from RGBD to Half Float if necessary.
+         * @param texture the texture to expand.
          */
-        static CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode?: boolean): Texture;
+        private static _ExpandDefaultBRDFTexture;
         /**
          * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
          * @param scene defines the hosting scene
@@ -43334,6 +43931,7 @@ declare module BABYLON {
     export interface IMaterialBRDFDefines {
         BRDF_V_HEIGHT_CORRELATED: boolean;
         MS_BRDF_ENERGY_CONSERVATION: boolean;
+        SPHERICAL_HARMONICS: boolean;
         /** @hidden */
         _areMiscDirty: boolean;
     }
@@ -43341,12 +43939,37 @@ declare module BABYLON {
      * Define the code related to the BRDF parameters of the pbr material.
      */
     export class PBRBRDFConfiguration {
+        /**
+         * Default value used for the energy conservation.
+         * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
+         */
+        static DEFAULT_USE_ENERGY_CONSERVATION: boolean;
+        /**
+         * Default value used for the Smith Visibility Height Correlated mode.
+         * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
+         */
+        static DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED: boolean;
+        /**
+         * Default value used for the IBL diffuse part.
+         * This can help switching back to the polynomials mode globally which is a tiny bit
+         * less GPU intensive at the drawback of a lower quality.
+         */
+        static DEFAULT_USE_SPHERICAL_HARMONICS: boolean;
         private _useEnergyConservation;
         /**
          * Defines if the material uses energy conservation.
          */
         useEnergyConservation: boolean;
         private _useSmithVisibilityHeightCorrelated;
+        private _useSphericalHarmonics;
+        /**
+         * LEGACY Mode set to false
+         * Defines if the material uses spherical harmonics vs spherical polynomials for the
+         * diffuse part of the IBL.
+         * The harmonics despite a tiny bigger cost has been proven to provide closer results
+         * to the ground truth.
+         */
+        useSphericalHarmonics: boolean;
         /**
          * LEGACY Mode set to false
          * Defines if the material uses height smith correlated visibility term.
@@ -43544,7 +44167,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrFunctions: {
+    export var pbrFragmentExtraDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrFragmentSamplersDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrHelperFunctions: {
         name: string;
         shader: string;
     };
@@ -43558,21 +44195,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrPreLightingFunctions: {
+    export var pbrDirectLightingSetupFunctions: {
         name: string;
         shader: string;
     };
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrFalloffLightingFunctions: {
+    export var pbrDirectLightingFalloffFunctions: {
         name: string;
         shader: string;
     };
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrLightingFunctions: {
+    export var pbrBRDFFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrDirectLightingFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrIBLFunctions: {
         name: string;
         shader: string;
     };
@@ -43606,6 +44257,168 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+    /**
+     * Manages the defines for the PBR Material.
+     * @hidden
+     */
+    export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines {
+        PBR: boolean;
+        MAINUV1: boolean;
+        MAINUV2: boolean;
+        UV1: boolean;
+        UV2: boolean;
+        ALBEDO: boolean;
+        ALBEDODIRECTUV: number;
+        VERTEXCOLOR: boolean;
+        AMBIENT: boolean;
+        AMBIENTDIRECTUV: number;
+        AMBIENTINGRAYSCALE: boolean;
+        OPACITY: boolean;
+        VERTEXALPHA: boolean;
+        OPACITYDIRECTUV: number;
+        OPACITYRGB: boolean;
+        ALPHATEST: boolean;
+        DEPTHPREPASS: boolean;
+        ALPHABLEND: boolean;
+        ALPHAFROMALBEDO: boolean;
+        ALPHATESTVALUE: string;
+        SPECULAROVERALPHA: boolean;
+        RADIANCEOVERALPHA: boolean;
+        ALPHAFRESNEL: boolean;
+        LINEARALPHAFRESNEL: boolean;
+        PREMULTIPLYALPHA: boolean;
+        EMISSIVE: boolean;
+        EMISSIVEDIRECTUV: number;
+        REFLECTIVITY: boolean;
+        REFLECTIVITYDIRECTUV: number;
+        SPECULARTERM: boolean;
+        MICROSURFACEFROMREFLECTIVITYMAP: boolean;
+        MICROSURFACEAUTOMATIC: boolean;
+        LODBASEDMICROSFURACE: boolean;
+        MICROSURFACEMAP: boolean;
+        MICROSURFACEMAPDIRECTUV: number;
+        METALLICWORKFLOW: boolean;
+        ROUGHNESSSTOREINMETALMAPALPHA: boolean;
+        ROUGHNESSSTOREINMETALMAPGREEN: boolean;
+        METALLNESSSTOREINMETALMAPBLUE: boolean;
+        AOSTOREINMETALMAPRED: boolean;
+        ENVIRONMENTBRDF: boolean;
+        ENVIRONMENTBRDF_RGBD: boolean;
+        NORMAL: boolean;
+        TANGENT: boolean;
+        BUMP: boolean;
+        BUMPDIRECTUV: number;
+        OBJECTSPACE_NORMALMAP: boolean;
+        PARALLAX: boolean;
+        PARALLAXOCCLUSION: boolean;
+        NORMALXYSCALE: boolean;
+        LIGHTMAP: boolean;
+        LIGHTMAPDIRECTUV: number;
+        USELIGHTMAPASSHADOWMAP: boolean;
+        GAMMALIGHTMAP: boolean;
+        REFLECTION: boolean;
+        REFLECTIONMAP_3D: boolean;
+        REFLECTIONMAP_SPHERICAL: boolean;
+        REFLECTIONMAP_PLANAR: boolean;
+        REFLECTIONMAP_CUBIC: boolean;
+        USE_LOCAL_REFLECTIONMAP_CUBIC: boolean;
+        REFLECTIONMAP_PROJECTION: boolean;
+        REFLECTIONMAP_SKYBOX: boolean;
+        REFLECTIONMAP_SKYBOX_TRANSFORMED: boolean;
+        REFLECTIONMAP_EXPLICIT: boolean;
+        REFLECTIONMAP_EQUIRECTANGULAR: boolean;
+        REFLECTIONMAP_EQUIRECTANGULAR_FIXED: boolean;
+        REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED: boolean;
+        INVERTCUBICMAP: boolean;
+        USESPHERICALFROMREFLECTIONMAP: boolean;
+        SPHERICAL_HARMONICS: boolean;
+        USESPHERICALINVERTEX: boolean;
+        REFLECTIONMAP_OPPOSITEZ: boolean;
+        LODINREFLECTIONALPHA: boolean;
+        GAMMAREFLECTION: boolean;
+        RGBDREFLECTION: boolean;
+        RADIANCEOCCLUSION: boolean;
+        HORIZONOCCLUSION: boolean;
+        REFRACTION: boolean;
+        REFRACTIONMAP_3D: boolean;
+        REFRACTIONMAP_OPPOSITEZ: boolean;
+        LODINREFRACTIONALPHA: boolean;
+        GAMMAREFRACTION: boolean;
+        RGBDREFRACTION: boolean;
+        LINKREFRACTIONTOTRANSPARENCY: boolean;
+        INSTANCES: boolean;
+        NUM_BONE_INFLUENCERS: number;
+        BonesPerMesh: number;
+        BONETEXTURE: boolean;
+        NONUNIFORMSCALING: boolean;
+        MORPHTARGETS: boolean;
+        MORPHTARGETS_NORMAL: boolean;
+        MORPHTARGETS_TANGENT: boolean;
+        NUM_MORPH_INFLUENCERS: number;
+        IMAGEPROCESSING: boolean;
+        VIGNETTE: boolean;
+        VIGNETTEBLENDMODEMULTIPLY: boolean;
+        VIGNETTEBLENDMODEOPAQUE: boolean;
+        TONEMAPPING: boolean;
+        TONEMAPPING_ACES: boolean;
+        CONTRAST: boolean;
+        COLORCURVES: boolean;
+        COLORGRADING: boolean;
+        COLORGRADING3D: boolean;
+        SAMPLER3DGREENDEPTH: boolean;
+        SAMPLER3DBGRMAP: boolean;
+        IMAGEPROCESSINGPOSTPROCESS: boolean;
+        EXPOSURE: boolean;
+        MULTIVIEW: boolean;
+        USEPHYSICALLIGHTFALLOFF: boolean;
+        USEGLTFLIGHTFALLOFF: boolean;
+        TWOSIDEDLIGHTING: boolean;
+        SHADOWFLOAT: boolean;
+        CLIPPLANE: boolean;
+        CLIPPLANE2: boolean;
+        CLIPPLANE3: boolean;
+        CLIPPLANE4: boolean;
+        POINTSIZE: boolean;
+        FOG: boolean;
+        LOGARITHMICDEPTH: boolean;
+        FORCENORMALFORWARD: boolean;
+        SPECULARAA: boolean;
+        CLEARCOAT: boolean;
+        CLEARCOAT_DEFAULTIOR: boolean;
+        CLEARCOAT_TEXTURE: boolean;
+        CLEARCOAT_TEXTUREDIRECTUV: number;
+        CLEARCOAT_BUMP: boolean;
+        CLEARCOAT_BUMPDIRECTUV: number;
+        CLEARCOAT_TINT: boolean;
+        CLEARCOAT_TINT_TEXTURE: boolean;
+        CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
+        ANISOTROPIC: boolean;
+        ANISOTROPIC_TEXTURE: boolean;
+        ANISOTROPIC_TEXTUREDIRECTUV: number;
+        BRDF_V_HEIGHT_CORRELATED: boolean;
+        MS_BRDF_ENERGY_CONSERVATION: boolean;
+        SHEEN: boolean;
+        SHEEN_TEXTURE: boolean;
+        SHEEN_TEXTUREDIRECTUV: number;
+        SHEEN_LINKWITHALBEDO: boolean;
+        ADOBETRANSPARENCY: boolean;
+        SCENETEXTURE: boolean;
+        SCENEDEPTHTEXTURE: boolean;
+        TRANSMISSION: boolean;
+        TRANSMISSIONRGB: boolean;
+        TRANSMISSIONDIRECTUV: number;
+        INTERIORCOLOR: boolean;
+        UNLIT: boolean;
+        DEBUGMODE: number;
+        /**
+         * Initializes the PBR Material defines.
+         */
+        constructor();
+        /**
+         * Resets the PBR Material defines.
+         */
+        reset(): void;
+    }
     /**
      * The Physically based material base class of BJS.
      *
@@ -43701,6 +44514,26 @@ declare module BABYLON {
          */
         protected _opacityTexture: BaseTexture;
         /**
+         * Stuff
+         */
+        protected _transmissionTexture: BaseTexture;
+        /**
+         * Stuff
+         */
+        protected _sceneTexture: RenderTargetTexture;
+        /**
+         * Stuff
+         */
+        protected _sceneDepthTexture: RenderTargetTexture;
+        /**
+         * Stuff
+         */
+        protected _interiorColor: Color3;
+        /**
+         * Stuff
+         */
+        protected _interiorDensity: number;
+        /**
          * Stores the reflection values in a texture.
          */
         protected _reflectionTexture: BaseTexture;
@@ -43751,6 +44584,10 @@ declare module BABYLON {
          * AKA Diffuse Color in other nomenclature.
          */
         protected _albedoColor: Color3;
+        /**
+         * Stuff
+         */
+        protected _opticalTransmission: number;
         /**
          * AKA Specular Color in other nomenclature.
          */
@@ -43990,6 +44827,10 @@ declare module BABYLON {
          */
         readonly sheen: PBRSheenConfiguration;
         /**
+         * Custom callback helping to override the default shader used in the material.
+         */
+        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
+        /**
          * Instantiates a new PBRMaterial instance.
          *
          * @param name The material name
@@ -44064,6 +44905,11 @@ declare module BABYLON {
          * @returns boolean specifiying if the material uses metallic roughness workflow.
         */
         isMetallicWorkflow(): boolean;
+        /**
+         * Stuff
+         * @returns Whether the material uses transparency from the Adobe standard material.
+         */
+        useAdobeTransparency(): boolean;
         private _prepareEffect;
         private _prepareDefines;
         /**
@@ -45683,8 +46529,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Disposes the component and the associated ressources.
          */
@@ -46423,8 +47270,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Serializes the component data to the specified json object
          * @param serializationObject The object to serialize to
@@ -46478,120 +47326,15 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Rebuilds the elements related to this component in case of
          * context lost for instance.
          */
         dispose(): void;
         private _gatherRenderTargets;
-    }
-}
-declare module BABYLON {
-    /**
-     * A directional light is defined by a direction (what a surprise!).
-     * The light is emitted from everywhere in the specified direction, and has an infinite range.
-     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
-     * Documentation: https://doc.babylonjs.com/babylon101/lights
-     */
-    export class DirectionalLight extends ShadowLight {
-        private _shadowFrustumSize;
-        /**
-         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
-         */
-        /**
-        * Specifies a fix frustum size for the shadow generation.
-        */
-        shadowFrustumSize: number;
-        private _shadowOrthoScale;
-        /**
-         * Gets the shadow projection scale against the optimal computed one.
-         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-         * This does not impact in fixed frustum size (shadowFrustumSize being set)
-         */
-        /**
-        * Sets the shadow projection scale against the optimal computed one.
-        * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-        * This does not impact in fixed frustum size (shadowFrustumSize being set)
-        */
-        shadowOrthoScale: number;
-        /**
-         * Automatically compute the projection matrix to best fit (including all the casters)
-         * on each frame.
-         */
-        autoUpdateExtends: boolean;
-        private _orthoLeft;
-        private _orthoRight;
-        private _orthoTop;
-        private _orthoBottom;
-        /**
-         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
-         * The directional light is emitted from everywhere in the given direction.
-         * It can cast shadows.
-         * Documentation : https://doc.babylonjs.com/babylon101/lights
-         * @param name The friendly name of the light
-         * @param direction The direction of the light
-         * @param scene The scene the light belongs to
-         */
-        constructor(name: string, direction: Vector3, scene: Scene);
-        /**
-         * Returns the string "DirectionalLight".
-         * @return The class name
-         */
-        getClassName(): string;
-        /**
-         * Returns the integer 1.
-         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        /**
-         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void;
-        /**
-         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        protected _buildUniformLayout(): void;
-        /**
-         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The directional light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
-        /**
-         * Gets the minZ used for shadow according to both the scene and the light.
-         *
-         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera The camera we are returning the min for
-         * @returns the depth min z
-         */
-        getDepthMinZ(activeCamera: Camera): number;
-        /**
-         * Gets the maxZ used for shadow according to both the scene and the light.
-         *
-         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera The camera we are returning the max for
-         * @returns the depth max z
-         */
-        getDepthMaxZ(activeCamera: Camera): number;
-        /**
-         * Prepares the list of defines specific to the light type.
-         * @param defines the list of defines
-         * @param lightIndex defines the index of the light for the effect
-         */
-        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
     }
 }
 declare module BABYLON {
@@ -46675,156 +47418,6 @@ declare module BABYLON {
          * @returns The point light
          */
         transferToEffect(effect: Effect, lightIndex: string): PointLight;
-        /**
-         * Prepares the list of defines specific to the light type.
-         * @param defines the list of defines
-         * @param lightIndex defines the index of the light for the effect
-         */
-        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * A spot light is defined by a position, a direction, an angle, and an exponent.
-     * These values define a cone of light starting from the position, emitting toward the direction.
-     * The angle, in radians, defines the size (field of illumination) of the spotlight's conical beam,
-     * and the exponent defines the speed of the decay of the light with distance (reach).
-     * Documentation: https://doc.babylonjs.com/babylon101/lights
-     */
-    export class SpotLight extends ShadowLight {
-        private _angle;
-        private _innerAngle;
-        private _cosHalfAngle;
-        private _lightAngleScale;
-        private _lightAngleOffset;
-        /**
-         * Gets the cone angle of the spot light in Radians.
-         */
-        /**
-        * Sets the cone angle of the spot light in Radians.
-        */
-        angle: number;
-        /**
-         * Only used in gltf falloff mode, this defines the angle where
-         * the directional falloff will start before cutting at angle which could be seen
-         * as outer angle.
-         */
-        /**
-        * Only used in gltf falloff mode, this defines the angle where
-        * the directional falloff will start before cutting at angle which could be seen
-        * as outer angle.
-        */
-        innerAngle: number;
-        private _shadowAngleScale;
-        /**
-         * Allows scaling the angle of the light for shadow generation only.
-         */
-        /**
-        * Allows scaling the angle of the light for shadow generation only.
-        */
-        shadowAngleScale: number;
-        /**
-         * The light decay speed with the distance from the emission spot.
-         */
-        exponent: number;
-        private _projectionTextureMatrix;
-        /**
-        * Allows reading the projecton texture
-        */
-        readonly projectionTextureMatrix: Matrix;
-        protected _projectionTextureLightNear: number;
-        /**
-         * Gets the near clip of the Spotlight for texture projection.
-         */
-        /**
-        * Sets the near clip of the Spotlight for texture projection.
-        */
-        projectionTextureLightNear: number;
-        protected _projectionTextureLightFar: number;
-        /**
-         * Gets the far clip of the Spotlight for texture projection.
-         */
-        /**
-        * Sets the far clip of the Spotlight for texture projection.
-        */
-        projectionTextureLightFar: number;
-        protected _projectionTextureUpDirection: Vector3;
-        /**
-         * Gets the Up vector of the Spotlight for texture projection.
-         */
-        /**
-        * Sets the Up vector of the Spotlight for texture projection.
-        */
-        projectionTextureUpDirection: Vector3;
-        private _projectionTexture;
-        /**
-         * Gets the projection texture of the light.
-        */
-        /**
-        * Sets the projection texture of the light.
-        */
-        projectionTexture: Nullable<BaseTexture>;
-        private _projectionTextureViewLightDirty;
-        private _projectionTextureProjectionLightDirty;
-        private _projectionTextureDirty;
-        private _projectionTextureViewTargetVector;
-        private _projectionTextureViewLightMatrix;
-        private _projectionTextureProjectionLightMatrix;
-        private _projectionTextureScalingMatrix;
-        /**
-         * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
-         * It can cast shadows.
-         * Documentation : https://doc.babylonjs.com/babylon101/lights
-         * @param name The light friendly name
-         * @param position The position of the spot light in the scene
-         * @param direction The direction of the light in the scene
-         * @param angle The cone angle of the light in Radians
-         * @param exponent The light decay speed with the distance from the emission spot
-         * @param scene The scene the lights belongs to
-         */
-        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
-        /**
-         * Returns the string "SpotLight".
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Returns the integer 2.
-         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Overrides the direction setter to recompute the projection texture view light Matrix.
-         */
-        protected _setDirection(value: Vector3): void;
-        /**
-         * Overrides the position setter to recompute the projection texture view light Matrix.
-         */
-        protected _setPosition(value: Vector3): void;
-        /**
-         * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.
-         * Returns the SpotLight.
-         */
-        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        protected _computeProjectionTextureViewLightMatrix(): void;
-        protected _computeProjectionTextureProjectionLightMatrix(): void;
-        /**
-         * Main function for light texture projection matrix computing.
-         */
-        protected _computeProjectionTextureMatrix(): void;
-        protected _buildUniformLayout(): void;
-        private _computeAngleValues;
-        /**
-         * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The spot light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): SpotLight;
-        /**
-         * Disposes the light and the associated resources.
-         */
-        dispose(): void;
         /**
          * Prepares the list of defines specific to the light type.
          * @param defines the list of defines
@@ -47117,6 +47710,7 @@ declare module BABYLON {
         private _fixedTimeStep;
         private _cannonRaycastResult;
         private _raycastResult;
+        private _removeAfterStep;
         BJSCANNON: any;
         constructor(_useDeltaForWorldStep?: boolean, iterations?: number, cannonInjection?: any);
         setGravity(gravity: Vector3): void;
@@ -47213,6 +47807,501 @@ declare module BABYLON {
         syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
         getRadius(impostor: PhysicsImpostor): number;
         getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
+        /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class RibbonBuilder {
+        /**
+         * Creates a ribbon mesh. The ribbon is a parametric shape.  It has no predefined shape. Its final shape will depend on the input parameters
+         * * The parameter `pathArray` is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry
+         * * The parameter `closeArray` (boolean, default false) creates a seam between the first and the last paths of the path array
+         * * The parameter `closePath` (boolean, default false) creates a seam between the first and the last points of each path of the path array
+         * * The parameter `offset` (positive integer, default : rounded half size of the pathArray length), is taken in account only if the `pathArray` is containing a single path
+         * * It's the offset to join the points from the same path. Ex : offset = 10 means the point 1 is joined to the point 11
+         * * The optional parameter `instance` is an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#ribbon
+         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture
+         * * The parameter `uvs` is an optional flat array of `Vector2` to update/set each ribbon vertex with its own custom UV values instead of the computed ones
+         * * The parameters `colors` is an optional flat array of `Color4` to set/update each ribbon vertex with its own custom color values
+         * * Note that if you use the parameters `uvs` or `colors`, the passed arrays must be populated with the right number of elements, it is to say the number of ribbon vertices. Remember that if you set `closePath` to `true`, there's one extra vertex per path in the geometry
+         * * Moreover, you can use the parameter `color` with `instance` (to update the ribbon), only if you previously used it at creation time
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the ribbon mesh
+         * @see https://doc.babylonjs.com/how_to/ribbon_tutorial
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes
+         */
+        static CreateRibbon(name: string, options: {
+            pathArray: Vector3[][];
+            closeArray?: boolean;
+            closePath?: boolean;
+            offset?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+            instance?: Mesh;
+            invertUV?: boolean;
+            uvs?: Vector2[];
+            colors?: Color4[];
+        }, scene?: Nullable<Scene>): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class ShapeBuilder {
+        /**
+         * Creates an extruded shape mesh. The extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters.
+         * * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis.
+         * * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
+         * * The parameter `rotation` (float, default 0 radians) is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve.
+         * * The parameter `scale` (float, default 1) is the value to scale the shape.
+         * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
+         * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
+         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the extruded shape mesh
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
+         */
+        static ExtrudeShape(name: string, options: {
+            shape: Vector3[];
+            path: Vector3[];
+            scale?: number;
+            rotation?: number;
+            cap?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+            instance?: Mesh;
+            invertUV?: boolean;
+        }, scene?: Nullable<Scene>): Mesh;
+        /**
+         * Creates an custom extruded shape mesh.
+         * The custom extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters.
+         * * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis.
+         * * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
+         * * The parameter `rotationFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the begining of the path
+         * * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
+         * * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the begining of the path
+         * * It must returns a float value that will be the scale value applied to the shape on each path point
+         * * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray`
+         * * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray`
+         * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
+         * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape
+         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the custom extruded shape mesh
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#custom-extruded-shapes
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
+         */
+        static ExtrudeShapeCustom(name: string, options: {
+            shape: Vector3[];
+            path: Vector3[];
+            scaleFunction?: any;
+            rotationFunction?: any;
+            ribbonCloseArray?: boolean;
+            ribbonClosePath?: boolean;
+            cap?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+            instance?: Mesh;
+            invertUV?: boolean;
+        }, scene: Scene): Mesh;
+        private static _ExtrudeShapeGeneric;
+    }
+}
+declare module BABYLON {
+    /**
+     * AmmoJS Physics plugin
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://github.com/kripken/ammo.js/
+     */
+    export class AmmoJSPlugin implements IPhysicsEnginePlugin {
+        private _useDeltaForWorldStep;
+        /**
+         * Reference to the Ammo library
+         */
+        bjsAMMO: any;
+        /**
+         * Created ammoJS world which physics bodies are added to
+         */
+        world: any;
+        /**
+         * Name of the plugin
+         */
+        name: string;
+        private _timeStep;
+        private _fixedTimeStep;
+        private _maxSteps;
+        private _tmpQuaternion;
+        private _tmpAmmoTransform;
+        private _tmpAmmoQuaternion;
+        private _tmpAmmoConcreteContactResultCallback;
+        private _collisionConfiguration;
+        private _dispatcher;
+        private _overlappingPairCache;
+        private _solver;
+        private _softBodySolver;
+        private _tmpAmmoVectorA;
+        private _tmpAmmoVectorB;
+        private _tmpAmmoVectorC;
+        private _tmpAmmoVectorD;
+        private _tmpContactCallbackResult;
+        private _tmpAmmoVectorRCA;
+        private _tmpAmmoVectorRCB;
+        private _raycastResult;
+        private static readonly DISABLE_COLLISION_FLAG;
+        private static readonly KINEMATIC_FLAG;
+        private static readonly DISABLE_DEACTIVATION_FLAG;
+        /**
+         * Initializes the ammoJS plugin
+         * @param _useDeltaForWorldStep if the time between frames should be used when calculating physics steps (Default: true)
+         * @param ammoInjection can be used to inject your own ammo reference
+         */
+        constructor(_useDeltaForWorldStep?: boolean, ammoInjection?: any);
+        /**
+         * Sets the gravity of the physics world (m/(s^2))
+         * @param gravity Gravity to set
+         */
+        setGravity(gravity: Vector3): void;
+        /**
+         * Amount of time to step forward on each frame (only used if useDeltaForWorldStep is false in the constructor)
+         * @param timeStep timestep to use in seconds
+         */
+        setTimeStep(timeStep: number): void;
+        /**
+         * Increment to step forward in the physics engine (If timeStep is set to 1/60 and fixedTimeStep is set to 1/120 the physics engine should run 2 steps per frame) (Default: 1/60)
+         * @param fixedTimeStep fixedTimeStep to use in seconds
+         */
+        setFixedTimeStep(fixedTimeStep: number): void;
+        /**
+         * Sets the maximum number of steps by the physics engine per frame (Default: 5)
+         * @param maxSteps the maximum number of steps by the physics engine per frame
+         */
+        setMaxSteps(maxSteps: number): void;
+        /**
+         * Gets the current timestep (only used if useDeltaForWorldStep is false in the constructor)
+         * @returns the current timestep in seconds
+         */
+        getTimeStep(): number;
+        private _isImpostorInContact;
+        private _isImpostorPairInContact;
+        private _stepSimulation;
+        /**
+         * Moves the physics simulation forward delta seconds and updates the given physics imposters
+         * Prior to the step the imposters physics location is set to the position of the babylon meshes
+         * After the step the babylon meshes are set to the position of the physics imposters
+         * @param delta amount of time to step forward
+         * @param impostors array of imposters to update before/after the step
+         */
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        /**
+         * Update babylon mesh to match physics world object
+         * @param impostor imposter to match
+         */
+        private _afterSoftStep;
+        /**
+         * Update babylon mesh vertices vertices to match physics world softbody or cloth
+         * @param impostor imposter to match
+         */
+        private _ropeStep;
+        /**
+         * Update babylon mesh vertices vertices to match physics world softbody or cloth
+         * @param impostor imposter to match
+         */
+        private _softbodyOrClothStep;
+        private _tmpVector;
+        private _tmpMatrix;
+        /**
+         * Applies an impulse on the imposter
+         * @param impostor imposter to apply impulse to
+         * @param force amount of force to be applied to the imposter
+         * @param contactPoint the location to apply the impulse on the imposter
+         */
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        /**
+         * Applies a force on the imposter
+         * @param impostor imposter to apply force
+         * @param force amount of force to be applied to the imposter
+         * @param contactPoint the location to apply the force on the imposter
+         */
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        /**
+         * Creates a physics body using the plugin
+         * @param impostor the imposter to create the physics body on
+         */
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        /**
+         * Removes the physics body from the imposter and disposes of the body's memory
+         * @param impostor imposter to remove the physics body from
+         */
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        /**
+         * Generates a joint
+         * @param impostorJoint the imposter joint to create the joint with
+         */
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        /**
+         * Removes a joint
+         * @param impostorJoint the imposter joint to remove the joint from
+         */
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        private _addMeshVerts;
+        /**
+         * Initialise the soft body vertices to match its object's (mesh) vertices
+         * Softbody vertices (nodes) are in world space and to match this
+         * The object's position and rotation is set to zero and so its vertices are also then set in world space
+         * @param impostor to create the softbody for
+         */
+        private _softVertexData;
+        /**
+         * Create an impostor's soft body
+         * @param impostor to create the softbody for
+         */
+        private _createSoftbody;
+        /**
+         * Create cloth for an impostor
+         * @param impostor to create the softbody for
+         */
+        private _createCloth;
+        /**
+         * Create rope for an impostor
+         * @param impostor to create the softbody for
+         */
+        private _createRope;
+        private _addHullVerts;
+        private _createShape;
+        /**
+         * Sets the physics body position/rotation from the babylon mesh's position/rotation
+         * @param impostor imposter containing the physics body and babylon object
+         */
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        /**
+         * Sets the babylon object's position/rotation from the physics body's position/rotation
+         * @param impostor imposter containing the physics body and babylon object
+         * @param newPosition new position
+         * @param newRotation new rotation
+         */
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        /**
+         * If this plugin is supported
+         * @returns true if its supported
+         */
+        isSupported(): boolean;
+        /**
+         * Sets the linear velocity of the physics body
+         * @param impostor imposter to set the velocity on
+         * @param velocity velocity to set
+         */
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        /**
+         * Sets the angular velocity of the physics body
+         * @param impostor imposter to set the velocity on
+         * @param velocity velocity to set
+         */
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        /**
+         * gets the linear velocity
+         * @param impostor imposter to get linear velocity from
+         * @returns linear velocity
+         */
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        /**
+         * gets the angular velocity
+         * @param impostor imposter to get angular velocity from
+         * @returns angular velocity
+         */
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        /**
+         * Sets the mass of physics body
+         * @param impostor imposter to set the mass on
+         * @param mass mass to set
+         */
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        /**
+         * Gets the mass of the physics body
+         * @param impostor imposter to get the mass from
+         * @returns mass
+         */
+        getBodyMass(impostor: PhysicsImpostor): number;
+        /**
+         * Gets friction of the impostor
+         * @param impostor impostor to get friction from
+         * @returns friction value
+         */
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        /**
+         * Sets friction of the impostor
+         * @param impostor impostor to set friction on
+         * @param friction friction value
+         */
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        /**
+         * Gets restitution of the impostor
+         * @param impostor impostor to get restitution from
+         * @returns restitution value
+         */
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        /**
+         * Sets resitution of the impostor
+         * @param impostor impostor to set resitution on
+         * @param restitution resitution value
+         */
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        /**
+         * Gets pressure inside the impostor
+         * @param impostor impostor to get pressure from
+         * @returns pressure value
+         */
+        getBodyPressure(impostor: PhysicsImpostor): number;
+        /**
+         * Sets pressure inside a soft body impostor
+         * Cloth and rope must remain 0 pressure
+         * @param impostor impostor to set pressure on
+         * @param pressure pressure value
+         */
+        setBodyPressure(impostor: PhysicsImpostor, pressure: number): void;
+        /**
+         * Gets stiffness of the impostor
+         * @param impostor impostor to get stiffness from
+         * @returns pressure value
+         */
+        getBodyStiffness(impostor: PhysicsImpostor): number;
+        /**
+         * Sets stiffness of the impostor
+         * @param impostor impostor to set stiffness on
+         * @param stiffness stiffness value from 0 to 1
+         */
+        setBodyStiffness(impostor: PhysicsImpostor, stiffness: number): void;
+        /**
+         * Gets velocityIterations of the impostor
+         * @param impostor impostor to get velocity iterations from
+         * @returns velocityIterations value
+         */
+        getBodyVelocityIterations(impostor: PhysicsImpostor): number;
+        /**
+         * Sets velocityIterations of the impostor
+         * @param impostor impostor to set velocity iterations on
+         * @param velocityIterations velocityIterations value
+         */
+        setBodyVelocityIterations(impostor: PhysicsImpostor, velocityIterations: number): void;
+        /**
+         * Gets positionIterations of the impostor
+         * @param impostor impostor to get position iterations from
+         * @returns positionIterations value
+         */
+        getBodyPositionIterations(impostor: PhysicsImpostor): number;
+        /**
+         * Sets positionIterations of the impostor
+         * @param impostor impostor to set position on
+         * @param positionIterations positionIterations value
+         */
+        setBodyPositionIterations(impostor: PhysicsImpostor, positionIterations: number): void;
+        /**
+        * Append an anchor to a cloth object
+        * @param impostor is the cloth impostor to add anchor to
+        * @param otherImpostor is the rigid impostor to anchor to
+        * @param width ratio across width from 0 to 1
+        * @param height ratio up height from 0 to 1
+        * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+        * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+        */
+        appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence?: number, noCollisionBetweenLinkedBodies?: boolean): void;
+        /**
+         * Append an hook to a rope object
+         * @param impostor is the rope impostor to add hook to
+         * @param otherImpostor is the rigid impostor to hook to
+         * @param length ratio along the rope from 0 to 1
+         * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, little strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+         */
+        appendHook(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence?: number, noCollisionBetweenLinkedBodies?: boolean): void;
+        /**
+         * Sleeps the physics body and stops it from being active
+         * @param impostor impostor to sleep
+         */
+        sleepBody(impostor: PhysicsImpostor): void;
+        /**
+         * Activates the physics body
+         * @param impostor impostor to activate
+         */
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        /**
+         * Updates the distance parameters of the joint
+         * @param joint joint to update
+         * @param maxDistance maximum distance of the joint
+         * @param minDistance minimum distance of the joint
+         */
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        /**
+         * Sets a motor on the joint
+         * @param joint joint to set motor on
+         * @param speed speed of the motor
+         * @param maxForce maximum force of the motor
+         * @param motorIndex index of the motor
+         */
+        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
+        /**
+         * Sets the motors limit
+         * @param joint joint to set limit on
+         * @param upperLimit upper limit
+         * @param lowerLimit lower limit
+         */
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
+        /**
+         * Syncs the position and rotation of a mesh with the impostor
+         * @param mesh mesh to sync
+         * @param impostor impostor to update the mesh with
+         */
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        /**
+         * Gets the radius of the impostor
+         * @param impostor impostor to get radius from
+         * @returns the radius
+         */
+        getRadius(impostor: PhysicsImpostor): number;
+        /**
+         * Gets the box size of the impostor
+         * @param impostor impostor to get box size from
+         * @param result the resulting box size
+         */
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        /**
+         * Disposes of the impostor
+         */
         dispose(): void;
         /**
          * Does a raycast in the physics world
@@ -47519,6 +48608,78 @@ declare module BABYLON {
          * Parses a JSON object correponding to the serialize function.
          */
         static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial;
+    }
+}
+declare module BABYLON {
+    /**
+     * The PBR material of BJS following the metal roughness convention.
+     *
+     * This fits to the PBR convention in the GLTF definition:
+     * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
+     */
+    export class PBRTransparencyMaterial extends PBRMaterial {
+        /**
+         * The base color has two different interhttp://localhost:1338/Playground/index-local.htmlpretations depending on the value of metalness.
+         * When the material is a metal, the base color is the specific measured reflectance value
+         * at normal incidence (F0). For a non-metal the base color represents the reflected diffuse color
+         * of the material.
+         */
+        interiorColor: Color3;
+        /**
+         * Stuff
+         */
+        interiorDensity: number;
+        /**
+         * Stuff
+         */
+        transmissionTexture: BaseTexture;
+        /**
+         * Stuff
+         */
+        opticalTransmission: number;
+        /**
+         * Stuff
+         */
+        sceneTexture: RenderTargetTexture;
+        /**
+         * Stuff
+         */
+        sceneDepthTexture: RenderTargetTexture;
+        /**
+         * Instantiates a new PBRMetalRoughnessMaterial instance.
+         *
+         * @param name The material name
+         * @param scene The scene the material will be use in.
+         */
+        constructor(name: string, scene: Scene);
+        /**
+         * Return the currrent class name of the material.
+         */
+        getClassName(): string;
+        useAdobeTransparency(): boolean;
+        /**
+         * Return the active textures of the material.
+         */
+        getActiveTextures(): BaseTexture[];
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Makes a duplicate of the current material.
+         * @param name - name to use for the new material.
+         */
+        clone(name: string): PBRTransparencyMaterial;
+        /**
+         * Serialize the material to a parsable JSON object.
+         */
+        serialize(): any;
+        /**
+         * Parses a JSON object correponding to the serialize function.
+         */
+        static Parse(source: any, scene: Scene, rootUrl: string): PBRTransparencyMaterial;
     }
 }
 declare module BABYLON {
@@ -48232,50 +49393,6 @@ declare module BABYLON {
     /**
      * Class containing static functions to help procedurally build meshes
      */
-    export class RibbonBuilder {
-        /**
-         * Creates a ribbon mesh. The ribbon is a parametric shape.  It has no predefined shape. Its final shape will depend on the input parameters
-         * * The parameter `pathArray` is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry
-         * * The parameter `closeArray` (boolean, default false) creates a seam between the first and the last paths of the path array
-         * * The parameter `closePath` (boolean, default false) creates a seam between the first and the last points of each path of the path array
-         * * The parameter `offset` (positive integer, default : rounded half size of the pathArray length), is taken in account only if the `pathArray` is containing a single path
-         * * It's the offset to join the points from the same path. Ex : offset = 10 means the point 1 is joined to the point 11
-         * * The optional parameter `instance` is an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#ribbon
-         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-         * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture
-         * * The parameter `uvs` is an optional flat array of `Vector2` to update/set each ribbon vertex with its own custom UV values instead of the computed ones
-         * * The parameters `colors` is an optional flat array of `Color4` to set/update each ribbon vertex with its own custom color values
-         * * Note that if you use the parameters `uvs` or `colors`, the passed arrays must be populated with the right number of elements, it is to say the number of ribbon vertices. Remember that if you set `closePath` to `true`, there's one extra vertex per path in the geometry
-         * * Moreover, you can use the parameter `color` with `instance` (to update the ribbon), only if you previously used it at creation time
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the ribbon mesh
-         * @see https://doc.babylonjs.com/how_to/ribbon_tutorial
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes
-         */
-        static CreateRibbon(name: string, options: {
-            pathArray: Vector3[][];
-            closeArray?: boolean;
-            closePath?: boolean;
-            offset?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-            frontUVs?: Vector4;
-            backUVs?: Vector4;
-            instance?: Mesh;
-            invertUV?: boolean;
-            uvs?: Vector2[];
-            colors?: Color4[];
-        }, scene?: Nullable<Scene>): Mesh;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class containing static functions to help procedurally build meshes
-     */
     export class TorusKnotBuilder {
         /**
          * Creates a torus knot mesh
@@ -48453,88 +49570,6 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
         }, scene: Scene, earcutInjection?: any): Mesh;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class containing static functions to help procedurally build meshes
-     */
-    export class ShapeBuilder {
-        /**
-         * Creates an extruded shape mesh. The extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters.
-         * * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis.
-         * * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
-         * * The parameter `rotation` (float, default 0 radians) is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve.
-         * * The parameter `scale` (float, default 1) is the value to scale the shape.
-         * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
-         * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
-         * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
-         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-         * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the extruded shape mesh
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
-         */
-        static ExtrudeShape(name: string, options: {
-            shape: Vector3[];
-            path: Vector3[];
-            scale?: number;
-            rotation?: number;
-            cap?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-            frontUVs?: Vector4;
-            backUVs?: Vector4;
-            instance?: Mesh;
-            invertUV?: boolean;
-        }, scene?: Nullable<Scene>): Mesh;
-        /**
-         * Creates an custom extruded shape mesh.
-         * The custom extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters.
-         * * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis.
-         * * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
-         * * The parameter `rotationFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the begining of the path
-         * * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
-         * * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the begining of the path
-         * * It must returns a float value that will be the scale value applied to the shape on each path point
-         * * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray`
-         * * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray`
-         * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
-         * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
-         * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape
-         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-         * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the custom extruded shape mesh
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#custom-extruded-shapes
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
-         */
-        static ExtrudeShapeCustom(name: string, options: {
-            shape: Vector3[];
-            path: Vector3[];
-            scaleFunction?: any;
-            rotationFunction?: any;
-            ribbonCloseArray?: boolean;
-            ribbonClosePath?: boolean;
-            cap?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-            frontUVs?: Vector4;
-            backUVs?: Vector4;
-            instance?: Mesh;
-            invertUV?: boolean;
-        }, scene: Scene): Mesh;
-        private static _ExtrudeShapeGeneric;
     }
 }
 declare module BABYLON {
@@ -50294,9 +51329,14 @@ declare module BABYLON {
          * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
          * @param impostor A physics imposter
          * @param origin the origin of the explosion
-         * @returns {Nullable<PhysicsForceAndContactPoint>} A physics force and contact point, or null
+         * @returns {Nullable<PhysicsHitData>} A physics force and contact point, or null
          */
-        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3): Nullable<PhysicsForceAndContactPoint>;
+        getImpostorHitData(impostor: PhysicsImpostor, origin: Vector3): Nullable<PhysicsHitData>;
+        /**
+         * Triggers affecterd impostors callbacks
+         * @param affectedImpostorsWithData defines the list of affected impostors (including associated data)
+         */
+        triggerAffectedImpostorsCallback(affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>): void;
         /**
          * Disposes the sphere.
          * @param force Specifies if the sphere should be disposed by force
@@ -50384,7 +51424,7 @@ declare module BABYLON {
          * @param force Specifies if the updraft should be disposed by force
          */
         dispose(force?: boolean): void;
-        private getImpostorForceAndContactPoint;
+        private getImpostorHitData;
         private _tick;
         /*** Helpers ***/
         private _prepareCylinder;
@@ -50428,7 +51468,7 @@ declare module BABYLON {
          * @param force
          */
         dispose(force?: boolean): void;
-        private getImpostorForceAndContactPoint;
+        private getImpostorHitData;
         private _tick;
         /*** Helpers ***/
         private _prepareCylinder;
@@ -50458,6 +51498,10 @@ declare module BABYLON {
             segments: number;
             diameter: number;
         };
+        /**
+         * Sphere options for the radial explosion.
+         */
+        affectedImpostorsCallback: (affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>) => void;
     }
     /**
      * Options fot the updraft event
@@ -50536,10 +51580,10 @@ declare module BABYLON {
         Perpendicular = 1
     }
     /**
-     * Interface for a physics force and contact point
+     * Interface for a physics hit data
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
-    export interface PhysicsForceAndContactPoint {
+    export interface PhysicsHitData {
         /**
          * The force applied at the contact point
          */
@@ -50548,6 +51592,10 @@ declare module BABYLON {
          * The contact point
          */
         contactPoint: Vector3;
+        /**
+         * The distance from the origin to the contact point
+         */
+        distanceFromOrigin: number;
     }
     /**
      * Interface for radial explosion event data
@@ -50589,340 +51637,19 @@ declare module BABYLON {
          */
         cylinder: Mesh;
     }
-}
-declare module BABYLON {
     /**
-     * AmmoJS Physics plugin
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
-     * @see https://github.com/kripken/ammo.js/
+     * Interface for an affected physics impostor
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
-    export class AmmoJSPlugin implements IPhysicsEnginePlugin {
-        private _useDeltaForWorldStep;
+    export interface PhysicsAffectedImpostorWithData {
         /**
-         * Reference to the Ammo library
+         * The impostor affected by the effect
          */
-        bjsAMMO: any;
+        impostor: PhysicsImpostor;
         /**
-         * Created ammoJS world which physics bodies are added to
+         * The data about the hit/horce from the explosion
          */
-        world: any;
-        /**
-         * Name of the plugin
-         */
-        name: string;
-        private _timeStep;
-        private _fixedTimeStep;
-        private _maxSteps;
-        private _tmpQuaternion;
-        private _tmpAmmoTransform;
-        private _tmpAmmoQuaternion;
-        private _tmpAmmoConcreteContactResultCallback;
-        private _collisionConfiguration;
-        private _dispatcher;
-        private _overlappingPairCache;
-        private _solver;
-        private _softBodySolver;
-        private _tmpAmmoVectorA;
-        private _tmpAmmoVectorB;
-        private _tmpAmmoVectorC;
-        private _tmpAmmoVectorD;
-        private _tmpContactCallbackResult;
-        private _tmpAmmoVectorRCA;
-        private _tmpAmmoVectorRCB;
-        private _raycastResult;
-        private static readonly DISABLE_COLLISION_FLAG;
-        private static readonly KINEMATIC_FLAG;
-        private static readonly DISABLE_DEACTIVATION_FLAG;
-        /**
-         * Initializes the ammoJS plugin
-         * @param _useDeltaForWorldStep if the time between frames should be used when calculating physics steps (Default: true)
-         * @param ammoInjection can be used to inject your own ammo reference
-         */
-        constructor(_useDeltaForWorldStep?: boolean, ammoInjection?: any);
-        /**
-         * Sets the gravity of the physics world (m/(s^2))
-         * @param gravity Gravity to set
-         */
-        setGravity(gravity: Vector3): void;
-        /**
-         * Amount of time to step forward on each frame (only used if useDeltaForWorldStep is false in the constructor)
-         * @param timeStep timestep to use in seconds
-         */
-        setTimeStep(timeStep: number): void;
-        /**
-         * Increment to step forward in the physics engine (If timeStep is set to 1/60 and fixedTimeStep is set to 1/120 the physics engine should run 2 steps per frame) (Default: 1/60)
-         * @param fixedTimeStep fixedTimeStep to use in seconds
-         */
-        setFixedTimeStep(fixedTimeStep: number): void;
-        /**
-         * Sets the maximum number of steps by the physics engine per frame (Default: 5)
-         * @param maxSteps the maximum number of steps by the physics engine per frame
-         */
-        setMaxSteps(maxSteps: number): void;
-        /**
-         * Gets the current timestep (only used if useDeltaForWorldStep is false in the constructor)
-         * @returns the current timestep in seconds
-         */
-        getTimeStep(): number;
-        private _isImpostorInContact;
-        private _isImpostorPairInContact;
-        private _stepSimulation;
-        /**
-         * Moves the physics simulation forward delta seconds and updates the given physics imposters
-         * Prior to the step the imposters physics location is set to the position of the babylon meshes
-         * After the step the babylon meshes are set to the position of the physics imposters
-         * @param delta amount of time to step forward
-         * @param impostors array of imposters to update before/after the step
-         */
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        /**
-         * Update babylon mesh vertices vertices to match physics world object
-         * @param impostor imposter to match
-         */
-        afterSoftStep(impostor: PhysicsImpostor): void;
-        private _tmpVector;
-        private _tmpMatrix;
-        /**
-         * Applies an impulse on the imposter
-         * @param impostor imposter to apply impulse to
-         * @param force amount of force to be applied to the imposter
-         * @param contactPoint the location to apply the impulse on the imposter
-         */
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        /**
-         * Applies a force on the imposter
-         * @param impostor imposter to apply force
-         * @param force amount of force to be applied to the imposter
-         * @param contactPoint the location to apply the force on the imposter
-         */
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        /**
-         * Creates a physics body using the plugin
-         * @param impostor the imposter to create the physics body on
-         */
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        /**
-         * Removes the physics body from the imposter and disposes of the body's memory
-         * @param impostor imposter to remove the physics body from
-         */
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        /**
-         * Generates a joint
-         * @param impostorJoint the imposter joint to create the joint with
-         */
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        /**
-         * Removes a joint
-         * @param impostorJoint the imposter joint to remove the joint from
-         */
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        private _addMeshVerts;
-        /**
-         * Initialise the soft body vertices to match its object's (mesh) vertices
-         * Softbody vertices (nodes) are in world space and to match this
-         * The object's position and rotation is set to zero and so its vertices are also then set in world space
-         * @param impostor to create the softbody for
-         */
-        private _softVertexData;
-        /**
-         * Create an impostor's soft body
-         * @param impostor to create the softbody for
-         */
-        private _createSoftbody;
-        /**
-         * Create cloth for an impostor
-         * @param impostor to create the softbody for
-         */
-        private _createCloth;
-        private _addHullVerts;
-        private _createShape;
-        /**
-         * Sets the physics body position/rotation from the babylon mesh's position/rotation
-         * @param impostor imposter containing the physics body and babylon object
-         */
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        /**
-         * Sets the babylon object's position/rotation from the physics body's position/rotation
-         * @param impostor imposter containing the physics body and babylon object
-         * @param newPosition new position
-         * @param newRotation new rotation
-         */
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        /**
-         * If this plugin is supported
-         * @returns true if its supported
-         */
-        isSupported(): boolean;
-        /**
-         * Sets the linear velocity of the physics body
-         * @param impostor imposter to set the velocity on
-         * @param velocity velocity to set
-         */
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        /**
-         * Sets the angular velocity of the physics body
-         * @param impostor imposter to set the velocity on
-         * @param velocity velocity to set
-         */
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        /**
-         * gets the linear velocity
-         * @param impostor imposter to get linear velocity from
-         * @returns linear velocity
-         */
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        /**
-         * gets the angular velocity
-         * @param impostor imposter to get angular velocity from
-         * @returns angular velocity
-         */
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        /**
-         * Sets the mass of physics body
-         * @param impostor imposter to set the mass on
-         * @param mass mass to set
-         */
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        /**
-         * Gets the mass of the physics body
-         * @param impostor imposter to get the mass from
-         * @returns mass
-         */
-        getBodyMass(impostor: PhysicsImpostor): number;
-        /**
-         * Gets friction of the impostor
-         * @param impostor impostor to get friction from
-         * @returns friction value
-         */
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        /**
-         * Sets friction of the impostor
-         * @param impostor impostor to set friction on
-         * @param friction friction value
-         */
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        /**
-         * Gets restitution of the impostor
-         * @param impostor impostor to get restitution from
-         * @returns restitution value
-         */
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        /**
-         * Sets resitution of the impostor
-         * @param impostor impostor to set resitution on
-         * @param restitution resitution value
-         */
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        /**
-         * Gets pressure inside the impostor
-         * @param impostor impostor to get pressure from
-         * @returns pressure value
-         */
-        getBodyPressure(impostor: PhysicsImpostor): number;
-        /**
-         * Sets pressure inside a soft body impostor
-         * Cloth and rope must remain 0 pressure
-         * @param impostor impostor to set pressure on
-         * @param pressure pressure value
-         */
-        setBodyPressure(impostor: PhysicsImpostor, pressure: number): void;
-        /**
-         * Gets stiffness of the impostor
-         * @param impostor impostor to get stiffness from
-         * @returns pressure value
-         */
-        getBodyStiffness(impostor: PhysicsImpostor): number;
-        /**
-         * Sets stiffness of the impostor
-         * @param impostor impostor to set stiffness on
-         * @param stiffness stiffness value from 0 to 1
-         */
-        setBodyStiffness(impostor: PhysicsImpostor, stiffness: number): void;
-        /**
-         * Gets velocityIterations of the impostor
-         * @param impostor impostor to get velocity iterations from
-         * @returns velocityIterations value
-         */
-        getBodyVelocityIterations(impostor: PhysicsImpostor): number;
-        /**
-         * Sets velocityIterations of the impostor
-         * @param impostor impostor to set velocity iterations on
-         * @param velocityIterations velocityIterations value
-         */
-        setBodyVelocityIterations(impostor: PhysicsImpostor, velocityIterations: number): void;
-        /**
-         * Gets positionIterations of the impostor
-         * @param impostor impostor to get position iterations from
-         * @returns positionIterations value
-         */
-        getBodyPositionIterations(impostor: PhysicsImpostor): number;
-        /**
-         * Sets positionIterations of the impostor
-         * @param impostor impostor to set position on
-         * @param positionIterations positionIterations value
-         */
-        setBodyPositionIterations(impostor: PhysicsImpostor, positionIterations: number): void;
-        /**
-         * Sleeps the physics body and stops it from being active
-         * @param impostor impostor to sleep
-         */
-        sleepBody(impostor: PhysicsImpostor): void;
-        /**
-         * Activates the physics body
-         * @param impostor impostor to activate
-         */
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        /**
-         * Updates the distance parameters of the joint
-         * @param joint joint to update
-         * @param maxDistance maximum distance of the joint
-         * @param minDistance minimum distance of the joint
-         */
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        /**
-         * Sets a motor on the joint
-         * @param joint joint to set motor on
-         * @param speed speed of the motor
-         * @param maxForce maximum force of the motor
-         * @param motorIndex index of the motor
-         */
-        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
-        /**
-         * Sets the motors limit
-         * @param joint joint to set limit on
-         * @param upperLimit upper limit
-         * @param lowerLimit lower limit
-         */
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
-        /**
-         * Syncs the position and rotation of a mesh with the impostor
-         * @param mesh mesh to sync
-         * @param impostor impostor to update the mesh with
-         */
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        /**
-         * Gets the radius of the impostor
-         * @param impostor impostor to get radius from
-         * @returns the radius
-         */
-        getRadius(impostor: PhysicsImpostor): number;
-        /**
-         * Gets the box size of the impostor
-         * @param impostor impostor to get box size from
-         * @param result the resulting box size
-         */
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        /**
-         * Disposes of the impostor
-         */
-        dispose(): void;
-        /**
-         * Does a raycast in the physics world
-         * @param from when should the ray start?
-         * @param to when should the ray end?
-         * @returns PhysicsRaycastResult
-         */
-        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
+        hitData: PhysicsHitData;
     }
 }
 declare module BABYLON {
@@ -52955,8 +53682,11 @@ declare module BABYLON {
          */
         horizontalBlur: boolean;
         /**
-         * Sets the overall exposure used by the pipeline
+         * Gets the overall exposure used by the pipeline
          */
+        /**
+        * Sets the overall exposure used by the pipeline
+        */
         exposure: number;
         /**
          * Texture used typically to simulate "dirty" on camera lens
@@ -52992,6 +53722,13 @@ declare module BABYLON {
          * For eye adaptation, represents the increase luminance speed
          */
         hdrIncreaseRate: number;
+        /**
+         * Gets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+         */
+        /**
+        * Sets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+        */
+        hdrAutoExposure: boolean;
         /**
          * Lens color texture used by the lens flare effect. Mandatory if lens flare effect enabled
          */
@@ -53045,6 +53782,9 @@ declare module BABYLON {
         private _scene;
         private _currentDepthOfFieldSource;
         private _basePostProcess;
+        private _fixedExposure;
+        private _currentExposure;
+        private _hdrAutoExposure;
         private _hdrCurrentLuminance;
         private _floatTextureType;
         private _ratio;
@@ -53564,6 +54304,10 @@ declare module BABYLON {
      * It should not be used directly but through the available method on mesh.
      */
     export class OutlineRenderer implements ISceneComponent {
+        /**
+         * Stencil value used to avoid outline being seen within the mesh when the mesh is transparent
+         */
+        private static _StencilReference;
         /**
          * The name of the component. Each component must have a unique name.
          */
@@ -54206,7 +54950,85 @@ declare module BABYLON {
          * @param onSuccess is a callback called when the task is successfully executed
          * @param onError is a callback called if an error occurs
          */
-        run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
+        runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
+    }
+    /**
+     * Define a task used by AssetsManager to load Equirectangular cube textures
+     */
+    export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<EquiRectangularCubeTexture> {
+        /**
+         * Defines the name of the task
+         */
+        name: string;
+        /**
+         * Defines the location of the file to load
+         */
+        url: string;
+        /**
+         * Defines the desired size (the more it increases the longer the generation will be)
+         */
+        size: number;
+        /**
+         * Defines if mipmaps should not be generated (default is false)
+         */
+        noMipmap: boolean;
+        /**
+         * Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space,
+         * but the standard material would require them in Gamma space) (default is true)
+         */
+        gammaSpace: boolean;
+        /**
+         * Gets the loaded texture
+         */
+        texture: EquiRectangularCubeTexture;
+        /**
+         * Callback called when the task is successful
+         */
+        onSuccess: (task: EquiRectangularCubeTextureAssetTask) => void;
+        /**
+         * Callback called when the task is successful
+         */
+        onError: (task: EquiRectangularCubeTextureAssetTask, message?: string, exception?: any) => void;
+        /**
+         * Creates a new EquiRectangularCubeTextureAssetTask object
+         * @param name defines the name of the task
+         * @param url defines the location of the file to load
+         * @param size defines the desired size (the more it increases the longer the generation will be)
+         * If the size is omitted this implies you are using a preprocessed cubemap.
+         * @param noMipmap defines if mipmaps should not be generated (default is false)
+         * @param gammaSpace specifies if the texture will be used in gamma or linear space
+         * (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
+         * (default is true)
+         */
+        constructor(
+        /**
+         * Defines the name of the task
+         */
+        name: string, 
+        /**
+         * Defines the location of the file to load
+         */
+        url: string, 
+        /**
+         * Defines the desired size (the more it increases the longer the generation will be)
+         */
+        size: number, 
+        /**
+         * Defines if mipmaps should not be generated (default is false)
+         */
+        noMipmap?: boolean, 
+        /**
+         * Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space,
+         * but the standard material would require them in Gamma space) (default is true)
+         */
+        gammaSpace?: boolean);
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
+        runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
     /**
      * This class can be used to easily import assets into a scene
@@ -54323,6 +55145,18 @@ declare module BABYLON {
          * @returns a new HDRCubeTextureAssetTask object
          */
         addHDRCubeTextureTask(taskName: string, url: string, size: number, noMipmap?: boolean, generateHarmonics?: boolean, gammaSpace?: boolean, reserved?: boolean): HDRCubeTextureAssetTask;
+        /**
+         *
+         * Add a EquiRectangularCubeTextureAssetTask to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @param size defines the size you want for the cubemap (can be null)
+         * @param noMipmap defines if the texture must not receive mipmaps (false by default)
+         * @param gammaSpace Specifies if the texture will be used in gamma or linear space
+         * (the PBR material requires those textures in linear space, but the standard material would require them in Gamma space)
+         * @returns a new EquiRectangularCubeTextureAssetTask object
+         */
+        addEquiRectangularCubeTextureAssetTask(taskName: string, url: string, size: number, noMipmap?: boolean, gammaSpace?: boolean): EquiRectangularCubeTextureAssetTask;
         /**
          * Remove a task from the assets manager.
          * @param task the task to remove
@@ -54938,6 +55772,22 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to host texture specific utilities
+     */
+    export class TextureTools {
+        /**
+         * Uses the GPU to create a copy texture rescaled at a given size
+         * @param texture Texture to copy from
+         * @param width defines the desired width
+         * @param height defines the desired height
+         * @param useBilinearMode defines if bilinear mode has to be used
+         * @return the generated texture
+         */
+        static CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode?: boolean): Texture;
+    }
+}
+declare module BABYLON {
+    /**
      * This represents the different options avilable for the video capture.
      */
     export interface VideoRecorderOptions {
@@ -55136,6 +55986,12 @@ declare module BABYLON {
          * @returns This path cursor
          */
         onchange(f: (cursor: PathCursor) => void): PathCursor;
+    }
+}
+declare module BABYLON {
+    export class DepthPeelingHelper {
+        layers: number;
+        constructor(layers: number);
     }
 }
 declare module BABYLON {

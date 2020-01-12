@@ -2,6 +2,8 @@
 
 #include<__decl__pbrVertex>
 
+#define CUSTOM_VERTEX_BEGIN
+
 // Attributes
 attribute vec3 position;
 #ifdef NORMAL
@@ -42,6 +44,10 @@ varying vec2 vAmbientUV;
 
 #if defined(OPACITY) && OPACITYDIRECTUV == 0
 varying vec2 vOpacityUV;
+#endif
+
+#if defined(TRANSMISSION) && TRANSMISSIONDIRECTUV == 0
+varying vec2 vTransmissionUV;
 #endif
 
 #if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0
@@ -124,9 +130,17 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
+#ifdef SCENEDEPTHTEXTURE
+varying vec3 vPosCameraSpace;
+#endif
+
 #include<logDepthDeclaration>
+#define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void) {
+
+	#define CUSTOM_VERTEX_MAIN_BEGIN
+
     vec3 positionUpdated = position;
 #ifdef NORMAL
     vec3 normalUpdated = normal;
@@ -145,16 +159,33 @@ void main(void) {
     #endif
 #endif 
 
+#define CUSTOM_VERTEX_UPDATE_POSITION
+
+#define CUSTOM_VERTEX_UPDATE_NORMAL
+
 #include<instancesVertex>
 #include<bonesVertex>
 
-    gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
-    #if DEBUGMODE > 0
-        vClipSpacePosition = gl_Position;
-    #endif
+#ifdef MULTIVIEW
+	if (gl_ViewID_OVR == 0u) {
+		gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+	} else {
+		gl_Position = viewProjectionR * finalWorld * vec4(positionUpdated, 1.0);
+	}
+#else
+	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+#endif
+
+#if DEBUGMODE > 0
+    vClipSpacePosition = gl_Position;
+#endif
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
+
+#ifdef SCENEDEPTHTEXTURE
+    vPosCameraSpace = (view * worldPos).xyz;
+#endif
 
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);
@@ -170,7 +201,7 @@ void main(void) {
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
         #endif
-        vEnvironmentIrradiance = environmentIrradianceJones(reflectionVector);
+        vEnvironmentIrradiance = computeEnvironmentIrradiance(reflectionVector);
     #endif
 #endif
 
@@ -224,6 +255,17 @@ void main(void) {
     else
     {
         vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
+    }
+#endif
+
+#if defined(TRANSMISSION) && TRANSMISSIONDIRECTUV == 0 
+    if (vTransmissionInfos.x == 0.)
+    {
+        vTransmissionUV = vec2(transmissionMatrix * vec4(uv, 1.0, 0.0));
+    }
+    else
+    {
+        vTransmissionUV = vec2(transmissionMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
 
@@ -367,4 +409,7 @@ void main(void) {
 
     // Log. depth
 #include<logDepthVertex>
+
+#define CUSTOM_VERTEX_MAIN_END
+
 }

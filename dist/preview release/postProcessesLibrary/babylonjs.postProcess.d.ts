@@ -304,4 +304,4 @@ declare module BABYLON {
          */
         private _computeCameraRotation;
     }
-}
+}

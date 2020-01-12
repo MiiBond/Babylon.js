@@ -25,8 +25,10 @@ import { Skeleton } from "../../Bones/skeleton";
 import { MorphTargetManager } from "../../Morph/morphTargetManager";
 import { CannonJSPlugin } from "../../Physics/Plugins/cannonJSPlugin";
 import { OimoJSPlugin } from "../../Physics/Plugins/oimoJSPlugin";
+import { AmmoJSPlugin } from "../../Physics/Plugins/ammoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { _TypeStore } from '../../Misc/typeStore';
+import { Tools } from '../../Misc/tools';
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
@@ -74,6 +76,41 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
 
         var index: number;
         var cache: number;
+
+        // Environment texture
+        if (parsedData.environmentTexture !== undefined && parsedData.environmentTexture !== null) {
+            // PBR needed for both HDR texture (gamma space) & a sky box
+            var isPBR = parsedData.isPBR !== undefined ? parsedData.isPBR : true;
+            if (parsedData.environmentTextureType && parsedData.environmentTextureType === "BABYLON.HDRCubeTexture") {
+                var hdrSize: number = (parsedData.environmentTextureSize) ? parsedData.environmentTextureSize : 128;
+                var hdrTexture = new HDRCubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene, hdrSize, true, !isPBR);
+                if (parsedData.environmentTextureRotationY) {
+                    hdrTexture.rotationY = parsedData.environmentTextureRotationY;
+                }
+                scene.environmentTexture = hdrTexture;
+            } else {
+                if (Tools.EndsWith(parsedData.environmentTexture, ".env")) {
+                    var compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                    if (parsedData.environmentTextureRotationY) {
+                        compressedTexture.rotationY = parsedData.environmentTextureRotationY;
+                    }
+                    scene.environmentTexture = compressedTexture;
+                } else {
+                    var cubeTexture = CubeTexture.CreateFromPrefilteredData((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                    if (parsedData.environmentTextureRotationY) {
+                        cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                    }
+                    scene.environmentTexture = cubeTexture;
+                }
+            }
+            if (parsedData.createDefaultSkybox === true) {
+                var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;
+                var skyboxBlurLevel = parsedData.skyboxBlurLevel || 0;
+                scene.createDefaultSkybox(scene.environmentTexture, isPBR, skyboxScale, skyboxBlurLevel);
+            }
+            container.environmentTexture = scene.environmentTexture;
+        }
+
         // Lights
         if (parsedData.lights !== undefined && parsedData.lights !== null) {
             for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
@@ -564,6 +601,8 @@ SceneLoader.RegisterPlugin({
                     physicsPlugin = new CannonJSPlugin();
                 } else if (parsedData.physicsEngine === "oimo") {
                     physicsPlugin = new OimoJSPlugin();
+                } else if (parsedData.physicsEngine === "ammo") {
+                    physicsPlugin = new AmmoJSPlugin();
                 }
                 log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
                 //else - default engine, which is currently oimo
@@ -606,11 +645,19 @@ SceneLoader.RegisterPlugin({
                     }
                     scene.environmentTexture = hdrTexture;
                 } else {
-                    var cubeTexture = CubeTexture.CreateFromPrefilteredData(rootUrl + parsedData.environmentTexture, scene);
-                    if (parsedData.environmentTextureRotationY) {
-                        cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                    if (Tools.EndsWith(parsedData.environmentTexture, ".env")) {
+                        var compressedTexture = new CubeTexture(rootUrl + parsedData.environmentTexture, scene);
+                        if (parsedData.environmentTextureRotationY) {
+                            compressedTexture.rotationY = parsedData.environmentTextureRotationY;
+                        }
+                        scene.environmentTexture = compressedTexture;
+                    } else {
+                        var cubeTexture = CubeTexture.CreateFromPrefilteredData(rootUrl + parsedData.environmentTexture, scene);
+                        if (parsedData.environmentTextureRotationY) {
+                            cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                        }
+                        scene.environmentTexture = cubeTexture;
                     }
-                    scene.environmentTexture = cubeTexture;
                 }
                 if (parsedData.createDefaultSkybox === true) {
                     var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;

@@ -93,12 +93,6 @@ export class Camera extends Node {
     public static ForceAttachControlToAlwaysPreventDefault = false;
 
     /**
-     * @hidden
-     * Might be removed once multiview will be a thing
-     */
-    public static UseAlternateWebVRRendering = false;
-
-    /**
      * Define the input manager associated with the camera.
      */
     public inputs: CameraInputsManager<Camera>;
@@ -271,8 +265,6 @@ export class Camera extends Node {
     protected _webvrViewMatrix = Matrix.Identity();
     /** @hidden */
     public _skipRendering = false;
-    /** @hidden */
-    public _alternateCamera: Camera;
 
     /** @hidden */
     public _projectionMatrix = new Matrix();
@@ -651,7 +643,7 @@ export class Camera extends Node {
         this.updateCache();
         this._computedViewMatrix = this._getViewMatrix();
         this._currentRenderId = this.getScene().getRenderId();
-        this._childRenderId = this._currentRenderId;
+        this._childUpdateId++;
 
         this._refreshFrustumPlanes = true;
 

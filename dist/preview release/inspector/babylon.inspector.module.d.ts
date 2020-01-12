@@ -7,6 +7,17 @@ declare module "babylonjs-inspector/components/propertyChangedEvent" {
         initialValue: any;
     }
 }
+declare module "babylonjs-inspector/components/replayRecorder" {
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    export class ReplayRecorder {
+        private _recordedCodeLines;
+        private _previousObject;
+        private _previousProperty;
+        reset(): void;
+        record(event: PropertyChangedEvent): void;
+        export(): void;
+    }
+}
 declare module "babylonjs-inspector/components/globalState" {
     import { GLTFFileLoader, IGLTFLoaderExtension } from "babylonjs-loaders/glTF/index";
     import { IGLTFValidationResults } from "babylonjs-gltf2interface";
@@ -17,6 +28,7 @@ declare module "babylonjs-inspector/components/globalState" {
     import { Light } from "babylonjs/Lights/light";
     import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { ReplayRecorder } from "babylonjs-inspector/components/replayRecorder";
     export class GlobalState {
         onSelectionChangedObservable: Observable<any>;
         onPropertyChangedObservable: Observable<PropertyChangedEvent>;
@@ -36,6 +48,8 @@ declare module "babylonjs-inspector/components/globalState" {
         };
         blockMutationUpdates: boolean;
         selectedLineContainerTitle: string;
+        recorder: ReplayRecorder;
+        init(propertyChangedObservable: Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: GLTFFileLoader): void;
         lightGizmos: Array<LightGizmo>;
         enableLightGizmo(light: Light, enable?: boolean): void;
@@ -43,12 +57,14 @@ declare module "babylonjs-inspector/components/globalState" {
 }
 declare module "babylonjs-inspector/components/actionTabs/paneComponent" {
     import * as React from "react";
+
     import { Observable } from "babylonjs/Misc/observable";
     import { Scene } from "babylonjs/scene";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     export interface IPaneComponentProps {
         title: string;
+
         scene: Scene;
         selectedEntity?: any;
         onSelectionChangedObservable?: Observable<any>;
@@ -1618,9 +1634,11 @@ declare module "babylonjs-inspector/components/headerComponent" {
 }
 declare module "babylonjs-inspector/components/actionTabs/lines/messageLineComponent" {
     import * as React from "react";
+
     interface IMessageLineComponentProps {
         text: string;
         color?: string;
+
     }
     export class MessageLineComponent extends React.Component<IMessageLineComponentProps> {
         constructor(props: IMessageLineComponentProps);
@@ -1657,6 +1675,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
+        resetReplay(): void;
+        exportReplay(): void;
         render(): JSX.Element | null;
     }
 }
@@ -1694,9 +1714,11 @@ declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
 }
 declare module "babylonjs-inspector/components/sceneExplorer/treeItemLabelComponent" {
     import * as React from "react";
+
     interface ITreeItemLabelComponentProps {
         label: string;
         onClick?: () => void;
+
         color: string;
     }
     export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps> {
@@ -1733,11 +1755,11 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/meshTreeIt
         onClick: () => void;
     }
     export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, {
-        isGizmoEnabled: boolean;
+        isBoundingBoxEnabled: boolean;
         isVisible: boolean;
     }> {
         constructor(props: IMeshTreeItemComponentProps);
-        showGizmos(): void;
+        showBoundingBox(): void;
         switchVisibility(): void;
         render(): JSX.Element;
     }
@@ -2174,6 +2196,7 @@ declare module "babylonjs-inspector/index" {
 declare module "babylonjs-inspector/legacy/legacy" {
     export * from "babylonjs-inspector/index";
 }
+
 declare module "babylonjs-inspector" {
     export * from "babylonjs-inspector/legacy/legacy";
 }
@@ -2184,6 +2207,16 @@ declare module INSPECTOR {
         property: string;
         value: any;
         initialValue: any;
+    }
+}
+declare module INSPECTOR {
+    export class ReplayRecorder {
+        private _recordedCodeLines;
+        private _previousObject;
+        private _previousProperty;
+        reset(): void;
+        record(event: PropertyChangedEvent): void;
+        export(): void;
     }
 }
 declare module INSPECTOR {
@@ -2206,6 +2239,8 @@ declare module INSPECTOR {
         };
         blockMutationUpdates: boolean;
         selectedLineContainerTitle: string;
+        recorder: ReplayRecorder;
+        init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
@@ -3449,6 +3484,8 @@ declare module INSPECTOR {
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
+        resetReplay(): void;
+        exportReplay(): void;
         render(): JSX.Element | null;
     }
 }
@@ -3516,11 +3553,11 @@ declare module INSPECTOR {
         onClick: () => void;
     }
     export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, {
-        isGizmoEnabled: boolean;
+        isBoundingBoxEnabled: boolean;
         isVisible: boolean;
     }> {
         constructor(props: IMeshTreeItemComponentProps);
-        showGizmos(): void;
+        showBoundingBox(): void;
         switchVisibility(): void;
         render(): JSX.Element;
     }
@@ -3884,4 +3921,4 @@ declare module INSPECTOR {
         private static _RemoveElementFromDOM;
         static Hide(): void;
     }
-}
+}

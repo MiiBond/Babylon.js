@@ -8,6 +8,16 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class ReplayRecorder {
+        private _recordedCodeLines;
+        private _previousObject;
+        private _previousProperty;
+        reset(): void;
+        record(event: PropertyChangedEvent): void;
+        export(): void;
+    }
+}
+declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
@@ -27,6 +37,8 @@ declare module INSPECTOR {
         };
         blockMutationUpdates: boolean;
         selectedLineContainerTitle: string;
+        recorder: ReplayRecorder;
+        init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
@@ -1270,6 +1282,8 @@ declare module INSPECTOR {
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
+        resetReplay(): void;
+        exportReplay(): void;
         render(): JSX.Element | null;
     }
 }
@@ -1337,11 +1351,11 @@ declare module INSPECTOR {
         onClick: () => void;
     }
     export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, {
-        isGizmoEnabled: boolean;
+        isBoundingBoxEnabled: boolean;
         isVisible: boolean;
     }> {
         constructor(props: IMeshTreeItemComponentProps);
-        showGizmos(): void;
+        showBoundingBox(): void;
         switchVisibility(): void;
         render(): JSX.Element;
     }
@@ -1705,4 +1719,4 @@ declare module INSPECTOR {
         private static _RemoveElementFromDOM;
         static Hide(): void;
     }
-}
+}

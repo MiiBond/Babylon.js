@@ -5,19 +5,22 @@ uniform Material
     uniform vec2 vAlbedoInfos;
     uniform vec4 vAmbientInfos;
     uniform vec2 vOpacityInfos;
+    uniform vec2 vTransmissionInfos;
     uniform vec2 vEmissiveInfos;
     uniform vec2 vLightmapInfos;
     uniform vec3 vReflectivityInfos;
     uniform vec2 vMicroSurfaceSamplerInfos;
     uniform vec4 vRefractionInfos;
+    uniform vec4 vSceneRefractionInfos;
     uniform vec2 vReflectionInfos;
     uniform vec3 vReflectionPosition;
-    uniform vec3 vReflectionSize;	
+    uniform vec3 vReflectionSize;
     uniform vec3 vBumpInfos;
     uniform mat4 albedoMatrix;
     uniform mat4 ambientMatrix;
     uniform mat4 opacityMatrix;
     uniform mat4 emissiveMatrix;
+    uniform mat4 transmissionMatrix;
     uniform mat4 lightmapMatrix;
     uniform mat4 reflectivityMatrix;
     uniform mat4 microSurfaceSamplerMatrix;
@@ -30,13 +33,22 @@ uniform Material
     uniform vec4 vAlbedoColor;
     uniform vec4 vLightingIntensity;
 
+    uniform mat4 sceneRefractionMatrix;
+	uniform vec2 cameraMinMaxZ;
+
     uniform vec3 vRefractionMicrosurfaceInfos;
+	uniform vec3 vSceneRefractionMicrosurfaceInfos;
     uniform vec3 vReflectionMicrosurfaceInfos;
+
+    uniform float pointSize;
 
     uniform vec4 vReflectivityColor;
     uniform vec3 vEmissiveColor;
 
-    uniform float pointSize;
+    uniform float opticalTransmission;
+	uniform vec3 interiorColor;
+	uniform float interiorDensity;
+    uniform float visibility;
 
     uniform vec2 vClearCoatParams;
     uniform vec4 vClearCoatRefractionParams;
@@ -57,9 +69,14 @@ uniform Material
     uniform vec4 vSheenColor;
     uniform vec2 vSheenInfos;
     uniform mat4 sheenMatrix;
+
+    
 };
 
 uniform Scene {
     mat4 viewProjection;
+#ifdef MULTIVIEW
+	mat4 viewProjectionR;
+#endif 
     mat4 view;
 };
