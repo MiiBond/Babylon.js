@@ -75,7 +75,10 @@ void main(void) {
 #if defined(DEPTH_PEELING) || defined(SS_DEPTHINREFRACTIONALPHA)
     float sceneDepthWorld = gl_FragCoord.z * 2. - 1.; // Depth range being 0 to 1 -> transform to -1 - 1
     sceneDepthWorld = sceneDepthWorld / gl_FragCoord.w; // Revert to the projection space z
-    float sceneDepthNormalized = (sceneDepthWorld + depthValues.x) / depthValues.y - 0.00001; // Apply camera setup to transform back to 0 - 1 but in a linear way
+    float sceneDepthNormalized = (sceneDepthWorld + depthValues.x) / depthValues.y; // Apply camera setup to transform back to 0 - 1 but in a linear way
+    #ifdef DEPTH_PEELING
+        sceneDepthNormalized -= Epsilon;
+    #endif
 #endif
 
 #ifdef DEPTH_PEELING
@@ -83,7 +86,7 @@ void main(void) {
         // Handle depth-peeling against current depth textures.
         vec2 screenCoords = vec2(gl_FragCoord.x / depthValues.z, gl_FragCoord.y / depthValues.w);
         #ifdef DEPTH_PEELING_FRONT_INVERSE
-            float frontDepth = 1.0 - texture2D(frontDepthTexture, screenCoords).a + 0.00001;
+            float frontDepth = 1.0 - texture2D(frontDepthTexture, screenCoords).a + Epsilon;
         #else
             float frontDepth = texture2D(frontDepthTexture, screenCoords).r;
         #endif
@@ -384,26 +387,10 @@ void main(void) {
                 #if defined(SS_VOLUME_THICKNESS) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
                     // To avoid artifacts from the lower-res refraction depth, we will take a bunch of samples and select the one
                     // that gives the smallest thickness while still being positive.
-                    float offset = 1.0 / 1024.0; // TODO - use the actual resolution of the texture instead of 1024
                     float refractionDepth = (1.0 - refraction_clear.a);
                     thicknessNormalized = clamp(refractionDepth - sceneDepthNormalized, 0.0, 1.0);
-                    // refractionDepth = (refractionDepth + 0.00001) * depthValues.y - depthValues.x;
-                    // thickness = refractionDepth - sceneDepthWorld;
-                    for (float x = -1.0; x < 2.0; x++) {
-                        for (float y = -1.0; y < 2.0; y++) {
-                            float sample_refraction = sampleRefraction(refractionSampler, refractionCoordsNoRefract + vec2(x * offset, y * offset)).a;
-                            float sampleRefractionDepth = 1.0 - sample_refraction;
-                            float sample_thickness = sampleRefractionDepth - sceneDepthNormalized;
-                            if (sample_thickness > 0.0 && (sample_thickness < thicknessNormalized || thicknessNormalized < 0.0)) {
-                                thicknessNormalized = sample_thickness;
-                                // sampleRefractionDepth = (sampleRefractionDepth + 0.00001) * depthValues.y - depthValues.x;
-                                // thickness = sampleRefractionDepth - sceneDepthWorld;
-                                // thickness = sample_thickness;
-                            }
-                        }
-                    }
-                    // Convert thickness to be in world units.
-                    thickness = (thicknessNormalized + 0.00001) * depthValues.y - depthValues.x;
+                    // Convert thickness to be in world units. Bump up by small amount to avoid 0 in thickness calculations.
+                    thickness = (thicknessNormalized + 0.0001) * depthValues.y - depthValues.x;
                 #endif
             #endif
         #endif
@@ -414,15 +401,6 @@ void main(void) {
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
         #elif defined(SS_VOLUME_THICKNESS) && defined(SS_DEPTHINREFRACTIONALPHA)
-            
-            // If thickness is changing rapidly, set it to 0 to try to avoid ugly edges on objects.
-            // if (abs(dFdx(thickness)) * 100.0 > 1.0) {
-            //     thickness = 0.000001;
-            // }
-            // if (abs(dFdy(thickness)) * 100.0 > 1.0) {
-            //     thickness = 0.000001;
-            // }
-            
             vec3 vRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW + refractionVector * vRefractionInfos.z * thicknessNormalized, 1.0));
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
             refractionCoords.y = 1.0 - refractionCoords.y;
@@ -1103,10 +1081,9 @@ void main(void) {
             // vec3 scatteringColor = vec3(scatteringIntensity);
             // Based on Volumetric Light Scattering Eq 1
             // https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch13.html
-            // environmentRefraction.rgb *= 1.0 / exp((absorption_coeff) * thickness_scale * TRANSPARENCY_SCENE_SCALE);
-            // vec3 inter = vec3(4.09712) + 4.20863 * vScatterColor - sqrt(vec3(9.59217) + 41.68086 * vScatterColor + vec3(17.7126) * vScatterColor * vScatterColor);
-            vec3 singleScatterAlbedo = vec3(0.68) * vScatterColor * vec3(scatteringIntensity);
-            // vec3 singleScatterAlbedo = (1.0 - inter * inter) / (1.0 - anisotropy_for_volume * inter * inter);
+            vec3 inter = vec3(4.09712) + 4.20863 * vScatterColor - sqrt(vec3(9.59217) + 41.68086 * vScatterColor + vec3(17.7126) * vScatterColor * vScatterColor);
+            // vec3 singleScatterAlbedo = vec3(0.68) * vScatterColor * vec3(scatteringIntensity);
+            vec3 singleScatterAlbedo = (1.0 - inter * inter) / (1.0 - 0.5 * inter * inter);
             // vec3 singleScatterAlbedo = vec3(0.6);
             
         #endif
@@ -1163,7 +1140,7 @@ void main(void) {
             refractionTransmittance *= surfaceAlbedo.rgb;
             #ifdef SS_SCATTERING
                 scatterTransmittance *= surfaceAlbedo.rgb;
-                refractionTransmittance = refractionTransmittance * pow(refractionTransmittance, vec3(5.0 * scatteringIntensity));
+                refractionTransmittance *= pow(refractionTransmittance, vec3(5.0 * clamp(1.0 - vTintColor.w, 0.0, 1.0)));
             #endif
         #endif
 

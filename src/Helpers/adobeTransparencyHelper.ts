@@ -332,7 +332,7 @@ export class AdobeTransparencyHelper {
         if (!material.subSurface.isRefractionEnabled) {
             material.subSurface.refractionIntensity = 0;
         }
-        material.subSurface.tintColorAtDistance *= this._options.sceneScale;
+        material.subSurface.tintColorAtDistance /= this._options.sceneScale;
         if (material.subSurface.isScatteringEnabled) {
             material.subSurface.scatteringIntensity /= this._options.sceneScale;
         }

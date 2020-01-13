@@ -113,12 +113,14 @@ void main(void) {
         
         // Interior calculation
         if (front_facing == 1.0) {
-            vec3 singleScatterAlbedo = vec3(0.68) * scatterColor.rgb;
+            vec3 inter = vec3(4.09712)+4.20863*scatterColor.rgb-sqrt(vec3(9.59217)+41.68086*scatterColor.rgb+vec3(17.7126)*scatterColor.rgb*scatterColor.rgb);
+            vec3 singleScatterAlbedo = (1.0-inter*inter)/(1.0-0.5*inter*inter);
             vec3 scatterCoeff = singleScatterAlbedo * ior;
             vec3 extinctionCoeff = computeColorAtDistanceInMedia(attenuationColor.rgb, attenuationColor.w);
             vec3 attenuation = cocaLambert(extinctionCoeff, thickness);
             // attenuation = attenuation * pow(scatterColor.rgb, vec3(scatterColor.rgb * 5.0));
-            refraction_color *= attenuation;
+            // refraction_color *= attenuation * pow(scatterColor.rgb, vec3(scatterColor.rgb * 5.0));
+            refraction_color *= pow(attenuation, vec3(5.0 * clamp(1.0 - attenuationColor.w, 0.0, 1.0)));
 
             vec3 scatterTransmittance = vec3(1.0) - attenuation;
             scatterTransmittance *= scatterCoeff;
