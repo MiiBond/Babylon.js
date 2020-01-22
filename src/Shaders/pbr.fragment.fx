@@ -1435,6 +1435,8 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
         norm = norm * 0.5 + 0.5;
         #ifndef SS_REFRACTION
             float refractionIntensity = 0.0;
+        #elif defined(REFLECTION)
+            refractionIntensity -= specularEnvironmentReflectance.r;
         #endif
         gl_FragData[2] = vec4(refractionIntensity, roughness, norm.x, norm.y);
        
