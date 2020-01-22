@@ -468,11 +468,13 @@ declare module "babylonjs-node-editor/sharedComponents/sliderLineComponent" {
 }
 declare module "babylonjs-node-editor/sharedComponents/numericInputComponent" {
     import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     interface INumericInputComponentProps {
         label: string;
         value: number;
         step?: number;
         onChange: (value: number) => void;
+        globalState: GlobalState;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -494,6 +496,7 @@ declare module "babylonjs-node-editor/sharedComponents/vector2LineComponent" {
     import { Vector2 } from "babylonjs/Maths/math";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     interface IVector2LineComponentProps {
         label: string;
         target: any;
@@ -501,6 +504,7 @@ declare module "babylonjs-node-editor/sharedComponents/vector2LineComponent" {
         step?: number;
         onChange?: (newvalue: Vector2) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
         isExpanded: boolean;
@@ -539,12 +543,14 @@ declare module "babylonjs-node-editor/sharedComponents/color3LineComponent" {
     import { Observable } from "babylonjs/Misc/observable";
     import { Color3 } from "babylonjs/Maths/math";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     export interface IColor3LineComponentProps {
         label: string;
         target: any;
         propertyName: string;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         onChange?: () => void;
+        globalState: GlobalState;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -582,6 +588,7 @@ declare module "babylonjs-node-editor/sharedComponents/vector3LineComponent" {
     import { Vector3 } from "babylonjs/Maths/math";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     interface IVector3LineComponentProps {
         label: string;
         target: any;
@@ -589,6 +596,7 @@ declare module "babylonjs-node-editor/sharedComponents/vector3LineComponent" {
         step?: number;
         onChange?: (newvalue: Vector3) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -629,6 +637,7 @@ declare module "babylonjs-node-editor/sharedComponents/vector4LineComponent" {
     import { Vector4 } from "babylonjs/Maths/math";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     interface IVector4LineComponentProps {
         label: string;
         target?: any;
@@ -637,6 +646,7 @@ declare module "babylonjs-node-editor/sharedComponents/vector4LineComponent" {
         step?: number;
         onChange?: (newvalue: Vector4) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
         isExpanded: boolean;
@@ -713,6 +723,7 @@ declare module "babylonjs-node-editor/sharedComponents/matrixLineComponent" {
     import { Vector3, Matrix, Vector4 } from "babylonjs/Maths/math";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     interface IMatrixLineComponentProps {
         label: string;
         target: any;
@@ -722,6 +733,7 @@ declare module "babylonjs-node-editor/sharedComponents/matrixLineComponent" {
         onModeChange?: (mode: number) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         mode?: number;
+        globalState: GlobalState;
     }
     export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, {
         value: Matrix;
@@ -829,17 +841,6 @@ declare module "babylonjs-node-editor/diagram/properties/genericNodePropertyComp
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/diagram/properties/inputNodePropertyComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
-    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        renderValue(globalState: GlobalState): JSX.Element | null;
-        setDefaultValue(): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -864,6 +865,63 @@ declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
             isSelected: boolean;
         }): boolean;
         onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/color4LineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { Color4 } from "babylonjs/Maths/math";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    export interface IColor4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        onChange?: () => void;
+        globalState: GlobalState;
+    }
+    export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
+        isExpanded: boolean;
+        color: Color4;
+    }> {
+        private _localChange;
+        constructor(props: IColor4LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
+            color: Color4;
+        }): boolean;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Color4): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        updateStateA(value: number): void;
+        copyToClipboard(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/propertyTab/properties/color4PropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    interface IColor4PropertyTabComponentProps {
+        globalState: GlobalState;
+        inputBlock: InputBlock;
+    }
+    export class Color4PropertyTabComponent extends React.Component<IColor4PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/diagram/properties/inputNodePropertyComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
+    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        renderValue(globalState: GlobalState): JSX.Element | null;
+        setDefaultValue(): void;
         render(): JSX.Element;
     }
 }
@@ -910,6 +968,7 @@ declare module "babylonjs-node-editor/diagram/properties/gradientStepComponent" 
         lineIndex: number;
         onDelete: () => void;
         onUpdateStep: () => void;
+        onCheckForReOrder: () => void;
     }
     export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
         gradient: number;
@@ -917,6 +976,7 @@ declare module "babylonjs-node-editor/diagram/properties/gradientStepComponent" 
         constructor(props: IGradientStepComponentProps);
         updateColor(color: string): void;
         updateStep(gradient: number): void;
+        onPointerUp(): void;
         render(): JSX.Element;
     }
 }
@@ -940,6 +1000,7 @@ declare module "babylonjs-node-editor/diagram/properties/gradientNodePropertyCom
         forceRebuild(): void;
         deleteStep(step: GradientBlockColorStep): void;
         addNewStep(): void;
+        checkForReOrder(): void;
         render(): JSX.Element;
     }
 }
@@ -1442,11 +1503,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param nodeMaterialBlock
-         */
-        createNodeFromObject(block: NodeMaterialBlock): GraphNode;
+        createNodeFromObject(block: NodeMaterialBlock, recursion?: boolean): GraphNode;
         addValueNode(type: string): GraphNode;
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -1879,6 +1936,7 @@ declare module NODEEDITOR {
         value: number;
         step?: number;
         onChange: (value: number) => void;
+        globalState: GlobalState;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -1903,6 +1961,7 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector2) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
         isExpanded: boolean;
@@ -1940,6 +1999,7 @@ declare module NODEEDITOR {
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         onChange?: () => void;
+        globalState: GlobalState;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -1977,6 +2037,7 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -2018,6 +2079,7 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector4) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
         isExpanded: boolean;
@@ -2093,6 +2155,7 @@ declare module NODEEDITOR {
         onModeChange?: (mode: number) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         mode?: number;
+        globalState: GlobalState;
     }
     export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, {
         value: BABYLON.Matrix;
@@ -2188,14 +2251,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        renderValue(globalState: GlobalState): JSX.Element | null;
-        setDefaultValue(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     export interface ICheckBoxLineComponentProps {
         label: string;
         target?: any;
@@ -2216,6 +2271,52 @@ declare module NODEEDITOR {
             isSelected: boolean;
         }): boolean;
         onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IColor4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onChange?: () => void;
+        globalState: GlobalState;
+    }
+    export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
+        isExpanded: boolean;
+        color: BABYLON.Color4;
+    }> {
+        private _localChange;
+        constructor(props: IColor4LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
+            color: BABYLON.Color4;
+        }): boolean;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color4): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        updateStateA(value: number): void;
+        copyToClipboard(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IColor4PropertyTabComponentProps {
+        globalState: GlobalState;
+        inputBlock: BABYLON.InputBlock;
+    }
+    export class Color4PropertyTabComponent extends React.Component<IColor4PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        renderValue(globalState: GlobalState): JSX.Element | null;
+        setDefaultValue(): void;
         render(): JSX.Element;
     }
 }
@@ -2251,6 +2352,7 @@ declare module NODEEDITOR {
         lineIndex: number;
         onDelete: () => void;
         onUpdateStep: () => void;
+        onCheckForReOrder: () => void;
     }
     export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
         gradient: number;
@@ -2258,6 +2360,7 @@ declare module NODEEDITOR {
         constructor(props: IGradientStepComponentProps);
         updateColor(color: string): void;
         updateStep(gradient: number): void;
+        onPointerUp(): void;
         render(): JSX.Element;
     }
 }
@@ -2277,6 +2380,7 @@ declare module NODEEDITOR {
         forceRebuild(): void;
         deleteStep(step: BABYLON.GradientBlockColorStep): void;
         addNewStep(): void;
+        checkForReOrder(): void;
         render(): JSX.Element;
     }
 }
@@ -2701,11 +2805,7 @@ declare module NODEEDITOR {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param nodeMaterialBlock
-         */
-        createNodeFromObject(block: BABYLON.NodeMaterialBlock): GraphNode;
+        createNodeFromObject(block: BABYLON.NodeMaterialBlock, recursion?: boolean): GraphNode;
         addValueNode(type: string): GraphNode;
         componentDidMount(): void;
         componentWillUnmount(): void;

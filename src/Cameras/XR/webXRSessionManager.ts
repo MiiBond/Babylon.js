@@ -120,7 +120,7 @@ export class WebXRSessionManager implements IDisposable {
         // Check if the browser supports webXR
         this._xrNavigator = navigator;
         if (!this._xrNavigator.xr) {
-            return Promise.reject("webXR not supported by this browser");
+            return Promise.reject("WebXR not available");
         }
         return Promise.resolve();
     }
@@ -128,28 +128,29 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Initializes an xr session
      * @param xrSessionMode mode to initialize
-     * @param optionalFeatures defines optional values to pass to the session builder
+     * @param xrSessionInit defines optional and required values to pass to the session builder
      * @returns a promise which will resolve once the session has been initialized
      */
-    public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}): Promise<XRSession> {
-        return this._xrNavigator.xr.requestSession(xrSessionMode, optionalFeatures).then((session: XRSession) => {
+    public initializeSessionAsync(xrSessionMode: XRSessionMode = 'immersive-vr', xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
+        return this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit).then((session: XRSession) => {
             this.session = session;
             this.onXRSessionInit.notifyObservers(session);
             this._sessionEnded = false;
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
             this.session.addEventListener("end", () => {
+                const engine = this.scene.getEngine();
                 this._sessionEnded = true;
                 // Remove render target texture and notify frame obervers
                 this._rttProvider = null;
 
                 // Restore frame buffer to avoid clear on xr framebuffer after session end
-                this.scene.getEngine().restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer();
 
                 // Need to restart render loop as after the session is ended the last request for new frame will never call callback
-                this.scene.getEngine().customAnimationFrameRequester = null;
+                engine.customAnimationFrameRequester = null;
                 this.onXRSessionEnded.notifyObservers(null);
-                this.scene.getEngine()._renderLoop();
+                engine._renderLoop();
             }, { once: true });
             return this.session;
         });
@@ -157,11 +158,11 @@ export class WebXRSessionManager implements IDisposable {
 
     /**
      * Sets the reference space on the xr session
-     * @param referenceSpace space to set
+     * @param referenceSpaceType space to set
      * @returns a promise that will resolve once the reference space has been set
      */
-    public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType) {
-        return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
+    public setReferenceSpaceTypeAsync(referenceSpaceType: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
+        return this.session.requestReferenceSpace(referenceSpaceType).then((referenceSpace: XRReferenceSpace) => {
             return referenceSpace;
         }, (rejectionReason) => {
             Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
@@ -182,6 +183,7 @@ export class WebXRSessionManager implements IDisposable {
             this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
                 this.viewerReferenceSpace = referenceSpace;
             });
+            return this.referenceSpace;
         });
     }
 
@@ -206,9 +208,8 @@ export class WebXRSessionManager implements IDisposable {
 
     /**
      * Starts rendering to the xr layer
-     * @returns a promise that will resolve once rendering has started
      */
-    public startRenderingToXRAsync() {
+    public runXRRenderLoop() {
         const engine = this.scene.getEngine();
         // Tell the engine's render loop to be driven by the xr session's refresh rate and provide xr pose information
         engine.customAnimationFrameRequester = {
@@ -240,7 +241,6 @@ export class WebXRSessionManager implements IDisposable {
         // Stop window's animation frame and trigger sessions animation frame
         if (window.cancelAnimationFrame) { window.cancelAnimationFrame(engine._frameHandler); }
         engine._renderLoop();
-        return Promise.resolve();
     }
 
     /**
@@ -270,7 +270,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param sessionMode session mode to check if supported eg. immersive-vr
      * @returns true if supported
      */
-    public supportsSessionAsync(sessionMode: XRSessionMode) {
+    public isSessionSupportedAsync(sessionMode: XRSessionMode) {
         return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 

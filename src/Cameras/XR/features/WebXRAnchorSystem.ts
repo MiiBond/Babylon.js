@@ -1,4 +1,4 @@
-import { IWebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
+import { WebXRFeatureName } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../../Misc/observable';
 import { Matrix } from '../../../Maths/math.vector';
@@ -6,8 +6,6 @@ import { TransformNode } from '../../../Meshes/transformNode';
 import { WebXRPlaneDetector } from './WebXRPlaneDetector';
 import { WebXRHitTestLegacy } from './WebXRHitTestLegacy';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-anchor-system";
 
 /**
  * Configuration options of the anchor system
@@ -54,12 +52,12 @@ let anchorIdProvider = 0;
  * will use the frame to create an anchor and not the session or a detected plane
  * For further information see https://github.com/immersive-web/anchors/
  */
-export class WebXRAnchorSystem extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRAnchorSystem extends WebXRAbstractFeature {
 
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.ANCHOR_SYSTEM;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
@@ -122,7 +120,9 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature implements IWebXRFea
      * @returns true if successful.
      */
     attach(): boolean {
-        super.attach();
+        if (!super.attach()) {
+            return false;
+        }
         if (this._options.addAnchorOnSelect) {
             this._xrSessionManager.session.addEventListener('select', this._onSelect, false);
         }
@@ -136,7 +136,9 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature implements IWebXRFea
      * @returns true if successful.
      */
     detach(): boolean {
-        super.detach();
+        if (!super.detach()) {
+            return false;
+        }
 
         this._xrSessionManager.session.removeEventListener('select', this._onSelect);
 
@@ -258,6 +260,6 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature implements IWebXRFea
 }
 
 //register the plugin
-WebXRFeaturesManager.AddWebXRFeature(WebXRAnchorSystem.Name, (xrSessionManager, options) => {
-    return () => new WebXRAnchorSystem(xrSessionManager, options);
-}, WebXRAnchorSystem.Version);
+// WebXRFeaturesManager.AddWebXRFeature(WebXRAnchorSystem.Name, (xrSessionManager, options) => {
+//     return () => new WebXRAnchorSystem(xrSessionManager, options);
+// }, WebXRAnchorSystem.Version);

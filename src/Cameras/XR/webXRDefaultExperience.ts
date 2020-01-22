@@ -7,13 +7,14 @@ import { WebXREnterExitUI, WebXREnterExitUIOptions } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
 import { WebXRMotionControllerTeleportation } from './features/WebXRControllerTeleportation';
+import { Logger } from '../../Misc/logger';
 
 /**
  * Options for the default xr helper
  */
 export class WebXRDefaultExperienceOptions {
     /**
-     * Floor meshes that should be used for teleporting
+     * Floor meshes that will be used for teleporting
      */
     public floorMeshes?: Array<AbstractMesh>;
 
@@ -36,6 +37,11 @@ export class WebXRDefaultExperienceOptions {
      * Disable the controller mesh-loading. Can be used if you want to load your own meshes
      */
     public inputOptions?: IWebXRInputOptions;
+
+    /**
+     * Should teleportation not initialize. defaults to false.
+     */
+    public disableTeleportation?: boolean;
 }
 
 /**
@@ -86,7 +92,8 @@ export class WebXRDefaultExperience {
                 xrInput: result.input
             });
 
-            if (options.floorMeshes) {
+            // Add default teleportation, including rotation
+            if (!options.disableTeleportation) {
                 result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, "latest", {
                     floorMeshes: options.floorMeshes,
                     xrInput: result.input
@@ -109,6 +116,10 @@ export class WebXRDefaultExperience {
                 return;
             }
         }).then(() => {
+            return result;
+        }).catch((error) => {
+            Logger.Error("Error initializing XR");
+            Logger.Error(error);
             return result;
         });
     }
