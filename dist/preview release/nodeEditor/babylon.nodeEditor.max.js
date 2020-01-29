@@ -51536,6 +51536,22 @@ var BlockTools = /** @class */ (function () {
                 worldMatrixBlock.connectTo(transformBlock);
                 return transformBlock;
             }
+            case "WorldTangentBlock": {
+                var worldTangentBlock = nodeMaterial.getInputBlockByPredicate(function (b) { return b.isAttribute && b.name === "tangent"; });
+                if (!worldTangentBlock) {
+                    worldTangentBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("tangent");
+                    worldTangentBlock.setAsAttribute("tangent");
+                }
+                var worldMatrixBlock = nodeMaterial.getInputBlockByPredicate(function (b) { return b.isSystemValue && b.systemValue === babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World; });
+                if (!worldMatrixBlock) {
+                    worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
+                    worldMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World);
+                }
+                var transformBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TransformBlock"]("World tangent");
+                worldTangentBlock.connectTo(transformBlock);
+                worldMatrixBlock.connectTo(transformBlock);
+                return transformBlock;
+            }
         }
         return null;
     };
@@ -51776,7 +51792,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock",],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
-            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "FrontFacingBlock"],
+            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
@@ -51854,6 +51870,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         "TangentBlock": "A Vector3 representing the tangent of each vertex of the attached mesh",
         "UVBlock": "A Vector2 representing the UV coordinates of each vertex of the attached mesh",
         "WorldNormal": "A Vector4 representing the normal of each vertex of the attached mesh transformed into world space",
+        "WorldTangent": "A Vector4 representing the tangent of each vertex of the attached mesh transformed into world space",
         "PerturbNormalBlock": "Creates high-frequency detail normal vectors based on a normal map, the world position, and world normal",
         "NormalBlend": "Outputs the result of blending two normal maps together using a per-channel screen",
         "WorldPosition": "A Vector4 representing the position of each vertex of the attached mesh transformed into world space",
@@ -52364,6 +52381,9 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
         }
         document.getElementById("file-picker").value = "";
     };
+    PreviewMeshControlComponent.prototype.onPopUp = function () {
+        this.props.togglePreviewAreaComponent();
+    };
     PreviewMeshControlComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
@@ -52382,7 +52402,9 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button align", title: "Preview with a custom mesh" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-picker", id: "file-picker-label" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlus"] })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "file-picker", id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "file-picker", id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Open preview in new window", id: "preview-new-window", onClick: function () { return _this.onPopUp(); }, className: "button" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faWindowRestore"] }))));
     };
     return PreviewMeshControlComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -52722,6 +52744,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../diagram/graphFrame */ "./diagram/graphFrame.ts");
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
 /* harmony import */ var _diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../diagram/properties/framePropertyComponent */ "./diagram/properties/framePropertyComponent.tsx");
+/* harmony import */ var _sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../sharedComponents/color3LineComponent */ "./sharedComponents/color3LineComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../sharedComponents/color4LineComponent */ "./sharedComponents/color4LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../sharedComponents/vector2LineComponent */ "./sharedComponents/vector2LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../../sharedComponents/vector3LineComponent */ "./sharedComponents/vector3LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../../sharedComponents/vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
+
+
+
+
+
+
+
 
 
 
@@ -52759,6 +52794,45 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 _this.setState({ currentNode: null, currentFrame: null });
             }
         });
+        this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(function () {
+            _this.forceUpdate();
+        });
+    };
+    PropertyTabComponent.prototype.componentWillReceiveProps = function () {
+        this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
+    };
+    PropertyTabComponent.prototype.processInputBlockUpdate = function (ib) {
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        if (ib.isConstant) {
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        }
+    };
+    PropertyTabComponent.prototype.renderInputBlock = function (block) {
+        var _this = this;
+        switch (block.type) {
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Float:
+                var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.name },
+                    block.isBoolean &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
+                                _this.processInputBlockUpdate(block);
+                            } }),
+                    !block.isBoolean && cantDisplaySlider &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_16__["FloatLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }),
+                    !block.isBoolean && !cantDisplaySlider &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, onChange: function () { return _this.processInputBlockUpdate(block); } })));
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Color3:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_15__["Color3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Color4:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_17__["Color4LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_18__["Vector2LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_19__["Vector3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_20__["Vector4LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+        }
+        return null;
     };
     PropertyTabComponent.prototype.load = function (file) {
         var _this = this;
@@ -52839,7 +52913,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export shaders", onClick: function () {
                             _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
-                        } })))));
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "INPUTS" }, this.props.globalState.nodeMaterial.getInputBlocks().map(function (ib) {
+                    if (!ib.isUniform || ib.isSystemValue || !ib.name) {
+                        return null;
+                    }
+                    return _this.renderInputBlock(ib);
+                })))));
     };
     return PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -53801,8 +53881,10 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             for (var _b = 0, _c = _this._frames; _b < _c.length; _b++) {
                 var frame = _c[_b];
                 if (frame.id === dagreNode.id) {
+                    _this._frameIsMoving = true;
                     frame.move(dagreNode.x - dagreNode.width / 2, dagreNode.y - dagreNode.height / 2, false);
                     frame.cleanAccumulation();
+                    _this._frameIsMoving = false;
                     return;
                 }
             }
@@ -53989,6 +54071,41 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         evt.stopPropagation();
     };
     GraphCanvasComponent.prototype.zoomToFit = function () {
+        var _this = this;
+        // Get negative offset
+        var minX = 0;
+        var minY = 0;
+        this._nodes.forEach(function (node) {
+            if (_this._frames.some(function (f) { return f.nodes.indexOf(node) !== -1; })) {
+                return;
+            }
+            if (node.x < minX) {
+                minX = node.x;
+            }
+            if (node.y < minY) {
+                minY = node.y;
+            }
+        });
+        this._frames.forEach(function (frame) {
+            if (frame.x < minX) {
+                minX = frame.x;
+            }
+            if (frame.y < minY) {
+                minY = frame.y;
+            }
+        });
+        // Restore to 0
+        this._frames.forEach(function (frame) {
+            frame.x += -minX;
+            frame.y += -minY;
+            frame.cleanAccumulation();
+        });
+        this._nodes.forEach(function (node) {
+            node.x += -minX;
+            node.y += -minY;
+            node.cleanAccumulation();
+        });
+        // Get correct zoom
         var xFactor = this._rootContainer.clientWidth / this._rootContainer.scrollWidth;
         var yFactor = this._rootContainer.clientHeight / this._rootContainer.scrollHeight;
         var zoomFactor = xFactor < yFactor ? xFactor : yFactor;
@@ -54861,8 +54978,8 @@ var GraphNode = /** @class */ (function () {
             this._displayManager.updatePreviewContent(this.block, this._content);
             this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
             var additionalClass = this._displayManager.getHeaderClass(this.block);
+            this._header.classList.value = "header";
             if (additionalClass) {
-                this._header.classList.value = "header";
                 this._header.classList.add(additionalClass);
             }
         }
@@ -56229,14 +56346,14 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.block, onValueChanged: function () {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                     } }),
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to gamma space", propertyName: "convertToGammaSpace", target: this.props.block, onValueChanged: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
                 texture && isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Reflection mode", options: reflectionModeOptions, target: texture, propertyName: "coordinatesMode", onSelect: function (value) {
                             texture.coordinatesMode = value;
                             _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                        } }),
-                texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&
@@ -56537,6 +56654,7 @@ var GlobalState = /** @class */ (function () {
     function GlobalState() {
         this.onSelectionChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onRebuildRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onBuiltObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onResetRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onZoomToFitRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -56603,6 +56721,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
 /* harmony import */ var _diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagram/graphCanvas */ "./diagram/graphCanvas.tsx");
 /* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./diagram/graphFrame */ "./diagram/graphFrame.ts");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_16___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_16__);
+
 
 
 
@@ -56632,6 +56753,166 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._copiedFrame = null;
         _this._mouseLocationX = 0;
         _this._mouseLocationY = 0;
+        _this.state = {
+            showPreviewPopUp: false
+        };
+        _this.handlePopUp = function () {
+            _this.setState({
+                showPreviewPopUp: true
+            });
+            _this.createPopUp();
+            _this.props.globalState.hostWindow.addEventListener('beforeunload', _this.handleClosingPopUp);
+        };
+        _this.handleClosingPopUp = function () {
+            _this._previewManager.dispose();
+            _this._popUpWindow.close();
+            _this.setState({
+                showPreviewPopUp: false
+            }, function () { return _this.initiatePreviewArea(); });
+        };
+        _this.initiatePreviewArea = function (canvas) {
+            if (canvas === void 0) { canvas = _this.props.globalState.hostDocument.getElementById("preview-canvas"); }
+            _this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_10__["PreviewManager"](canvas, _this.props.globalState);
+        };
+        _this.createPopUp = function () {
+            var userOptions = {
+                original: true,
+                popup: false,
+                overlay: false,
+                embedMode: false,
+                enableClose: true,
+                handleResize: true,
+                enablePopup: true,
+            };
+            var options = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ embedHostWidth: "100%", popup: true }, userOptions);
+            var popUpWindow = _this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
+            if (popUpWindow) {
+                popUpWindow.addEventListener('beforeunload', _this.handleClosingPopUp);
+                var parentControl = popUpWindow.document.getElementById('node-editor-graph-root');
+                _this.createPreviewMeshControlHost(options, parentControl);
+                _this.createPreviewHost(options, parentControl);
+                if (parentControl) {
+                    _this.fixPopUpStyles(parentControl.ownerDocument);
+                    _this.initiatePreviewArea(parentControl.ownerDocument.getElementById("preview-canvas"));
+                }
+            }
+        };
+        _this.createPopupWindow = function (title, windowVariableName, width, height) {
+            if (width === void 0) { width = 500; }
+            if (height === void 0) { height = 500; }
+            var windowCreationOptionsList = {
+                width: width,
+                height: height,
+                top: (_this.props.globalState.hostWindow.innerHeight - width) / 2 + window.screenY,
+                left: (_this.props.globalState.hostWindow.innerWidth - height) / 2 + window.screenX
+            };
+            var windowCreationOptions = Object.keys(windowCreationOptionsList)
+                .map(function (key) { return key + '=' + windowCreationOptionsList[key]; })
+                .join(',');
+            var popupWindow = _this.props.globalState.hostWindow.open("", title, windowCreationOptions);
+            if (!popupWindow) {
+                return null;
+            }
+            var parentDocument = popupWindow.document;
+            parentDocument.title = title;
+            parentDocument.body.style.width = "100%";
+            parentDocument.body.style.height = "100%";
+            parentDocument.body.style.margin = "0";
+            parentDocument.body.style.padding = "0";
+            var parentControl = parentDocument.createElement("div");
+            parentControl.style.width = "100%";
+            parentControl.style.height = "100%";
+            parentControl.style.margin = "0";
+            parentControl.style.padding = "0";
+            parentControl.style.display = "block";
+            parentControl.style.gridTemplateRows = "unset";
+            parentControl.id = 'node-editor-graph-root';
+            parentControl.className = 'right-panel';
+            popupWindow.document.body.appendChild(parentControl);
+            _this.copyStyles(_this.props.globalState.hostWindow.document, parentDocument);
+            _this[windowVariableName] = popupWindow;
+            _this._popUpWindow = popupWindow;
+            return popupWindow;
+        };
+        _this.copyStyles = function (sourceDoc, targetDoc) {
+            var styleContainer = [];
+            for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
+                var styleSheet = sourceDoc.styleSheets[index];
+                try {
+                    if (styleSheet.href) { // for <link> elements loading CSS from a URL
+                        var newLinkEl = sourceDoc.createElement('link');
+                        newLinkEl.rel = 'stylesheet';
+                        newLinkEl.href = styleSheet.href;
+                        targetDoc.head.appendChild(newLinkEl);
+                        styleContainer.push(newLinkEl);
+                    }
+                    else if (styleSheet.cssRules) { // for <style> elements
+                        var newStyleEl = sourceDoc.createElement('style');
+                        for (var _i = 0, _a = styleSheet.cssRules; _i < _a.length; _i++) {
+                            var cssRule = _a[_i];
+                            if (cssRule.selectorText !== '.right-panel #preview-config-bar .button') { // skip css grid layout rules
+                                newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+                            }
+                        }
+                        targetDoc.head.appendChild(newStyleEl);
+                        styleContainer.push(newStyleEl);
+                    }
+                }
+                catch (e) {
+                    console.log(e);
+                }
+            }
+        };
+        _this.createPreviewMeshControlHost = function (options, parentControl) {
+            // Prepare the preview control host
+            if (parentControl) {
+                var host = parentControl.ownerDocument.createElement("div");
+                host.id = "PreviewMeshControl-host";
+                host.style.width = options.embedHostWidth || "auto";
+                host.style.display = "block";
+                host.style.height = "30px";
+                parentControl.appendChild(host);
+                var PreviewMeshControlComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewMeshControlComponent"], {
+                    globalState: _this.props.globalState,
+                    togglePreviewAreaComponent: _this.handlePopUp
+                });
+                react_dom__WEBPACK_IMPORTED_MODULE_16__["render"](PreviewMeshControlComponentHost, host);
+            }
+        };
+        _this.createPreviewHost = function (options, parentControl) {
+            // Prepare the preview host
+            if (parentControl) {
+                var host = parentControl.ownerDocument.createElement("div");
+                host.id = "PreviewAreaComponent-host";
+                host.style.width = options.embedHostWidth || "auto";
+                host.style.display = "block";
+                parentControl.appendChild(host);
+                _this._previewHost = host;
+                if (!options.overlay) {
+                    _this._previewHost.style.position = "relative";
+                }
+            }
+            if (_this._previewHost) {
+                var PreviewAreaComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__["PreviewAreaComponent"], {
+                    globalState: _this.props.globalState,
+                    width: 200
+                });
+                react_dom__WEBPACK_IMPORTED_MODULE_16__["render"](PreviewAreaComponentHost, _this._previewHost);
+            }
+        };
+        _this.fixPopUpStyles = function (document) {
+            var previewContainer = document.getElementById("preview");
+            if (previewContainer) {
+                previewContainer.style.height = "calc(100% - 60px)";
+            }
+            var newWindowButton = document.getElementById('preview-new-window');
+            if (newWindowButton) {
+                newWindowButton.style.display = 'none';
+            }
+        };
+        _this.state = {
+            showPreviewPopUp: false
+        };
         _this.props.globalState.onRebuildRequiredObservable.add(function () {
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial();
@@ -56731,6 +57012,10 @@ var GraphEditor = /** @class */ (function (_super) {
         }, false);
         return _this;
     }
+    /**
+     * Creates a node and recursivly creates its parent nodes from it's input
+     * @param nodeMaterialBlock
+     */
     GraphEditor.prototype.createNodeFromObject = function (block, recursion) {
         if (recursion === void 0) { recursion = true; }
         if (this._blocks.indexOf(block) !== -1) {
@@ -56879,6 +57164,7 @@ var GraphEditor = /** @class */ (function (_super) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__["LogEntry"](err, true));
         }
         _serializationTools__WEBPACK_IMPORTED_MODULE_13__["SerializationTools"].UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
+        this.props.globalState.onBuiltObservable.notifyObservers();
     };
     GraphEditor.prototype.build = function () {
         var _this = this;
@@ -57043,8 +57329,8 @@ var GraphEditor = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "right-panel" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["PropertyTabComponent"], { globalState: this.props.globalState }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewMeshControlComponent"], { globalState: this.props.globalState }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__["PreviewAreaComponent"], { globalState: this.props.globalState, width: this._rightWidth })),
+                    !this.state.showPreviewPopUp ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewMeshControlComponent"], { globalState: this.props.globalState, togglePreviewAreaComponent: this.handlePopUp }) : null,
+                    !this.state.showPreviewPopUp ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__["PreviewAreaComponent"], { globalState: this.props.globalState, width: this._rightWidth }) : null),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__["LogComponent"], { globalState: this.props.globalState })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_8__["MessageDialogComponent"], { globalState: this.props.globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blocker" }, "Node Material Editor runs only on desktop")));
@@ -57177,6 +57463,7 @@ var NodeEditor = /** @class */ (function () {
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument;
         globalState.customSave = options.customSave;
+        globalState.hostWindow = hostElement.ownerDocument.defaultView;
         var graphEditor = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_graphEditor__WEBPACK_IMPORTED_MODULE_3__["GraphEditor"], {
             globalState: globalState
         });
@@ -57184,6 +57471,7 @@ var NodeEditor = /** @class */ (function () {
         if (options.customLoadObservable) {
             options.customLoadObservable.add(function (data) {
                 _serializationTools__WEBPACK_IMPORTED_MODULE_5__["SerializationTools"].Deserialize(data, globalState);
+                globalState.onBuiltObservable.notifyObservers();
             });
         }
         this._CurrentState = globalState;
@@ -57354,7 +57642,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             _this.state = { isSelected: _this.props.isSelected() };
         }
         else {
-            _this.state = { isSelected: _this.props.target[_this.props.propertyName] === true };
+            _this.state = { isSelected: _this.props.target[_this.props.propertyName] == true };
         }
         return _this;
     }
@@ -57364,7 +57652,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             currentState = nextProps.isSelected();
         }
         else {
-            currentState = nextProps.target[nextProps.propertyName] === true;
+            currentState = nextProps.target[nextProps.propertyName] == true;
         }
         if (currentState !== nextState.isSelected || this._localChange) {
             nextState.isSelected = currentState;

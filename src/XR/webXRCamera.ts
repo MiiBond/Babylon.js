@@ -1,10 +1,10 @@
-import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
-import { Scene } from "../../scene";
-import { Camera } from "../../Cameras/camera";
-import { FreeCamera } from "../../Cameras/freeCamera";
-import { TargetCamera } from "../../Cameras/targetCamera";
+import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
+import { Scene } from "../scene";
+import { Camera } from "../Cameras/camera";
+import { FreeCamera } from "../Cameras/freeCamera";
+import { TargetCamera } from "../Cameras/targetCamera";
 import { WebXRSessionManager } from "./webXRSessionManager";
-import { Viewport } from '../../Maths/math.viewport';
+import { Viewport } from '../Maths/math.viewport';
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -12,11 +12,32 @@ import { Viewport } from '../../Maths/math.viewport';
  */
 export class WebXRCamera extends FreeCamera {
 
+    /**
+     * Should position compensation execute on first frame.
+     * This is used when copying the position from a native (non XR) camera
+     */
+    public compensateOnFirstFrame: boolean = true;
+
     private _firstFrame = false;
     private _referencedPosition: Vector3 = new Vector3();
     private _referenceQuaternion: Quaternion = Quaternion.Identity();
     private _xrInvPositionCache: Vector3 = new Vector3();
     private _xrInvQuaternionCache = Quaternion.Identity();
+
+    private _realWorldHeight: number = 0;
+
+    /**
+     * Prevent the camera from calculating the real-world height
+     * If you are not using the user's height disable this for better performance
+     */
+    public disableRealWorldHeightCalculation: boolean = false;
+
+    /**
+     * Return the user's height, unrelated to the current ground.
+     */
+    public get realWorldHeight(): number {
+        return this._realWorldHeight;
+    }
 
     /**
      * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
@@ -37,7 +58,7 @@ export class WebXRCamera extends FreeCamera {
             this._referencedPosition.copyFromFloats(0, 0, 0);
             this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
             // first frame - camera's y position should be 0 for the correct offset
-            this._firstFrame = true;
+            this._firstFrame = this.compensateOnFirstFrame;
 
         });
 
@@ -54,10 +75,12 @@ export class WebXRCamera extends FreeCamera {
 
     private _updateNumberOfRigCameras(viewCount = 1) {
         while (this.rigCameras.length < viewCount) {
-            var newCamera = new TargetCamera("view: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
+            var newCamera = new TargetCamera("XR-RigCamera: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
             newCamera.minZ = 0.1;
             newCamera.rotationQuaternion = new Quaternion();
             newCamera.updateUpVectorFromRotation = true;
+            newCamera.isRigCamera = true;
+            newCamera.rigParent = this;
             this.rigCameras.push(newCamera);
         }
         while (this.rigCameras.length > viewCount) {
@@ -168,6 +191,16 @@ export class WebXRCamera extends FreeCamera {
     }
 
     private _updateFromXRSession() {
+
+        // user height
+        if (!this.disableRealWorldHeightCalculation) {
+            const basePose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.baseReferenceSpace);
+            if (basePose && basePose.transform) {
+                this._realWorldHeight = basePose.transform.position.y;
+            }
+        } else {
+            this._realWorldHeight = 0;
+        }
 
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
 

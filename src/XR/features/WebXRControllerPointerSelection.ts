@@ -1,20 +1,20 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { Observer } from '../../../Misc/observable';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { Observer } from '../../Misc/observable';
 import { WebXRInput } from '../webXRInput';
 import { WebXRController } from '../webXRController';
-import { Scene } from '../../../scene';
+import { Scene } from '../../scene';
 import { WebXRControllerComponent } from '../motionController/webXRControllerComponent';
-import { Nullable } from '../../../types';
-import { Vector3 } from '../../../Maths/math.vector';
-import { Color3 } from '../../../Maths/math.color';
-import { Axis } from '../../../Maths/math.axis';
-import { StandardMaterial } from '../../../Materials/standardMaterial';
-import { CylinderBuilder } from '../../../Meshes/Builders/cylinderBuilder';
-import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
-import { Ray } from '../../../Culling/ray';
-import { PickingInfo } from '../../../Collisions/pickingInfo';
+import { Nullable } from '../../types';
+import { Vector3 } from '../../Maths/math.vector';
+import { Color3 } from '../../Maths/math.color';
+import { Axis } from '../../Maths/math.axis';
+import { StandardMaterial } from '../../Materials/standardMaterial';
+import { CylinderBuilder } from '../../Meshes/Builders/cylinderBuilder';
+import { TorusBuilder } from '../../Meshes/Builders/torusBuilder';
+import { Ray } from '../../Culling/ray';
+import { PickingInfo } from '../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 /**
@@ -357,53 +357,51 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     }
 
     private _attachTrackedPointerRayMode(xrController: WebXRController) {
-        if (!xrController.motionController) {
-            return;
-        }
-
-        if (this._options.forceGazeMode) {
-            return this._attachGazeMode(xrController);
-        }
-
-        const controllerData = this._controllers[xrController.uniqueId];
-
-        if (this._options.overrideButtonId) {
-            controllerData.selectionComponent = xrController.motionController.getComponent(this._options.overrideButtonId);
-        }
-        if (!controllerData.selectionComponent) {
-            controllerData.selectionComponent = xrController.motionController.getMainComponent();
-        }
-
-        controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
-            if (controllerData.selectionComponent && controllerData.selectionComponent.pressed) {
-                (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
-                (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
-            } else {
-                (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+        xrController.onMotionControllerInitObservable.add((motionController) => {
+            if (this._options.forceGazeMode) {
+                return this._attachGazeMode(xrController);
             }
 
-            controllerData.laserPointer.isVisible = this.displayLaserPointer;
-            (<StandardMaterial>controllerData.laserPointer.material).disableLighting = this.disablePointerLighting;
-            (<StandardMaterial>controllerData.selectionMesh.material).disableLighting = this.disableSelectionMeshLighting;
+            const controllerData = this._controllers[xrController.uniqueId];
 
-            if (controllerData.pick) {
-                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+            if (this._options.overrideButtonId) {
+                controllerData.selectionComponent = motionController.getComponent(this._options.overrideButtonId);
             }
-        });
+            if (!controllerData.selectionComponent) {
+                controllerData.selectionComponent = motionController.getMainComponent();
+            }
 
-        controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChanged.add((component) => {
-            if (component.changes.pressed) {
-                const pressed = component.changes.pressed.current;
+            controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
+                if (controllerData.selectionComponent && controllerData.selectionComponent.pressed) {
+                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+                } else {
+                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+                }
+                controllerData.laserPointer.isVisible = this.displayLaserPointer;
+                (<StandardMaterial>controllerData.laserPointer.material).disableLighting = this.disablePointerLighting;
+                (<StandardMaterial>controllerData.selectionMesh.material).disableLighting = this.disableSelectionMeshLighting;
+
                 if (controllerData.pick) {
-                    if (pressed) {
-                        this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
-                    } else {
-                        this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                    this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+                }
+            });
+
+            controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChanged.add((component) => {
+                if (component.changes.pressed) {
+                    const pressed = component.changes.pressed.current;
+                    if (controllerData.pick) {
+                        if (pressed) {
+                            this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                        } else {
+                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                        }
                     }
                 }
-            }
+            });
         });
+
     }
 
     private _detachController(xrControllerUniqueId: string) {
@@ -473,7 +471,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _updatePointerDistance(_laserPointer: AbstractMesh, distance: number = 100) {
         _laserPointer.scaling.y = distance;
-        _laserPointer.position.z = distance / 2;
+        // a bit of distance from the controller
+        _laserPointer.position.z = (distance / 2) + 0.05;
     }
 }
 
