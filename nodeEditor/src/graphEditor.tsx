@@ -116,7 +116,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
         let newInputBlock = new InputBlock(type, undefined, nodeType);
-        return this.createNodeFromObject(newInputBlock)
+        return this.createNodeFromObject(newInputBlock);
     }
 
     componentDidMount() {
@@ -175,7 +175,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         }
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
-            if (evt.keyCode === 46 && !this.props.globalState.blockKeyboardEvents) { // Delete                
+            if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) { // Delete                
                 let selectedItems = this._graphCanvas.selectedNodes;
 
                 for (var selectedItem of selectedItems) {
