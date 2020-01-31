@@ -1145,7 +1145,8 @@ void main(void) {
         #endif
 
         #ifdef SS_LINKALPHAWITHCLEARREFRACTION
-            refractionTransmittance = mix(environmentRefraction.rgb, refractionTransmittance, alpha);
+            // Where alpha is 0, transmittance is 100% (i.e. we can see completely through the surface)
+            refractionTransmittance = mix(vec3(1.0), refractionTransmittance, alpha);
             #ifdef SS_SCATTERING
                 scatterTransmittance = mix(environmentRefraction.rgb, scatterTransmittance, alpha);
             #endif
@@ -1169,7 +1170,7 @@ void main(void) {
         #ifdef SS_LINKALPHAWITHCLEARREFRACTION
             refractionTransmittance *= 1.0 - (specularEnvironmentReflectance * alpha);
             // Put alpha back to 1;
-            alpha = 1.0;
+            // alpha = 1.0;
         #else
             refractionTransmittance *= 1.0 - specularEnvironmentReflectance;
         #endif
@@ -1473,6 +1474,9 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
 #else
     // Reflection already includes the environment intensity.
     vec4 finalColor = vec4(finalDiffuseLight + finalReflectedLight + finalRefractedLight + finalEmissiveLight, alpha);
+    #ifdef SS_LINKALPHAWITHCLEARREFRACTION
+        finalColor = vec4(mix(finalRefractedLight, finalColor.rgb, alpha), 1.0);
+    #endif
 
     // _____________________________ LightMappping _____________________________________
     #ifdef LIGHTMAP

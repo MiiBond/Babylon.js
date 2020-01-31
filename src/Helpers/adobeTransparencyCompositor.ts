@@ -156,11 +156,7 @@ export class AdobeTransparencyCompositor {
         let postEffect = new PostProcess("transparentComposite", "adobeTransparentComposite", ["renderSize", "renderOpacity", "depthValues"],
             ["colourTexture", "reflectionTexture", "miscTexture", "attenuationTexture", "scatterTexture", "backgroundDepth"],
             postOptions, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), undefined, defines, floatTextureType);
-        postEffect._textures.forEach((tex) => {
-            tex._lodGenerationOffset = -4;
-            tex._lodGenerationScale = 0.25;
-        });
-
+        
         postEffect.getEffect().setFloat("renderOpacity", 1.0);
         postEffect.onApplyObservable.add((effect: Effect) => {
             postEffect._textures.forEach((tex) => {
@@ -246,7 +242,7 @@ export class AdobeTransparencyCompositor {
         this.compositedTexture.lodGenerationOffset = -4;
         this.compositedTexture.wrapU = Engine.TEXTURE_CLAMP_ADDRESSMODE;
         // this.compositedTexture.samples = 4;
-        // this.compositedTexture.gammaSpace = false;
+        this.compositedTexture.gammaSpace = true;
         // this.compositedTexture.hasAlpha = true;
         // this.compositedTexture.anisotropicFilteringLevel = 8;
         (this.compositedTexture as any).depth = this._options.refractionScale;

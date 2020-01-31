@@ -174,9 +174,10 @@ export class AdobeTransparencyHelper {
         const oldOptions = this._options;
         this._options = newOptions;
 
-        // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.volumeRendering !== oldOptions.volumeRendering) {
-            this._volumeRenderingEnabled = this._options.volumeRendering && (this._scene.getEngine()._gl as any).COLOR_ATTACHMENT4 !== undefined;
+        const newVolumeRendering = newOptions.volumeRendering && (this._scene.getEngine()._gl as any).COLOR_ATTACHMENT4 !== undefined;
+        // If size or volume rendering changes, recreate everything
+        if (newOptions.renderSize !== oldOptions.renderSize || newVolumeRendering !== oldOptions.volumeRendering) {
+            this._volumeRenderingEnabled = newVolumeRendering;
             this._setupRenderTargets();
         // If number of passes changes, create or remove passes as needed.
         } else if (newOptions.numPasses > oldOptions.numPasses) {
@@ -205,6 +206,19 @@ export class AdobeTransparencyHelper {
             while (this._numEnabledPasses > options.passesToEnable) {
                 this.disablePass();
             }
+        }
+
+        // Update any existing materials
+        if (newVolumeRendering !== oldOptions.volumeRendering) {
+            this._transparentMeshesCache.forEach((mesh: Mesh) => {
+                if (!mesh.material || !(mesh.material instanceof PBRMaterial)) {
+                    return;
+                }
+                const cache = this._materialCache[mesh.uniqueId];
+                cache.regularMaterial.adobeGBufferVolumeInfoEnabled = this._volumeRenderingEnabled;
+                cache.gbufferMaterial1.adobeGBufferVolumeInfoEnabled = this._volumeRenderingEnabled;
+                cache.gbufferMaterial2.adobeGBufferVolumeInfoEnabled = this._volumeRenderingEnabled;
+            });
         }
 
         this._compositor.updateOptions(options);
@@ -279,6 +293,24 @@ export class AdobeTransparencyHelper {
         } else {
             this.disabled = false;
         }
+        this._updateVolumeRenderingState();
+    }
+
+    private _checkIfNeedsVolumeRendering(): boolean {
+        return this._transparentMeshesCache.filter((mesh: Mesh) => {
+            if (!mesh.material || !(mesh.material instanceof PBRMaterial)) {
+                return false;
+            }
+            return mesh.material.subSurface.isScatteringEnabled;
+        }).length > 0;
+    }
+
+    private _updateVolumeRenderingState(): void {
+        const enabled = this._checkIfNeedsVolumeRendering();
+        const updateOptions: Partial<IAdobeTransparencyHelperOptions> = {};
+        updateOptions.volumeRendering = enabled;
+        this.updateOptions(updateOptions);
+        
     }
 
     private _removeMesh(mesh: AbstractMesh): void {
@@ -299,6 +331,7 @@ export class AdobeTransparencyHelper {
         } else {
             this.disabled = false;
         }
+        this._updateVolumeRenderingState();
     }
 
     private registerMaterialInCache(mesh: Mesh): void {
@@ -475,6 +508,7 @@ export class AdobeTransparencyHelper {
         multiRenderTarget.refreshRate = 1;
         multiRenderTarget.renderParticles = false;
         multiRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
+        // multiRenderTarget.gammaSpace = false;
         // multiRenderTarget.lodGenerationScale = 1;
         multiRenderTarget.anisotropicFilteringLevel = 4;
         // multiRenderTarget.noMipmap = true;
@@ -638,6 +672,7 @@ export class AdobeTransparencyHelper {
             this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, true);
             this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
             // this._opaqueRenderTarget.clearColor = new Color4(0.0, 0.0, 0.0, 0.0);
+            this._opaqueRenderTarget.gammaSpace = true;
             this._opaqueRenderTarget.lodGenerationScale = 1;
             this._opaqueRenderTarget.lodGenerationOffset = -4;
             (this._opaqueRenderTarget as any).depth = this._options.refractionScale;
