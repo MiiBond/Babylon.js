@@ -26,10 +26,10 @@ export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
-    public enabled = true;
-
     private _loader: GLTFLoader;
+
+    /** Defines whether this extension is enabled. */
+    public enabled = this._loader.isExtensionUsed(NAME);
 
     constructor(loader: GLTFLoader) {
         this._loader = loader;
@@ -55,7 +55,6 @@ export class ADOBE_materials_thin_transparency implements IGLTFLoaderExtension {
     /** @hidden */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IAdobeMaterialsThinTransparency>(context, material, this.name, (extensionContext, extension) => {
-            console.log(extensionContext);
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));

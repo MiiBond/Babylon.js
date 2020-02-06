@@ -27,10 +27,10 @@ export class KHR_materials_volume_transmission implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
-    public enabled = true;
-
     private _loader: GLTFLoader;
+
+    /** Defines whether this extension is enabled. */
+    public enabled = this._loader.isExtensionUsed(NAME);
 
     constructor(loader: GLTFLoader) {
         this._loader = loader;
