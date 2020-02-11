@@ -291,7 +291,7 @@ class Main {
             this.parent.menuPG.removeAllOptions();
             this.createNewScript.call(this);
         }.bind(this));
-        // Clear 
+        // Clear
         this.parent.utils.setToMultipleID("clearButton", "click", function () {
             this.parent.menuPG.removeAllOptions();
             this.clear.call(this);
@@ -460,7 +460,7 @@ class Main {
 
     /**
      * Check if we're in the correct language for the selected script
-     * @param {*} xhr 
+     * @param {*} xhr
      */
     checkTypescriptSupport(xhr) {
         // If we're loading TS content and it's JS page
@@ -482,8 +482,8 @@ class Main {
 
     /**
      * Load a script in the database
-     * @param {*} scriptURL 
-     * @param {*} title 
+     * @param {*} scriptURL
+     * @param {*} title
      */
     loadScript(scriptURL, title) {
         var xhr = new XMLHttpRequest();
@@ -854,17 +854,35 @@ class Main {
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState === 4) {
                 if (xmlHttp.status === 200) {
-                    var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
                     var snippet = JSON.parse(xmlHttp.responseText);
-                    var newUrl = baseUrl + "#" + snippet.id;
-                    this.currentSnippetToken = snippet.id;
-                    if (snippet.version && snippet.version !== "0") {
-                        newUrl += "#" + snippet.version;
+                    if (location.pathname && location.pathname.indexOf('pg/') !== -1) {
+                        // full path with /pg/??????
+                        if (location.pathname.indexOf('revision') !== -1) {
+                            location.href = location.href.replace(/revision\/(\d+)/, "revision/" + snippet.version);
+                        } else {
+                            location.href = location.href + '/revision/' + snippet.version;
+                        }
+                    } else if (location.search && location.search.indexOf('pg=') !== -1) {
+                        // query string with ?pg=??????
+                        const currentQuery = this.parseQuery(location.search);
+                        if (currentQuery.revision) {
+                            location.href = location.href.replace(/revision=(\d+)/, "revision=" + snippet.version);
+                        } else {
+                            location.href = location.href + '&revision=' + snippet.version;
+                        }
+                    } else {
+                        // default behavior!
+                        var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                        var newUrl = baseUrl + "#" + snippet.id;
+                        this.currentSnippetToken = snippet.id;
+                        if (snippet.version && snippet.version !== "0") {
+                            newUrl += "#" + snippet.version;
+                        }
+                        location.href = newUrl;
+                        // Hide the complete title & co message
+                        this.hideNoMetadata();
+                        compileAndRun(this.parent, this.fpsLabel);
                     }
-                    location.href = newUrl;
-                    // Hide the complete title & co message
-                    this.hideNoMetadata();
-                    compileAndRun(this.parent, this.fpsLabel);
                 } else {
                     this.parent.utils.showError("Unable to save your code. It may be too long.", null);
                 }
@@ -1055,6 +1073,11 @@ class Main {
             }
         }
         if (pgHash) {
+            var match = pgHash.match(/^(#[A-Za-z\d]*)(%23)([\d]+)$/);
+            if (match){
+                pgHash = match[1]+'#'+match[3];
+                parent.location.hash = pgHash;
+            }
             this.previousHash = pgHash;
             this.loadPlayground(pgHash.substr(1))
         }
@@ -1124,16 +1147,27 @@ class Main {
         }
     }
     updateMetadata() {
+        var selection;
+
         if (this.currentSnippetTitle) {
-            document.querySelector('title').innerText = (this.currentSnippetTitle + " | Babylon.js Playground");
+            selection = document.querySelector('title');
+            if(selection){
+                selection.innerText = (this.currentSnippetTitle + " | Babylon.js Playground");
+            }
         }
 
         if (this.currentSnippetDescription) {
-            document.querySelector('meta[name="description"]').setAttribute("content", this.currentSnippetDescription + " - Babylon.js Playground");
+            selection = document.querySelector('meta[name="description"]');
+            if(selection){
+                selection.setAttribute("content", this.currentSnippetDescription + " - Babylon.js Playground");
+            }
         }
 
         if (this.currentSnippetTags) {
-            document.querySelector('meta[name="keywords"]').setAttribute("content", "babylon.js, game engine, webgl, 3d," + this.currentSnippetTags);
+            selection = document.querySelector('meta[name="keywords"]');
+            if(selection){
+                selection.setAttribute("content", "babylon.js, game engine, webgl, 3d," + this.currentSnippetTags);
+            }
         }
     }
     parseQuery(queryString) {

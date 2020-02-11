@@ -26333,7 +26333,6 @@ declare module BABYLON {
         USE_LOCAL_REFLECTIONMAP_CUBIC: boolean;
         REFLECTIONMAP_PROJECTION: boolean;
         REFLECTIONMAP_SKYBOX: boolean;
-        REFLECTIONMAP_SKYBOX_TRANSFORMED: boolean;
         REFLECTIONMAP_EXPLICIT: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR_FIXED: boolean;
@@ -35096,6 +35095,8 @@ declare module BABYLON {
         cameraToUseForPointers: Nullable<Camera>;
         /** @hidden */
         readonly _isScene: boolean;
+        /** @hidden */
+        _blockEntityCollection: boolean;
         /**
          * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
          */
@@ -36951,6 +36952,7 @@ declare module BABYLON {
      * Container with a set of assets that can be added or removed from a scene.
      */
     export class AssetContainer extends AbstractScene {
+        private _wasAddedToScene;
         /**
          * The scene the AssetContainer belongs to.
          */
@@ -38084,8 +38086,6 @@ declare module BABYLON {
         /**
          * Targets the given mesh and updates zoom level accordingly.
          * @param mesh  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
@@ -38093,8 +38093,6 @@ declare module BABYLON {
         /**
          * Targets the given mesh with its children and updates zoom level accordingly.
          * @param mesh  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
@@ -38102,8 +38100,6 @@ declare module BABYLON {
         /**
          * Targets the given meshes with their children and updates zoom level accordingly.
          * @param meshes  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
@@ -43089,23 +43085,23 @@ declare module BABYLON {
         /**
          * Thumbstick component type
          */
-        static THUMBSTICK: MotionControllerComponentType;
+        static THUMBSTICK_TYPE: MotionControllerComponentType;
         /**
          * Touchpad component type
          */
-        static TOUCHPAD: MotionControllerComponentType;
+        static TOUCHPAD_TYPE: MotionControllerComponentType;
         /**
          * trigger component type
          */
-        static TRIGGER: MotionControllerComponentType;
+        static TRIGGER_TYPE: MotionControllerComponentType;
         /**
          * squeeze component type
          */
-        static SQUEEZE: MotionControllerComponentType;
+        static SQUEEZE_TYPE: MotionControllerComponentType;
         /**
          * button component type
          */
-        static BUTTON: MotionControllerComponentType;
+        static BUTTON_TYPE: MotionControllerComponentType;
         /**
          * Observers registered here will be triggered when the state of a button changes
          * State change is either pressed / touched / value
@@ -44474,6 +44470,10 @@ declare module BABYLON {
          * if provided, this scene will be used to render meshes.
          */
         customUtilityLayerScene?: Scene;
+        /**
+         *  use this rendering group id for the meshes (optional)
+         */
+        renderingGroupId?: number;
     }
     /**
      * A module that will enable pointer selection for motion controllers of XR Input Sources
@@ -44523,7 +44523,6 @@ declare module BABYLON {
          */
         disableSelectionMeshLighting: boolean;
         private static _idCounter;
-        private _tmpRay;
         private _controllers;
         private _scene;
         /**
@@ -44553,6 +44552,13 @@ declare module BABYLON {
          * @returns the controller that correlates to this id or null if not found
          */
         getXRControllerByPointerId(id: number): Nullable<WebXRInputSource>;
+        /**
+         * Will get the mesh under a specific pointer.
+         * `scene.meshUnderPointer` will only return one mesh - either left or right.
+         * @param controllerId the controllerId to check
+         * @returns The mesh under pointer or null if no mesh is under the pointer
+         */
+        getMeshUnderPointer(controllerId: string): Nullable<AbstractMesh>;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private _attachController;
         private _attachScreenRayMode;
@@ -44763,6 +44769,20 @@ declare module BABYLON {
          */
         teleportationTargetMesh?: AbstractMesh;
         /**
+         * An array of points to which the teleportation will snap to.
+         * If the teleportation ray is in the proximity of one of those points, it will be corrected to this point.
+         */
+        snapPositions?: Vector3[];
+        /**
+         * How close should the teleportation ray be in order to snap to position.
+         * Default to 0.8 units (meters)
+         */
+        snapToPositionRadius?: number;
+        /**
+         * Should teleportation move only to snap points
+         */
+        snapPointsOnly?: boolean;
+        /**
          * Values to configure the default target mesh
          */
         defaultTargetMeshOptions?: {
@@ -44804,10 +44824,14 @@ declare module BABYLON {
          * if provided, this scene will be used to render meshes.
          */
         customUtilityLayerScene?: Scene;
+        /**
+         *  use this rendering group id for the meshes (optional)
+         */
+        renderingGroupId?: number;
     }
     /**
      * This is a teleportation feature to be used with webxr-enabled motion controllers.
-     * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
+     * When enabled and attached, the feature will allow a user to move around and rotate in the scene using
      * the input of the attached controllers.
      */
     export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
@@ -44869,6 +44893,7 @@ declare module BABYLON {
         private _tmpRay;
         private _tmpVector;
         private _floorMeshes;
+        private _snapToPositions;
         private _controllers;
         /**
          * constructs a new anchor system
@@ -44877,6 +44902,28 @@ declare module BABYLON {
          */
         constructor(_xrSessionManager: WebXRSessionManager, _options: IWebXRTeleportationOptions);
         private _selectionFeature;
+        private _snappedToPoint;
+        private _teleportationRingMaterial?;
+        /**
+         * Get the snapPointsOnly flag
+         */
+        get snapPointsOnly(): boolean;
+        /**
+         * Sets the snapPointsOnly flag
+         * @param snapToPoints should teleportation be exclusively to snap points
+         */
+        set snapPointsOnly(snapToPoints: boolean);
+        /**
+         * Add a new snap-to point to fix teleportation to this position
+         * @param newSnapPoint The new Snap-To point
+         */
+        addSnapPoint(newSnapPoint: Vector3): void;
+        /**
+         * This function will iterate through the array, searching for this point or equal to it. It will then remove it from the snap-to array
+         * @param snapPointToRemove the point (or a clone of it) to be removed from the array
+         * @returns was the point found and removed or not
+         */
+        removeSnapPoint(snapPointToRemove: Vector3): boolean;
         /**
          * This function sets a selection feature that will be disabled when
          * the forward ray is shown and will be reattached when hidden.
@@ -44892,11 +44939,12 @@ declare module BABYLON {
         private _attachController;
         private _teleportForward;
         private _detachController;
-        private createDefaultTargetMesh;
-        private setTargetMeshVisibility;
-        private setTargetMeshPosition;
+        private _createDefaultTargetMesh;
+        private _setTargetMeshVisibility;
+        private _setTargetMeshPosition;
         private _quadraticBezierCurve;
         private _showParabolicPath;
+        private _findClosestSnapPointWithRadius;
     }
 }
 declare module BABYLON {
@@ -50805,7 +50853,6 @@ declare module BABYLON {
         USE_LOCAL_REFLECTIONMAP_CUBIC: boolean;
         REFLECTIONMAP_PROJECTION: boolean;
         REFLECTIONMAP_SKYBOX: boolean;
-        REFLECTIONMAP_SKYBOX_TRANSFORMED: boolean;
         REFLECTIONMAP_EXPLICIT: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR_FIXED: boolean;
@@ -68528,8 +68575,9 @@ declare module BABYLON {
          * @param samples Texture samples (default: 1)
          * @param antialiasing Whether antialiasing should be turned on or not (default: false)
          * @param fileName A name for for the downloaded file.
+         * @param renderSprites Whether the sprites should be rendered or not (default: false)
          */
-        static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): void;
+        static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string, renderSprites?: boolean): void;
         /**
          * Generates an image screenshot from the specified camera.
          * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
@@ -68545,10 +68593,11 @@ declare module BABYLON {
          * @param samples Texture samples (default: 1)
          * @param antialiasing Whether antialiasing should be turned on or not (default: false)
          * @param fileName A name for for the downloaded file.
+         * @param renderSprites Whether the sprites should be rendered or not (default: false)
          * @returns screenshot as a string of base64-encoded characters. This string can be assigned
          * to the src parameter of an <img> to display it
          */
-        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): Promise<string>;
+        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string, renderSprites?: boolean): Promise<string>;
         /**
          * Gets height and width for screenshot size
          * @private
@@ -69064,6 +69113,35 @@ declare module BABYLON {
              */
             restitution?: number;
         };
+        /**
+         * Should the headset get its own impostor
+         */
+        enableHeadsetImpostor?: boolean;
+        /**
+         * Optional parameters for the headset impostor
+         */
+        headsetImpostorParams?: {
+            /**
+             * The type of impostor to create. Default is sphere
+             */
+            impostorType: number;
+            /**
+             * the size of the impostor. Defaults to 10cm
+             */
+            impostorSize?: number | {
+                width: number;
+                height: number;
+                depth: number;
+            };
+            /**
+             * Friction definitions
+             */
+            friction?: number;
+            /**
+             * Restitution
+             */
+            restitution?: number;
+        };
     }
     /**
      * Add physics impostor to your webxr controllers,
@@ -69084,6 +69162,8 @@ declare module BABYLON {
         private _lastTimestamp;
         private _delta;
         private _controllers;
+        private _headsetImpostor?;
+        private _headsetMesh?;
         private _tmpVector;
         private _tmpQuaternion;
         /**
@@ -69106,6 +69186,18 @@ declare module BABYLON {
             friction?: number;
             restitution?: number;
         }): void;
+        /**
+         * Get the physics impostor of a specific controller.
+         * The impostor is not attached to a mesh because a mesh for each controller is not obligatory
+         * @param controller the controller or the controller id of which to get the impostor
+         * @returns the impostor or null
+         */
+        getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor>;
+        /**
+         * Get the headset impostor, if enabled
+         * @returns the impostor
+         */
+        getHeadsetImpostor(): PhysicsImpostor | undefined;
         /**
          * attach this feature
          * Will usually be called by the features manager
