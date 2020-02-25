@@ -49,9 +49,9 @@ export class GlobalState {
     hemisphericLight: boolean;
     directionalLight0: boolean;
     directionalLight1: boolean;
-    controlCamera: boolean;    
+    controlCamera: boolean;
     storeEditorData:(serializationObject: any) => void;
-    
+
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
     public constructor() {
@@ -63,9 +63,9 @@ export class GlobalState {
         this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 
-        let r = DataStorage.ReadNumber("BackgroundColorR", 0.37);
-        let g = DataStorage.ReadNumber("BackgroundColorG", 0.37);
-        let b = DataStorage.ReadNumber("BackgroundColorB", 0.37);
+        let r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
+        let g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
+        let b = DataStorage.ReadNumber("BackgroundColorB", 0.25098039215686274);
         this.backgroundColor = new Color4(r, g, b, 1.0);
     }
 }

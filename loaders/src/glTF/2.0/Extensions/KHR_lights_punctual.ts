@@ -1,5 +1,6 @@
 import { Nullable } from "babylonjs/types";
-import { Color3, Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
+import { Color3 } from 'babylonjs/Maths/math.color';
 import { DirectionalLight } from "babylonjs/Lights/directionalLight";
 import { PointLight } from "babylonjs/Lights/pointLight";
 import { SpotLight } from "babylonjs/Lights/spotLight";
@@ -39,7 +40,7 @@ interface ILights {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual)
  */
 export class KHR_lights implements IGLTFLoaderExtension {
     /**

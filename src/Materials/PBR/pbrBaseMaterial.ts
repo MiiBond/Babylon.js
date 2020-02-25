@@ -60,6 +60,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public UV2 = false;
 
     public ALBEDO = false;
+    public GAMMAALBEDO = false;
     public ALBEDODIRECTUV = 0;
     public VERTEXCOLOR = false;
 
@@ -1319,6 +1320,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                     MaterialHelper.PrepareDefinesForMergedUV(this._albedoTexture, defines, "ALBEDO");
+                    defines.GAMMAALBEDO = this._albedoTexture.gammaSpace;
                 } else {
                     defines.ALBEDO = false;
                 }

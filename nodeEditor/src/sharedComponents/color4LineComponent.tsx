@@ -1,11 +1,13 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { Color3, Color4 } from "babylonjs/Maths/math";
+import { Color3, Color4 } from "babylonjs/Maths/math.color";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMinus, faPlus, faCopy } from "@fortawesome/free-solid-svg-icons";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { GlobalState } from '../globalState';
+
+const copyIcon: string = require("./copy.svg");
 
 export interface IColor4LineComponentProps {
     label: string;
@@ -147,7 +149,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
 
     render() {
 
-        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
+        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
         const colorAsColor3 = new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
 
         return (
@@ -160,7 +162,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                         <input type="color" value={colorAsColor3.toHexString()} onChange={(evt) => this.onChange(evt.target.value)} />
                     </div>
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
-                        <FontAwesomeIcon icon={faCopy} />
+                        <img src={copyIcon} alt=""/>
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
@@ -169,10 +171,10 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent globalState={this.props.globalState} label="r" value={this.state.color.r} onChange={value => this.updateStateR(value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="g" value={this.state.color.g} onChange={value => this.updateStateG(value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="b" value={this.state.color.b} onChange={value => this.updateStateB(value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="a" value={this.state.color.a} onChange={value => this.updateStateA(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />
                     </div>
                 }
             </div>

@@ -118,6 +118,7 @@
             &.collapsed {
                 height: auto !important;
                 width: 200px !important;
+                z-index: 3;
 
                 .frame-box-header {
                     font-size: 16px;
@@ -204,6 +205,15 @@
                 grid-template-rows: 100%;
                 grid-template-columns: 50% 50%; 
                 z-index: 2;
+            }
+
+            .frame-comments.has-comments{
+                display: grid;
+                grid-row: 2;
+                grid-column: 1;
+                padding: 0 10px;
+                font-style: italic;
+                word-wrap: break-word;
             }
 
             &.selected {
@@ -341,7 +351,7 @@
             height: 100%;                  
 
             .visual {
-                z-index: 3;
+                z-index: 4;
                 width: 200px;
                 position: absolute;
                 left: 0;
@@ -406,13 +416,13 @@
                     color: white;
 
                     &.constant {
-                        border-color: #4E5C74;
-                        background: #4E5C74;
+                        border-color: #464348;
+                        background: #464348;
                     }
             
                     &.inspector {
-                        border-color: #396437;
-                        background: #396437;
+                        border-color: #66491b;
+                        background: #66491b;
                     }
                 }
 

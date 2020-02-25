@@ -53,6 +53,13 @@ export class InstancedMesh extends AbstractMesh {
             this.rotationQuaternion = source.rotationQuaternion.clone();
         }
 
+        this.animations = source.animations;
+        for (var range of source.getAnimationRanges()) {
+            if (range != null) {
+                this.createAnimationRange(range.name, range.from, range.to);
+            }
+        }
+
         this.infiniteDistance = source.infiniteDistance;
 
         this.setPivotMatrix(source.getPivotMatrix());
@@ -364,6 +371,11 @@ export class InstancedMesh extends AbstractMesh {
         }
 
         return this._currentLOD;
+    }
+
+    /** @hidden */
+    public _preActivateForIntermediateRendering(renderId: number): Mesh {
+        return <Mesh>this.sourceMesh._preActivateForIntermediateRendering(renderId);
     }
 
     /** @hidden */

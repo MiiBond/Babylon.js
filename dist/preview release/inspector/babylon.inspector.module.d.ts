@@ -338,8 +338,8 @@ declare module "babylonjs-inspector/components/actionTabs/lines/numericInputComp
 declare module "babylonjs-inspector/components/actionTabs/lines/color3LineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Color3 } from "babylonjs/Maths/math";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { Color3 } from 'babylonjs/Maths/math.color';
     export interface IColor3LineComponentProps {
         label: string;
         target: any;
@@ -367,7 +367,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/color3LineCompon
 }
 declare module "babylonjs-inspector/components/actionTabs/lines/vector3LineComponent" {
     import * as React from "react";
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     interface IVector3LineComponentProps {
@@ -405,7 +405,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector3LineCompo
 declare module "babylonjs-inspector/components/actionTabs/lines/quaternionLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Quaternion, Vector3 } from "babylonjs/Maths/math";
+    import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     interface IQuaternionLineComponentProps {
         label: string;
@@ -692,7 +692,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
 }
 declare module "babylonjs-inspector/components/actionTabs/lines/vector2LineComponent" {
     import * as React from "react";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     interface IVector2LineComponentProps {
@@ -791,7 +791,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/fog
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Scene } from "babylonjs/scene";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
@@ -1640,7 +1640,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
 }
 declare module "babylonjs-inspector/components/actionTabs/lines/vector4LineComponent" {
     import * as React from "react";
-    import { Vector4 } from "babylonjs/Maths/math";
+    import { Vector4 } from "babylonjs/Maths/math.vector";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     interface IVector4LineComponentProps {
@@ -1679,7 +1679,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector4LineCompo
 declare module "babylonjs-inspector/components/actionTabs/lines/color4LineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Color4 } from "babylonjs/Maths/math";
+    import { Color4 } from "babylonjs/Maths/math.color";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     export interface IColor4LineComponentProps {
         label: string;

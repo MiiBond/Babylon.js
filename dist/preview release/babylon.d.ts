@@ -1043,29 +1043,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -1074,7 +1056,7 @@ declare module BABYLON {
          */
         loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -7618,10 +7600,9 @@ declare module BABYLON {
              * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
              * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
              * @param fallback defines texture to use while falling back when (compressed) texture file not found.
-             * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (defualt: empty array)
              * @returns the cube texture as an InternalTexture
              */
-            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, excludeLoaders: Array<IInternalTextureLoader>): InternalTexture;
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>): InternalTexture;
             /**
              * Creates a cube texture
              * @param rootUrl defines the url where the files to load is located
@@ -9957,12 +9938,12 @@ declare module BABYLON {
          */
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
         /**
-     * Intersects the sprites with a ray
-     * @param ray defines the ray to intersect with
-     * @param camera defines the current active camera
-     * @param predicate defines a predicate used to select candidate sprites
-     * @returns null if no hit or a PickingInfo array
-     */
+         * Intersects the sprites with a ray
+         * @param ray defines the ray to intersect with
+         * @param camera defines the current active camera
+         * @param predicate defines a predicate used to select candidate sprites
+         * @returns null if no hit or a PickingInfo array
+         */
         multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
         /**
          * Renders the list of sprites on screen.
@@ -10021,6 +10002,19 @@ declare module BABYLON {
          */
         get texture(): Texture;
         set texture(value: Texture);
+        private _blendMode;
+        /**
+         * Blend mode use to render the particle, it can be any of
+         * the static Constants.ALPHA_x properties provided in this class.
+         * Default value is Constants.ALPHA_COMBINE
+         */
+        get blendMode(): number;
+        set blendMode(blendMode: number);
+        /** Disables writing to the depth buffer when rendering the sprites.
+         *  It can be handy to disable depth writing when using textures without alpha channel
+         *  and setting some specific blend modes.
+        */
+        disableDepthWrite: boolean;
         /**
          * Creates a new sprite manager
          * @param name defines the manager's name
@@ -11528,12 +11522,12 @@ declare module BABYLON {
          * This function can be defined to specify initial direction for every new particle.
          * It by default use the emitterType defined function
          */
-        startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void;
         /**
          * This function can be defined to specify initial position for every new particle.
          * It by default use the emitterType defined function
          */
-        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
+        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void;
         /**
          * @hidden
          */
@@ -11607,6 +11601,10 @@ declare module BABYLON {
         * The current active Sub-systems, this property is used by the root particle system only.
         */
         activeSubSystems: Array<ParticleSystem>;
+        /**
+         * Specifies if the particles are updated in emitter local space or world space
+         */
+        isLocal: boolean;
         private _rootParticleSystem;
         /**
          * Gets the current list of active particles
@@ -12025,6 +12023,8 @@ declare module BABYLON {
         _randomNoiseCoordinates1: Vector3;
         /** @hidden */
         _randomNoiseCoordinates2: Vector3;
+        /** @hidden */
+        _localPosition?: Vector3;
         /**
          * Creates a new instance Particle
          * @param particleSystem the particle system the particle belongs to
@@ -12063,15 +12063,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12136,15 +12138,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12226,15 +12230,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12318,15 +12324,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12469,15 +12477,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12533,15 +12543,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12616,15 +12628,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12747,15 +12761,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12824,15 +12840,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -13073,6 +13091,10 @@ declare module BABYLON {
          * Specifies whether the particle system will be disposed once it reaches the end of the animation.
          */
         disposeOnStop: boolean;
+        /**
+         * Specifies if the particles are updated in emitter local space or world space
+         */
+        isLocal: boolean;
         /**
          * Gets the maximum number of particles active at the same time.
          * @returns The max number of active particles.
@@ -15162,6 +15184,8 @@ declare module BABYLON {
          * Returns the current associated LOD AbstractMesh.
          */
         getLOD(camera: Camera): AbstractMesh;
+        /** @hidden */
+        _preActivateForIntermediateRendering(renderId: number): Mesh;
         /** @hidden */
         _syncSubMeshes(): InstancedMesh;
         /** @hidden */
@@ -20415,9 +20439,11 @@ declare module BABYLON {
          * Return null to render with the curent renderList, else return the list of meshes to use for rendering.
          * For 2DArray RTT, layerOrFace is the index of the layer that is going to be rendered, else it is the faceIndex of
          * the cube (if the RTT is a cube, else layerOrFace=0).
-         * The renderList passed to the function is the current render list (the one that will be used if the function returns null)
+         * The renderList passed to the function is the current render list (the one that will be used if the function returns null).
+         * The length of this list is passed through renderListLength: don't use renderList.length directly because the array can
+         * hold dummy elements!
         */
-        getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>) => Nullable<Array<AbstractMesh>>;
+        getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>;
         private _hookArray;
         /**
          * Define if particles should be rendered in your texture.
@@ -30853,7 +30879,7 @@ declare module BABYLON {
      * Defines the interface used by objects working like Scene
      * @hidden
      */
-    interface ISceneLike {
+    export interface ISceneLike {
         _addPendingData(data: any): void;
         _removePendingData(data: any): void;
         offlineProvider: IOfflineProvider;
@@ -30943,19 +30969,6 @@ declare module BABYLON {
          */
         static get ShadersRepository(): string;
         static set ShadersRepository(value: string);
-        /**
-        * Gets or sets the textures that the engine should not attempt to load as compressed
-        */
-        protected _excludedCompressedTextures: string[];
-        /**
-         * Filters the compressed texture formats to only include
-         * files that are not included in the skippable list
-         *
-         * @param url the current extension
-         * @param textureFormatInUse the current compressed texture format
-         * @returns "format" string
-         */
-        excludedCompressedTextureFormats(url: Nullable<string>, textureFormatInUse: Nullable<string>): Nullable<string>;
         /** @hidden */
         _shaderProcessor: IShaderProcessor;
         /**
@@ -30998,9 +31011,10 @@ declare module BABYLON {
         get supportsUniformBuffers(): boolean;
         /** @hidden */
         _gl: WebGLRenderingContext;
+        /** @hidden */
+        _webGLVersion: number;
         protected _renderingCanvas: Nullable<HTMLCanvasElement>;
         protected _windowIsBackground: boolean;
-        protected _webGLVersion: number;
         protected _creationOptions: EngineOptions;
         protected _highPrecisionShadersAllowed: boolean;
         /** @hidden */
@@ -31722,11 +31736,10 @@ declare module BABYLON {
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
-         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
          * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>, mimeType?: string): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -33720,34 +33733,6 @@ declare module BABYLON {
         endFrame(): void;
         resize(): void;
         /**
-         * Set the compressed texture format to use, based on the formats you have, and the formats
-         * supported by the hardware / browser.
-         *
-         * Khronos Texture Container (.ktx) files are used to support this.  This format has the
-         * advantage of being specifically designed for OpenGL.  Header elements directly correspond
-         * to API arguments needed to compressed textures.  This puts the burden on the container
-         * generator to house the arcane code for determining these for current & future formats.
-         *
-         * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
-         * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-         *
-         * Note: The result of this call is not taken into account when a texture is base64.
-         *
-         * @param formatsAvailable defines the list of those format families you have created
-         * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
-         *
-         * Current families are astc, dxt, pvrtc, etc2, & etc1.
-         * @returns The extension selected.
-         */
-        setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
-        /**
-         * Set the compressed texture extensions or file names to skip.
-         *
-         * @param skippedFiles defines the list of those texture files you want to skip
-         * Example: [".dds", ".env", "myfile.png"]
-         */
-        setCompressedTextureExclusions(skippedFiles: Array<string>): void;
-        /**
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
          * @param height defines the new canvas' height
@@ -33822,6 +33807,9 @@ declare module BABYLON {
          * @param buffer defines the webGL buffer to delete
          */
         deleteInstancesBuffer(buffer: WebGLBuffer): void;
+        private _clientWaitAsync;
+        /** @hidden */
+        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
@@ -42534,6 +42522,11 @@ declare module BABYLON {
      */
     export class WebXRManagedOutputCanvasOptions {
         /**
+         * An optional canvas in case you wish to create it yourself and provide it here.
+         * If not provided, a new canvas will be created
+         */
+        canvasElement?: HTMLCanvasElement;
+        /**
          * Options for this XR Layer output
          */
         canvasOptions?: XRWebGLLayerOptions;
@@ -42541,11 +42534,6 @@ declare module BABYLON {
          * CSS styling for a newly created canvas (if not provided)
          */
         newCanvasCssStyle?: string;
-        /**
-         * An optional canvas in case you wish to create it yourself and provide it here.
-         * If not provided, a new canvas will be created
-         */
-        canvasElement?: HTMLCanvasElement;
         /**
          * Get the default values of the configuration object
          * @returns default values of this configuration object
@@ -42557,8 +42545,8 @@ declare module BABYLON {
      */
     export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         private _options;
-        private _engine;
         private _canvas;
+        private _engine;
         /**
          * Rendering context of the canvas which can be used to display/mirror xr content
          */
@@ -42567,12 +42555,6 @@ declare module BABYLON {
          * xr layer for the canvas
          */
         xrLayer: Nullable<XRWebGLLayer>;
-        /**
-         * Initializes the xr layer for the session
-         * @param xrSession xr session
-         * @returns a promise that will resolve once the XR Layer has been created
-         */
-        initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
         /**
          * Initializes the canvas to be added/removed upon entering/exiting xr
          * @param _xrSessionManager The XR Session manager
@@ -42583,9 +42565,15 @@ declare module BABYLON {
          * Disposes of the object
          */
         dispose(): void;
-        private _setManagedOutputCanvas;
+        /**
+         * Initializes the xr layer for the session
+         * @param xrSession xr session
+         * @returns a promise that will resolve once the XR Layer has been created
+         */
+        initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
         private _addCanvas;
         private _removeCanvas;
+        private _setManagedOutputCanvas;
     }
 }
 declare module BABYLON {
@@ -42596,10 +42584,35 @@ declare module BABYLON {
     export class WebXRSessionManager implements IDisposable {
         /** The scene which the session should be created for */
         scene: Scene;
+        private _referenceSpace;
+        private _rttProvider;
+        private _sessionEnded;
+        private _xrNavigator;
+        private baseLayer;
+        /**
+         * The base reference space from which the session started. good if you want to reset your
+         * reference space
+         */
+        baseReferenceSpace: XRReferenceSpace;
+        /**
+         * Current XR frame
+         */
+        currentFrame: Nullable<XRFrame>;
+        /** WebXR timestamp updated every frame */
+        currentTimestamp: number;
+        /**
+         * Used just in case of a failure to initialize an immersive session.
+         * The viewer reference space is compensated using this height, creating a kind of "viewer-floor" reference space
+         */
+        defaultHeightCompensation: number;
         /**
          * Fires every time a new xrFrame arrives which can be used to update the camera
          */
         onXRFrameObservable: Observable<XRFrame>;
+        /**
+         * Fires when the reference space changed
+         */
+        onXRReferenceSpaceChanged: Observable<XRReferenceSpace>;
         /**
          * Fires when the xr session is ended either by the device or manually done
          */
@@ -42609,10 +42622,6 @@ declare module BABYLON {
          */
         onXRSessionInit: Observable<XRSession>;
         /**
-         * Fires when the reference space changed
-         */
-        onXRReferenceSpaceChanged: Observable<XRReferenceSpace>;
-        /**
          * Underlying xr session
          */
         session: XRSession;
@@ -42621,7 +42630,13 @@ declare module BABYLON {
          * or get the offset the player is currently at.
          */
         viewerReferenceSpace: XRReferenceSpace;
-        private _referenceSpace;
+        /**
+         * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
+         * @param scene The scene which the session should be created for
+         */
+        constructor(
+        /** The scene which the session should be created for */
+        scene: Scene);
         /**
          * The current reference space used in this session. This reference space can constantly change!
          * It is mainly used to offset the camera's position.
@@ -42632,32 +42647,27 @@ declare module BABYLON {
          */
         set referenceSpace(newReferenceSpace: XRReferenceSpace);
         /**
-         * The base reference space from which the session started. good if you want to reset your
-         * reference space
+         * Disposes of the session manager
          */
-        baseReferenceSpace: XRReferenceSpace;
+        dispose(): void;
         /**
-         * Used just in case of a failure to initialize an immersive session.
-         * The viewer reference space is compensated using this height, creating a kind of "viewer-floor" reference space
+         * Stops the xrSession and restores the render loop
+         * @returns Promise which resolves after it exits XR
          */
-        defaultHeightCompensation: number;
+        exitXRAsync(): Promise<void>;
         /**
-         * Current XR frame
+         * Gets the correct render target texture to be rendered this frame for this eye
+         * @param eye the eye for which to get the render target
+         * @returns the render target for the specified eye
          */
-        currentFrame: Nullable<XRFrame>;
-        /** WebXR timestamp updated every frame */
-        currentTimestamp: number;
-        private _xrNavigator;
-        private baseLayer;
-        private _rttProvider;
-        private _sessionEnded;
+        getRenderTargetTextureForEye(eye: XREye): RenderTargetTexture;
         /**
-         * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
-         * @param scene The scene which the session should be created for
+         * Creates a WebXRRenderTarget object for the XR session
+         * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
+         * @param options optional options to provide when creating a new render target
+         * @returns a WebXR render target to which the session can render
          */
-        constructor(
-        /** The scene which the session should be created for */
-        scene: Scene);
+        getWebXRRenderTarget(options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget;
         /**
          * Initializes the manager
          * After initialization enterXR can be called to start an XR session
@@ -42672,15 +42682,25 @@ declare module BABYLON {
          */
         initializeSessionAsync(xrSessionMode?: XRSessionMode, xrSessionInit?: XRSessionInit): Promise<XRSession>;
         /**
+         * Checks if a session would be supported for the creation options specified
+         * @param sessionMode session mode to check if supported eg. immersive-vr
+         * @returns A Promise that resolves to true if supported and false if not
+         */
+        isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
+        /**
+         * Resets the reference space to the one started the session
+         */
+        resetReferenceSpace(): void;
+        /**
+         * Starts rendering to the xr layer
+         */
+        runXRRenderLoop(): void;
+        /**
          * Sets the reference space on the xr session
          * @param referenceSpaceType space to set
          * @returns a promise that will resolve once the reference space has been set
          */
         setReferenceSpaceTypeAsync(referenceSpaceType?: XRReferenceSpaceType): Promise<XRReferenceSpace>;
-        /**
-         * Resets the reference space to the one started the session
-         */
-        resetReferenceSpace(): void;
         /**
          * Updates the render state of the session
          * @param state state to set
@@ -42688,51 +42708,12 @@ declare module BABYLON {
          */
         updateRenderStateAsync(state: XRRenderState): Promise<void>;
         /**
-         * Starts rendering to the xr layer
-         */
-        runXRRenderLoop(): void;
-        /**
-         * Gets the correct render target texture to be rendered this frame for this eye
-         * @param eye the eye for which to get the render target
-         * @returns the render target for the specified eye
-         */
-        getRenderTargetTextureForEye(eye: XREye): RenderTargetTexture;
-        /**
-         * Stops the xrSession and restores the renderloop
-         * @returns Promise which resolves after it exits XR
-         */
-        exitXRAsync(): Promise<void>;
-        /**
-         * Checks if a session would be supported for the creation options specified
-         * @param sessionMode session mode to check if supported eg. immersive-vr
-         * @returns A Promise that resolves to true if supported and false if not
-         */
-        isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
-        /**
-         * Creates a WebXRRenderTarget object for the XR session
-         * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
-         * @param options optional options to provide when creating a new render target
-         * @returns a WebXR render target to which the session can render
-         */
-        getWebXRRenderTarget(options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget;
-        /**
-         * @hidden
-         * Converts the render layer of xrSession to a render target
-         * @param session session to create render target for
-         * @param scene scene the new render target should be created for
-         * @param baseLayer the webgl layer to create the render target for
-         */
-        static _CreateRenderTargetTextureFromSession(_session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
-        /**
-         * Disposes of the session manager
-         */
-        dispose(): void;
-        /**
          * Returns a promise that resolves with a boolean indicating if the provided session mode is supported by this browser
          * @param sessionMode defines the session to test
          * @returns a promise with boolean as final value
          */
         static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
+        private _createRenderTargetTexture;
     }
 }
 declare module BABYLON {
@@ -42772,6 +42753,11 @@ declare module BABYLON {
          * @param resetToBaseReferenceSpace should XR reset to the base reference space
          */
         setTransformationFromNonVRCamera(otherCamera?: Camera, resetToBaseReferenceSpace?: boolean): void;
+        /**
+         * Gets the current instance class name ("WebXRCamera").
+         * @returns the class name
+         */
+        getClassName(): string;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
         private _updateReferenceSpace;
@@ -42812,10 +42798,6 @@ declare module BABYLON {
      */
     export class WebXRFeatureName {
         /**
-         * The name of the hit test feature
-         */
-        static HIT_TEST: string;
-        /**
          * The name of the anchor system feature
          */
         static ANCHOR_SYSTEM: string;
@@ -42824,6 +42806,18 @@ declare module BABYLON {
          */
         static BACKGROUND_REMOVER: string;
         /**
+         * The name of the hit test feature
+         */
+        static HIT_TEST: string;
+        /**
+         * physics impostors for xr controllers feature
+         */
+        static PHYSICS_CONTROLLERS: string;
+        /**
+         * The name of the plane detection feature
+         */
+        static PLANE_DETECTION: string;
+        /**
          * The name of the pointer selection feature
          */
         static POINTER_SELECTION: string;
@@ -42831,14 +42825,6 @@ declare module BABYLON {
          * The name of the teleportation feature
          */
         static TELEPORTATION: string;
-        /**
-         * The name of the plane detection feature
-         */
-        static PLANE_DETECTION: string;
-        /**
-         * physics impostors for xr controllers feature
-         */
-        static PHYSICS_CONTROLLERS: string;
     }
     /**
      * Defining the constructor of a feature. Used to register the modules.
@@ -42853,6 +42839,13 @@ declare module BABYLON {
     export class WebXRFeaturesManager implements IDisposable {
         private _xrSessionManager;
         private static readonly _AvailableFeatures;
+        private _features;
+        /**
+         * constructs a new features manages.
+         *
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         */
+        constructor(_xrSessionManager: WebXRSessionManager);
         /**
          * Used to register a module. After calling this function a developer can use this feature in the scene.
          * Mainly used internally.
@@ -42874,6 +42867,18 @@ declare module BABYLON {
          */
         static ConstructFeature(featureName: string, version: number | undefined, xrSessionManager: WebXRSessionManager, options?: any): (() => IWebXRFeature);
         /**
+         * Can be used to return the list of features currently registered
+         *
+         * @returns an Array of available features
+         */
+        static GetAvailableFeatures(): string[];
+        /**
+         * Gets the versions available for a specific feature
+         * @param featureName the name of the feature
+         * @returns an array with the available versions
+         */
+        static GetAvailableVersions(featureName: string): string[];
+        /**
          * Return the latest unstable version of this feature
          * @param featureName the name of the feature to search
          * @returns the version number. if not found will return -1
@@ -42886,24 +42891,29 @@ declare module BABYLON {
          */
         static GetStableVersionOfFeature(featureName: string): number;
         /**
-         * Can be used to return the list of features currently registered
-         *
-         * @returns an Array of available features
+         * Attach a feature to the current session. Mainly used when session started to start the feature effect.
+         * Can be used during a session to start a feature
+         * @param featureName the name of feature to attach
          */
-        static GetAvailableFeatures(): string[];
+        attachFeature(featureName: string): void;
         /**
-         * Gets the versions available for a specific feature
-         * @param featureName the name of the feature
-         * @returns an array with the available versions
+         * Can be used inside a session or when the session ends to detach a specific feature
+         * @param featureName the name of the feature to detach
          */
-        static GetAvailableVersions(featureName: string): string[];
-        private _features;
+        detachFeature(featureName: string): void;
         /**
-         * constructs a new features manages.
-         *
-         * @param _xrSessionManager an instance of WebXRSessionManager
+         * Used to disable an already-enabled feature
+         * The feature will be disposed and will be recreated once enabled.
+         * @param featureName the feature to disable
+         * @returns true if disable was successful
          */
-        constructor(_xrSessionManager: WebXRSessionManager);
+        disableFeature(featureName: string | {
+            Name: string;
+        }): boolean;
+        /**
+         * dispose this features manager
+         */
+        dispose(): void;
         /**
          * Enable a feature using its name and a version. This will enable it in the scene, and will be responsible to attach it when the session starts.
          * If used twice, the old version will be disposed and a new one will be constructed. This way you can re-enable with different configuration.
@@ -42918,62 +42928,34 @@ declare module BABYLON {
             Name: string;
         }, version?: number | string, moduleOptions?: any, attachIfPossible?: boolean): IWebXRFeature;
         /**
-         * Used to disable an already-enabled feature
-         * The feature will be disposed and will be recreated once enabled.
-         * @param featureName the feature to disable
-         * @returns true if disable was successful
-         */
-        disableFeature(featureName: string | {
-            Name: string;
-        }): boolean;
-        /**
-         * Attach a feature to the current session. Mainly used when session started to start the feature effect.
-         * Can be used during a session to start a feature
-         * @param featureName the name of feature to attach
-         */
-        attachFeature(featureName: string): void;
-        /**
-         * Can be used inside a session or when the session ends to detach a specific feature
-         * @param featureName the name of the feature to detach
-         */
-        detachFeature(featureName: string): void;
-        /**
-         * Get the list of enabled features
-         * @returns an array of enabled features
-         */
-        getEnabledFeatures(): string[];
-        /**
          * get the implementation of an enabled feature.
          * @param featureName the name of the feature to load
          * @returns the feature class, if found
          */
         getEnabledFeature(featureName: string): IWebXRFeature;
         /**
-         * dispose this features manager
+         * Get the list of enabled features
+         * @returns an array of enabled features
          */
-        dispose(): void;
+        getEnabledFeatures(): string[];
     }
 }
 declare module BABYLON {
     /**
-     * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
+     * Base set of functionality needed to create an XR experience (WebXRSessionManager, Camera, StateManagement, etc.)
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRExperienceHelper implements IDisposable {
         private scene;
+        private _nonVRCamera;
+        private _originalSceneAutoClear;
+        private _supported;
         /**
          * Camera used to render xr content
          */
         camera: WebXRCamera;
-        /**
-         * The current state of the XR experience (eg. transitioning, in XR or not in XR)
-         */
-        state: WebXRState;
-        private _setState;
-        /**
-         * Fires when the state of the experience helper has changed
-         */
-        onStateChangedObservable: Observable<WebXRState>;
+        /** A features manager for this xr session */
+        featuresManager: WebXRFeaturesManager;
         /**
          * Observers registered here will be triggered after the camera's initial transformation is set
          * This can be used to set a different ground level or an extra rotation.
@@ -42982,13 +42964,21 @@ declare module BABYLON {
          * to the position set after this observable is done executing.
          */
         onInitialXRPoseSetObservable: Observable<WebXRCamera>;
+        /**
+         * Fires when the state of the experience helper has changed
+         */
+        onStateChangedObservable: Observable<WebXRState>;
         /** Session manager used to keep track of xr session */
         sessionManager: WebXRSessionManager;
-        /** A features manager for this xr session */
-        featuresManager: WebXRFeaturesManager;
-        private _nonVRCamera;
-        private _originalSceneAutoClear;
-        private _supported;
+        /**
+         * The current state of the XR experience (eg. transitioning, in XR or not in XR)
+         */
+        state: WebXRState;
+        /**
+         * Creates a WebXRExperienceHelper
+         * @param scene The scene the helper should be created in
+         */
+        private constructor();
         /**
          * Creates the experience helper
          * @param scene the scene to attach the experience helper to
@@ -42996,15 +42986,9 @@ declare module BABYLON {
          */
         static CreateAsync(scene: Scene): Promise<WebXRExperienceHelper>;
         /**
-         * Creates a WebXRExperienceHelper
-         * @param scene The scene the helper should be created in
+         * Disposes of the experience helper
          */
-        private constructor();
-        /**
-         * Exits XR mode and returns the scene to its original state
-         * @returns promise that resolves after xr mode has exited
-         */
-        exitXRAsync(): Promise<void>;
+        dispose(): void;
         /**
          * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
          * @param sessionMode options for the XR session
@@ -43014,10 +42998,12 @@ declare module BABYLON {
          */
         enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget?: WebXRRenderTarget): Promise<WebXRSessionManager>;
         /**
-         * Disposes of the experience helper
+         * Exits XR mode and returns the scene to its original state
+         * @returns promise that resolves after xr mode has exited
          */
-        dispose(): void;
+        exitXRAsync(): Promise<void>;
         private _nonXRToXRCamera;
+        private _setState;
     }
 }
 declare module BABYLON {
@@ -43052,21 +43038,21 @@ declare module BABYLON {
      */
     export interface IWebXRMotionControllerComponentChanges {
         /**
-         * will be populated with previous and current values if touched changed
+         * will be populated with previous and current values if axes changed
          */
-        touched?: IWebXRMotionControllerComponentChangesValues<boolean>;
+        axes?: IWebXRMotionControllerComponentChangesValues<IWebXRMotionControllerAxesValue>;
         /**
          * will be populated with previous and current values if pressed changed
          */
         pressed?: IWebXRMotionControllerComponentChangesValues<boolean>;
         /**
+         * will be populated with previous and current values if touched changed
+         */
+        touched?: IWebXRMotionControllerComponentChangesValues<boolean>;
+        /**
          * will be populated with previous and current values if value changed
          */
         value?: IWebXRMotionControllerComponentChangesValues<number>;
-        /**
-         * will be populated with previous and current values if axes changed
-         */
-        axes?: IWebXRMotionControllerComponentChangesValues<IWebXRMotionControllerAxesValue>;
     }
     /**
      * This class represents a single component (for example button or thumbstick) of a motion controller
@@ -43082,6 +43068,20 @@ declare module BABYLON {
         type: MotionControllerComponentType;
         private _buttonIndex;
         private _axesIndices;
+        private _axes;
+        private _changes;
+        private _currentValue;
+        private _hasChanges;
+        private _pressed;
+        private _touched;
+        /**
+         * button component type
+         */
+        static BUTTON_TYPE: MotionControllerComponentType;
+        /**
+         * squeeze component type
+         */
+        static SQUEEZE_TYPE: MotionControllerComponentType;
         /**
          * Thumbstick component type
          */
@@ -43095,19 +43095,6 @@ declare module BABYLON {
          */
         static TRIGGER_TYPE: MotionControllerComponentType;
         /**
-         * squeeze component type
-         */
-        static SQUEEZE_TYPE: MotionControllerComponentType;
-        /**
-         * button component type
-         */
-        static BUTTON_TYPE: MotionControllerComponentType;
-        /**
-         * Observers registered here will be triggered when the state of a button changes
-         * State change is either pressed / touched / value
-         */
-        onButtonStateChangedObservable: Observable<WebXRControllerComponent>;
-        /**
          * If axes are available for this component (like a touchpad or thumbstick) the observers will be notified when
          * the axes data changes
          */
@@ -43115,16 +43102,11 @@ declare module BABYLON {
             x: number;
             y: number;
         }>;
-        private _currentValue;
-        private _touched;
-        private _pressed;
-        private _axes;
-        private _changes;
-        private _hasChanges;
         /**
-         * Return whether or not the component changed the last frame
+         * Observers registered here will be triggered when the state of a button changes
+         * State change is either pressed / touched / value
          */
-        get hasChanges(): boolean;
+        onButtonStateChangedObservable: Observable<WebXRControllerComponent>;
         /**
          * Creates a new component for a motion controller.
          * It is created by the motion controller itself
@@ -43144,9 +43126,17 @@ declare module BABYLON {
          */
         type: MotionControllerComponentType, _buttonIndex?: number, _axesIndices?: number[]);
         /**
-         * Get the current value of this component
+         * The current axes data. If this component has no axes it will still return an object { x: 0, y: 0 }
          */
-        get value(): number;
+        get axes(): IWebXRMotionControllerAxesValue;
+        /**
+         * Get the changes. Elements will be populated only if they changed with their previous and current value
+         */
+        get changes(): IWebXRMotionControllerComponentChanges;
+        /**
+         * Return whether or not the component changed the last frame
+         */
+        get hasChanges(): boolean;
         /**
          * is the button currently pressed
          */
@@ -43156,32 +43146,28 @@ declare module BABYLON {
          */
         get touched(): boolean;
         /**
-         * The current axes data. If this component has no axes it will still return an object { x: 0, y: 0 }
+         * Get the current value of this component
          */
-        get axes(): IWebXRMotionControllerAxesValue;
+        get value(): number;
         /**
-         * Get the changes. Elements will be populated only if they changed with their previous and current value
+         * Dispose this component
          */
-        get changes(): IWebXRMotionControllerComponentChanges;
-        /**
-         * Is this component a button (hence - pressable)
-         * @returns true if can be pressed
-         */
-        isButton(): boolean;
+        dispose(): void;
         /**
          * Are there axes correlating to this component
          * @return true is axes data is available
          */
         isAxes(): boolean;
         /**
+         * Is this component a button (hence - pressable)
+         * @returns true if can be pressed
+         */
+        isButton(): boolean;
+        /**
          * update this component using the gamepad object it is in. Called on every frame
          * @param nativeController the native gamepad controller object
          */
         update(nativeController: IMinimalMotionControllerObject): void;
-        /**
-         * Dispose this component
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -43615,9 +43601,9 @@ declare module BABYLON {
      */
     export interface IMotionControllerLayout {
         /**
-         * Defines the main button component id
+         * Path to load the assets. Usually relative to the base path
          */
-        selectComponentId: string;
+        assetPath: string;
         /**
          * Available components (unsorted)
          */
@@ -43661,7 +43647,7 @@ declare module BABYLON {
                          */
                         componentProperty: "xAxis" | "yAxis" | "button" | "state";
                         /**
-                         * What states influence this visual reponse
+                         * What states influence this visual response
                          */
                         states: MotionControllerComponentStateType[];
                         /**
@@ -43697,9 +43683,9 @@ declare module BABYLON {
          */
         rootNodeName: string;
         /**
-         * Path to load the assets. Usually relative to the base path
+         * Defines the main button component id
          */
-        assetPath: string;
+        selectComponentId: string;
     }
     /**
      * A definition for the layout map in the input profile
@@ -43717,11 +43703,6 @@ declare module BABYLON {
      */
     export interface IMotionControllerProfile {
         /**
-         * The id of this profile
-         * correlates to the profile(s) in the xrInput.profiles array
-         */
-        profileId: string;
-        /**
          * fallback profiles for this profileId
          */
         fallbackProfileIds: string[];
@@ -43729,16 +43710,17 @@ declare module BABYLON {
          * The layout map, with handness as key
          */
         layouts: IMotionControllerLayoutMap;
+        /**
+         * The id of this profile
+         * correlates to the profile(s) in the xrInput.profiles array
+         */
+        profileId: string;
     }
     /**
      * A helper-interface for the 3 meshes needed for controller button animation
      * The meshes are provided to the _lerpButtonTransform function to calculate the current position of the value mesh
      */
     export interface IMotionControllerButtonMeshMap {
-        /**
-         * The mesh that will be changed when value changes
-         */
-        valueMesh: AbstractMesh;
         /**
          * the mesh that defines the pressed value mesh position.
          * This is used to find the max-position of this button
@@ -43749,6 +43731,10 @@ declare module BABYLON {
          * This is used to find the min (or initial) position of this button
          */
         unpressedMesh: AbstractMesh;
+        /**
+         * The mesh that will be changed when value changes
+         */
+        valueMesh: AbstractMesh;
     }
     /**
      * A helper-interface for the 3 meshes needed for controller axis animation.
@@ -43757,22 +43743,26 @@ declare module BABYLON {
      */
     export interface IMotionControllerMeshMap {
         /**
-         * The mesh that will be changed when axis value changes
+         * the mesh that defines the maximum value mesh position.
          */
-        valueMesh: AbstractMesh;
+        maxMesh?: AbstractMesh;
         /**
          * the mesh that defines the minimum value mesh position.
          */
         minMesh?: AbstractMesh;
         /**
-         * the mesh that defines the maximum value mesh position.
+         * The mesh that will be changed when axis value changes
          */
-        maxMesh?: AbstractMesh;
+        valueMesh: AbstractMesh;
     }
     /**
      * The elements needed for change-detection of the gamepad objects in motion controllers
      */
     export interface IMinimalMotionControllerObject {
+        /**
+         * Available axes of this controller
+         */
+        axes: number[];
         /**
          * An array of available buttons
          */
@@ -43790,10 +43780,6 @@ declare module BABYLON {
              */
             pressed: boolean;
         }>;
-        /**
-         * Available axes of this controller
-         */
-        axes: number[];
     }
     /**
      * An Abstract Motion controller
@@ -43811,10 +43797,8 @@ declare module BABYLON {
          * handness (left/right/none) of this controller
          */
         handness: MotionControllerHandness;
-        /**
-         * The profile id of this motion controller
-         */
-        abstract profileId: string;
+        private _initComponent;
+        private _modelReady;
         /**
          * A map of components (WebXRControllerComponent) in this motion controller
          * Components have a ComponentType and can also have both button and axis definitions
@@ -43823,18 +43807,21 @@ declare module BABYLON {
             [id: string]: WebXRControllerComponent;
         };
         /**
+         * Disable the model's animation. Can be set at any time.
+         */
+        disableAnimation: boolean;
+        /**
          * Observers registered here will be triggered when the model of this controller is done loading
          */
         onModelLoadedObservable: Observable<WebXRAbstractMotionController>;
         /**
+         * The profile id of this motion controller
+         */
+        abstract profileId: string;
+        /**
          * The root mesh of the model. It is null if the model was not yet initialized
          */
         rootMesh: Nullable<AbstractMesh>;
-        /**
-         * Disable the model's animation. Can be set at any time.
-         */
-        disableAnimation: boolean;
-        private _modelReady;
         /**
          * constructs a new abstract motion controller
          * @param scene the scene to which the model of the controller will be added
@@ -43852,34 +43839,10 @@ declare module BABYLON {
          * handness (left/right/none) of this controller
          */
         handness: MotionControllerHandness, _doNotLoadControllerMesh?: boolean);
-        private _initComponent;
         /**
-         * Update this model using the current XRFrame
-         * @param xrFrame the current xr frame to use and update the model
+         * Dispose this controller, the model mesh and all its components
          */
-        updateFromXRFrame(xrFrame: XRFrame): void;
-        /**
-         * Get the list of components available in this motion controller
-         * @returns an array of strings correlating to available components
-         */
-        getComponentIds(): string[];
-        /**
-         * Get the main (Select) component of this controller as defined in the layout
-         * @returns the main component of this controller
-         */
-        getMainComponent(): WebXRControllerComponent;
-        /**
-         * get a component based an its component id as defined in layout.components
-         * @param id the id of the component
-         * @returns the component correlates to the id or undefined if not found
-         */
-        getComponent(id: string): WebXRControllerComponent;
-        /**
-         * Get the first component of specific type
-         * @param type type of component to find
-         * @return a controller component or null if not found
-         */
-        getComponentOfType(type: MotionControllerComponentType): Nullable<WebXRControllerComponent>;
+        dispose(): void;
         /**
          * Returns all components of specific type
          * @param type the type to search for
@@ -43887,16 +43850,40 @@ declare module BABYLON {
          */
         getAllComponentsOfType(type: MotionControllerComponentType): WebXRControllerComponent[];
         /**
+         * get a component based an its component id as defined in layout.components
+         * @param id the id of the component
+         * @returns the component correlates to the id or undefined if not found
+         */
+        getComponent(id: string): WebXRControllerComponent;
+        /**
+         * Get the list of components available in this motion controller
+         * @returns an array of strings correlating to available components
+         */
+        getComponentIds(): string[];
+        /**
+         * Get the first component of specific type
+         * @param type type of component to find
+         * @return a controller component or null if not found
+         */
+        getComponentOfType(type: MotionControllerComponentType): Nullable<WebXRControllerComponent>;
+        /**
+         * Get the main (Select) component of this controller as defined in the layout
+         * @returns the main component of this controller
+         */
+        getMainComponent(): WebXRControllerComponent;
+        /**
          * Loads the model correlating to this controller
          * When the mesh is loaded, the onModelLoadedObservable will be triggered
          * @returns A promise fulfilled with the result of the model loading
          */
         loadModel(): Promise<boolean>;
         /**
-         * Update the model itself with the current frame data
-         * @param xrFrame the frame to use for updating the model mesh
+         * Update this model using the current XRFrame
+         * @param xrFrame the current xr frame to use and update the model
          */
-        protected updateModel(xrFrame: XRFrame): void;
+        updateFromXRFrame(xrFrame: XRFrame): void;
+        protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh;
+        protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh;
         /**
          * Moves the axis on the controller mesh based on its current state
          * @param axis the index of the axis
@@ -43904,10 +43891,11 @@ declare module BABYLON {
          * @hidden
          */
         protected _lerpTransform(axisMap: IMotionControllerMeshMap, axisValue: number, fixValueCoordinates?: boolean): void;
-        protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh;
-        protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh;
-        private _getGenericFilenameAndPath;
-        private _getGenericParentMesh;
+        /**
+         * Update the model itself with the current frame data
+         * @param xrFrame the frame to use for updating the model mesh
+         */
+        protected updateModel(xrFrame: XRFrame): void;
         /**
          * Get the filename and path for this controller's model
          * @returns a map of filename and path
@@ -43916,6 +43904,13 @@ declare module BABYLON {
             filename: string;
             path: string;
         };
+        /**
+         * This function is called before the mesh is loaded. It checks for loading constraints.
+         * For example, this function can check if the GLB loader is available
+         * If this function returns false, the generic controller will be loaded instead
+         * @returns Is the client ready to load the mesh
+         */
+        protected abstract _getModelLoadingConstraints(): boolean;
         /**
          * This function will be called after the model was successfully loaded and can be used
          * for mesh transformations before it is available for the user
@@ -43932,17 +43927,8 @@ declare module BABYLON {
          * @param xrFrame the current xrFrame
          */
         protected abstract _updateModel(xrFrame: XRFrame): void;
-        /**
-         * This function is called before the mesh is loaded. It checks for loading constraints.
-         * For example, this function can check if the GLB loader is available
-         * If this function returns false, the generic controller will be loaded instead
-         * @returns Is the client ready to load the mesh
-         */
-        protected abstract _getModelLoadingConstraints(): boolean;
-        /**
-         * Dispose this controller, the model mesh and all its components
-         */
-        dispose(): void;
+        private _getGenericFilenameAndPath;
+        private _getGenericParentMesh;
     }
 }
 declare module BABYLON {
@@ -43956,14 +43942,14 @@ declare module BABYLON {
         static ProfileId: string;
         profileId: string;
         constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
-        protected _processLoadedModel(meshes: AbstractMesh[]): void;
-        protected _updateModel(): void;
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
         };
-        protected _setRootMesh(meshes: AbstractMesh[]): void;
         protected _getModelLoadingConstraints(): boolean;
+        protected _processLoadedModel(meshes: AbstractMesh[]): void;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+        protected _updateModel(): void;
     }
 }
 declare module BABYLON {
@@ -44009,22 +43995,22 @@ declare module BABYLON {
      */
     export class WebXRProfiledMotionController extends WebXRAbstractMotionController {
         private _repositoryUrl;
+        private _buttonMeshMapping;
+        private _touchDots;
         /**
          * The profile ID of this controller. Will be populated when the controller initializes.
          */
         profileId: string;
-        private _buttonMeshMapping;
         constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, _repositoryUrl: string);
+        dispose(): void;
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
         };
-        private _touchDots;
+        protected _getModelLoadingConstraints(): boolean;
         protected _processLoadedModel(_meshes: AbstractMesh[]): void;
         protected _setRootMesh(meshes: AbstractMesh[]): void;
         protected _updateModel(_xrFrame: XRFrame): void;
-        protected _getModelLoadingConstraints(): boolean;
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -44041,29 +44027,37 @@ declare module BABYLON {
      * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
      */
     export class WebXRMotionControllerManager {
+        private static _AvailableControllers;
+        private static _Fallbacks;
+        private static _ProfileLoadingPromises;
+        private static _ProfilesList;
         /**
          * The base URL of the online controller repository. Can be changed at any time.
          */
         static BaseRepositoryUrl: string;
         /**
+         * Which repository gets priority - local or online
+         */
+        static PrioritizeOnlineRepository: boolean;
+        /**
          * Use the online repository, or use only locally-defined controllers
          */
         static UseOnlineRepository: boolean;
         /**
-         * Which repository gets priority - local or online
+         * Clear the cache used for profile loading and reload when requested again
          */
-        static PrioritizeOnlineRepository: boolean;
-        private static _AvailableControllers;
-        private static _Fallbacks;
+        static ClearProfilesCache(): void;
         /**
-         * Register a new controller based on its profile. This function will be called by the controller classes themselves.
-         *
-         * If you are missing a profile, make sure it is imported in your source, otherwise it will not register.
-         *
-         * @param type the profile type to register
-         * @param constructFunction the function to be called when loading this profile
+         * Register the default fallbacks.
+         * This function is called automatically when this file is imported.
          */
-        static RegisterController(type: string, constructFunction: MotionControllerConstructor): void;
+        static DefaultFallbacks(): void;
+        /**
+         * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
+         * @param profileId the profile to which a fallback needs to be found
+         * @return an array with corresponding fallback profiles
+         */
+        static FindFallbackWithProfileId(profileId: string): string[];
         /**
          * When acquiring a new xrInput object (usually by the WebXRInput class), match it with the correct profile.
          * The order of search:
@@ -44079,27 +44073,15 @@ declare module BABYLON {
          * @return A promise that fulfils with the motion controller class for this profile id or the generic standard class if none was found
          */
         static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): Promise<WebXRAbstractMotionController>;
-        private static _LoadProfilesFromAvailableControllers;
-        private static _ProfilesList;
-        private static _ProfileLoadingPromises;
-        private static _LoadProfileFromRepository;
         /**
-         * Clear the cache used for profile loading and reload when requested again
+         * Register a new controller based on its profile. This function will be called by the controller classes themselves.
+         *
+         * If you are missing a profile, make sure it is imported in your source, otherwise it will not register.
+         *
+         * @param type the profile type to register
+         * @param constructFunction the function to be called when loading this profile
          */
-        static ClearProfilesCache(): void;
-        /**
-         * Will update the list of profiles available in the repository
-         * @return a promise that resolves to a map of profiles available online
-         */
-        static UpdateProfilesList(): Promise<{
-            [profile: string]: string;
-        }>;
-        /**
-         * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
-         * @param profileId the profile to which a fallback needs to be found
-         * @return an array with corresponding fallback profiles
-         */
-        static FindFallbackWithProfileId(profileId: string): string[];
+        static RegisterController(type: string, constructFunction: MotionControllerConstructor): void;
         /**
          * Register a fallback to a specific profile.
          * @param profileId the profileId that will receive the fallbacks
@@ -44107,10 +44089,14 @@ declare module BABYLON {
          */
         static RegisterFallbacksForProfileId(profileId: string, fallbacks: string[]): void;
         /**
-         * Register the default fallbacks.
-         * This function is called automatically when this file is imported.
+         * Will update the list of profiles available in the repository
+         * @return a promise that resolves to a map of profiles available online
          */
-        static DefaultFallbacks(): void;
+        static UpdateProfilesList(): Promise<{
+            [profile: string]: string;
+        }>;
+        private static _LoadProfileFromRepository;
+        private static _LoadProfilesFromAvailableControllers;
     }
 }
 declare module BABYLON {
@@ -44119,19 +44105,19 @@ declare module BABYLON {
      */
     export interface IWebXRControllerOptions {
         /**
-         * Force a specific controller type for this controller.
-         * This can be used when creating your own profile or when testing different controllers
+         * Should the controller mesh be animated when a user interacts with it
+         * The pressed buttons / thumbstick and touchpad animations will be disabled
          */
-        forceControllerProfile?: string;
+        disableMotionControllerAnimation?: boolean;
         /**
          * Do not load the controller mesh, in case a different mesh needs to be loaded.
          */
         doNotLoadControllerMesh?: boolean;
         /**
-         * Should the controller mesh be animated when a user interacts with it
-         * The pressed buttons / thumbstick and touchpad animations will be disabled
+         * Force a specific controller type for this controller.
+         * This can be used when creating your own profile or when testing different controllers
          */
-        disableMotionControllerAnimation?: boolean;
+        forceControllerProfile?: string;
     }
     /**
      * Represents an XR controller
@@ -44141,14 +44127,13 @@ declare module BABYLON {
         /** The underlying input source for the controller  */
         inputSource: XRInputSource;
         private _options;
+        private _tmpQuaternion;
+        private _tmpVector;
+        private _uniqueId;
         /**
          * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
          */
         grip?: AbstractMesh;
-        /**
-         * Pointer which can be used to select objects or attach a visible laser to
-         */
-        pointer: AbstractMesh;
         /**
          * If available, this is the gamepad object related to this controller.
          * Using this object it is possible to get click events and trackpad changes of the
@@ -44156,9 +44141,11 @@ declare module BABYLON {
          */
         motionController?: WebXRAbstractMotionController;
         /**
-         * Observers registered here will trigger when a motion controller profile was assigned to this xr controller
+         * Event that fires when the controller is removed/disposed.
+         * The object provided as event data is this controller, after associated assets were disposed.
+         * uniqueId is still available.
          */
-        onMotionControllerInitObservable: Observable<WebXRAbstractMotionController>;
+        onDisposeObservable: Observable<WebXRInputSource>;
         /**
          * Will be triggered when the mesh associated with the motion controller is done loading.
          * It is also possible that this will never trigger (!) if no mesh was loaded, or if the developer decides to load a different mesh
@@ -44166,14 +44153,13 @@ declare module BABYLON {
          */
         onMeshLoadedObservable: Observable<AbstractMesh>;
         /**
-         * Event that fires when the controller is removed/disposed.
-         * The object provided as event data is this controller, after associated assets were disposed.
-         * uniqueId is still available.
+         * Observers registered here will trigger when a motion controller profile was assigned to this xr controller
          */
-        onDisposeObservable: Observable<WebXRInputSource>;
-        private _tmpQuaternion;
-        private _tmpVector;
-        private _uniqueId;
+        onMotionControllerInitObservable: Observable<WebXRAbstractMotionController>;
+        /**
+         * Pointer which can be used to select objects or attach a visible laser to
+         */
+        pointer: AbstractMesh;
         /**
          * Creates the controller
          * @see https://doc.babylonjs.com/how_to/webxr
@@ -44189,11 +44175,9 @@ declare module BABYLON {
          */
         get uniqueId(): string;
         /**
-         * Updates the controller pose based on the given XRFrame
-         * @param xrFrame xr frame to update the pose with
-         * @param referenceSpace reference space to use
+         * Disposes of the object
          */
-        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
+        dispose(): void;
         /**
          * Gets a world space ray coming from the pointer or grip
          * @param result the resulting ray
@@ -44201,9 +44185,11 @@ declare module BABYLON {
          */
         getWorldPointerRayToRef(result: Ray, gripIfAvailable?: boolean): void;
         /**
-         * Disposes of the object
+         * Updates the controller pose based on the given XRFrame
+         * @param xrFrame xr frame to update the pose with
+         * @param referenceSpace reference space to use
          */
-        dispose(): void;
+        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
     }
 }
 declare module BABYLON {
@@ -44222,7 +44208,7 @@ declare module BABYLON {
          */
         forceInputProfile?: string;
         /**
-         * Do not send a request to the controlle repository to load the profile.
+         * Do not send a request to the controller repository to load the profile.
          *
          * Instead, use the controllers available in babylon itself.
          */
@@ -44295,21 +44281,21 @@ declare module BABYLON {
      */
     export abstract class WebXRAbstractFeature implements IWebXRFeature {
         protected _xrSessionManager: WebXRSessionManager;
-        /**
-         * Construct a new (abstract) webxr feature
-         * @param _xrSessionManager the xr session manager for this feature
-         */
-        constructor(_xrSessionManager: WebXRSessionManager);
         private _attached;
         private _removeOnDetach;
-        /**
-         * Is this feature attached
-         */
-        get attached(): boolean;
         /**
          * Should auto-attach be disabled?
          */
         disableAutoAttach: boolean;
+        /**
+         * Construct a new (abstract) WebXR feature
+         * @param _xrSessionManager the xr session manager for this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager);
+        /**
+         * Is this feature attached
+         */
+        get attached(): boolean;
         /**
          * attach this feature
          *
@@ -44328,17 +44314,17 @@ declare module BABYLON {
          */
         dispose(): void;
         /**
-         * Code in this function will be executed on each xrFrame received from the browser.
-         * This function will not execute after the feature is detached.
-         * @param _xrFrame the current frame
-         */
-        protected abstract _onXRFrame(_xrFrame: XRFrame): void;
-        /**
          * This is used to register callbacks that will automatically be removed when detach is called.
          * @param observable the observable to which the observer will be attached
          * @param callback the callback to register
          */
         protected _addNewAttachObserver<T>(observable: Observable<T>, callback: (eventData: T, eventState: EventState) => void): void;
+        /**
+         * Code in this function will be executed on each xrFrame received from the browser.
+         * This function will not execute after the feature is detached.
+         * @param _xrFrame the current frame
+         */
+        protected abstract _onXRFrame(_xrFrame: XRFrame): void;
     }
 }
 declare module BABYLON {
@@ -44432,19 +44418,9 @@ declare module BABYLON {
      */
     export interface IWebXRControllerPointerSelectionOptions {
         /**
-         * the xr input to use with this pointer selection
+         * if provided, this scene will be used to render meshes.
          */
-        xrInput: WebXRInput;
-        /**
-         * Different button type to use instead of the main component
-         */
-        overrideButtonId?: string;
-        /**
-         * The amount of time in miliseconds it takes between pick found something to a pointer down event.
-         * Used in gaze modes. Tracked pointer uses the trigger, screen uses touch events
-         * 3000 means 3 seconds between pointing at something and selecting it
-         */
-        timeToSelect?: number;
+        customUtilityLayerScene?: Scene;
         /**
          * Disable the pointer up event when the xr controller in screen and gaze mode is disposed (meaning - when the user removed the finger from the screen)
          * If not disabled, the last picked point will be used to execute a pointer up event
@@ -44463,23 +44439,38 @@ declare module BABYLON {
          */
         gazeModePointerMovedFactor?: number;
         /**
-         * Should meshes created here be added to a utility layer or the main scene
+         * Different button type to use instead of the main component
          */
-        useUtilityLayer?: boolean;
-        /**
-         * if provided, this scene will be used to render meshes.
-         */
-        customUtilityLayerScene?: Scene;
+        overrideButtonId?: string;
         /**
          *  use this rendering group id for the meshes (optional)
          */
         renderingGroupId?: number;
+        /**
+         * The amount of time in milliseconds it takes between pick found something to a pointer down event.
+         * Used in gaze modes. Tracked pointer uses the trigger, screen uses touch events
+         * 3000 means 3 seconds between pointing at something and selecting it
+         */
+        timeToSelect?: number;
+        /**
+         * Should meshes created here be added to a utility layer or the main scene
+         */
+        useUtilityLayer?: boolean;
+        /**
+         * the xr input to use with this pointer selection
+         */
+        xrInput: WebXRInput;
     }
     /**
      * A module that will enable pointer selection for motion controllers of XR Input Sources
      */
     export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         private readonly _options;
+        private static _idCounter;
+        private _attachController;
+        private _controllers;
+        private _scene;
+        private _tmpVectorForPickCompare;
         /**
          * The module's name
          */
@@ -44487,25 +44478,17 @@ declare module BABYLON {
         /**
          * The (Babylon) version of this module.
          * This is an integer representing the implementation version.
-         * This number does not correspond to the webxr specs version
+         * This number does not correspond to the WebXR specs version
          */
         static readonly Version: number;
         /**
-         * This color will be set to the laser pointer when selection is triggered
+         * Disable lighting on the laser pointer (so it will always be visible)
          */
-        laserPointerPickedColor: Color3;
+        disablePointerLighting: boolean;
         /**
-         * This color will be applied to the selection ring when selection is triggered
+         * Disable lighting on the selection mesh (so it will always be visible)
          */
-        selectionMeshPickedColor: Color3;
-        /**
-         * default color of the selection ring
-         */
-        selectionMeshDefaultColor: Color3;
-        /**
-         * Default color of the laser pointer
-         */
-        lasterPointerDefaultColor: Color3;
+        disableSelectionMeshLighting: boolean;
         /**
          * Should the laser pointer be displayed
          */
@@ -44515,16 +44498,21 @@ declare module BABYLON {
          */
         displaySelectionMesh: boolean;
         /**
-         * Disable lighting on the laser pointer (so it will always be visible)
+         * This color will be set to the laser pointer when selection is triggered
          */
-        disablePointerLighting: boolean;
+        laserPointerPickedColor: Color3;
         /**
-         * Disable lighting on the selection mesh (so it will always be visible)
+         * Default color of the laser pointer
          */
-        disableSelectionMeshLighting: boolean;
-        private static _idCounter;
-        private _controllers;
-        private _scene;
+        lasterPointerDefaultColor: Color3;
+        /**
+         * default color of the selection ring
+         */
+        selectionMeshDefaultColor: Color3;
+        /**
+         * This color will be applied to the selection ring when selection is triggered
+         */
+        selectionMeshPickedColor: Color3;
         /**
          * constructs a new background remover module
          * @param _xrSessionManager the session manager for this module
@@ -44546,29 +44534,27 @@ declare module BABYLON {
          */
         detach(): boolean;
         /**
-         * Get the xr controller that correlates to the pointer id in the pointer event
-         *
-         * @param id the pointer id to search for
-         * @returns the controller that correlates to this id or null if not found
-         */
-        getXRControllerByPointerId(id: number): Nullable<WebXRInputSource>;
-        /**
          * Will get the mesh under a specific pointer.
          * `scene.meshUnderPointer` will only return one mesh - either left or right.
          * @param controllerId the controllerId to check
          * @returns The mesh under pointer or null if no mesh is under the pointer
          */
         getMeshUnderPointer(controllerId: string): Nullable<AbstractMesh>;
+        /**
+         * Get the xr controller that correlates to the pointer id in the pointer event
+         *
+         * @param id the pointer id to search for
+         * @returns the controller that correlates to this id or null if not found
+         */
+        getXRControllerByPointerId(id: number): Nullable<WebXRInputSource>;
         protected _onXRFrame(_xrFrame: XRFrame): void;
-        private _attachController;
-        private _attachScreenRayMode;
         private _attachGazeMode;
-        private _tmpVectorForPickCompare;
-        private _pickingMoved;
+        private _attachScreenRayMode;
         private _attachTrackedPointerRayMode;
+        private _convertNormalToDirectionOfRay;
         private _detachController;
         private _generateNewMeshPair;
-        private _convertNormalToDirectionOfRay;
+        private _pickingMoved;
         private _updatePointerDistance;
     }
 }
@@ -44597,7 +44583,7 @@ declare module BABYLON {
         /** Reference space type */
         referenceSpaceType: XRReferenceSpaceType);
         /**
-         * Overwritable function which can be used to update the button's visuals when the state changes
+         * Extendable function which can be used to update the button's visuals when the state changes
          * @param activeButton the current active button in the UI
          */
         update(activeButton: Nullable<WebXREnterExitUIButton>): void;
@@ -44607,23 +44593,23 @@ declare module BABYLON {
      */
     export class WebXREnterExitUIOptions {
         /**
-         * Context to enter xr with
-         */
-        renderTarget?: Nullable<WebXRRenderTarget>;
-        /**
          * User provided buttons to enable/disable WebXR. The system will provide default if not set
          */
         customButtons?: Array<WebXREnterExitUIButton>;
-        /**
-         * A session mode to use when creating the default button.
-         * Default is immersive-vr
-         */
-        sessionMode?: XRSessionMode;
         /**
          * A reference space type to use when creating the default button.
          * Default is local-floor
          */
         referenceSpaceType?: XRReferenceSpaceType;
+        /**
+         * Context to enter xr with
+         */
+        renderTarget?: Nullable<WebXRRenderTarget>;
+        /**
+         * A session mode to use when creating the default button.
+         * Default is immersive-vr
+         */
+        sessionMode?: XRSessionMode;
     }
     /**
      * UI to allow the user to enter/exit XR mode
@@ -44632,9 +44618,9 @@ declare module BABYLON {
         private scene;
         /** version of the options passed to this UI */
         options: WebXREnterExitUIOptions;
-        private _overlay;
-        private _buttons;
         private _activeButton;
+        private _buttons;
+        private _overlay;
         /**
          * Fired every time the active button is changed.
          *
@@ -44644,6 +44630,12 @@ declare module BABYLON {
          */
         activeButtonChangedObservable: Observable<Nullable<WebXREnterExitUIButton>>;
         /**
+         *
+         * @param scene babylon scene object to use
+         * @param options (read-only) version of the options passed to this UI
+         */
+        private constructor();
+        /**
          * Creates UI to allow the user to enter/exit XR mode
          * @param scene the scene to add the ui to
          * @param helper the xr experience helper to enter/exit xr with
@@ -44652,16 +44644,10 @@ declare module BABYLON {
          */
         static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI>;
         /**
-         *
-         * @param scene babylon scene object to use
-         * @param options (read-only) version of the options passed to this UI
-         */
-        private constructor();
-        private _updateButtons;
-        /**
-         * Disposes of the object
+         * Disposes of the XR UI component
          */
         dispose(): void;
+        private _updateButtons;
     }
 }
 declare module BABYLON {
@@ -44751,37 +44737,9 @@ declare module BABYLON {
      */
     export interface IWebXRTeleportationOptions {
         /**
-         * Babylon XR Input class for controller
+         * if provided, this scene will be used to render meshes.
          */
-        xrInput: WebXRInput;
-        /**
-         * A list of meshes to use as floor meshes.
-         * Meshes can be added and removed after initializing the feature using the
-         * addFloorMesh and removeFloorMesh functions
-         * If empty, rotation will still work
-         */
-        floorMeshes?: AbstractMesh[];
-        /**
-         * Provide your own teleportation mesh instead of babylon's wonderful doughnut.
-         * If you want to support rotation, make sure your mesh has a direction indicator.
-         *
-         * When left untouched, the default mesh will be initialized.
-         */
-        teleportationTargetMesh?: AbstractMesh;
-        /**
-         * An array of points to which the teleportation will snap to.
-         * If the teleportation ray is in the proximity of one of those points, it will be corrected to this point.
-         */
-        snapPositions?: Vector3[];
-        /**
-         * How close should the teleportation ray be in order to snap to position.
-         * Default to 0.8 units (meters)
-         */
-        snapToPositionRadius?: number;
-        /**
-         * Should teleportation move only to snap points
-         */
-        snapPointsOnly?: boolean;
+        customUtilityLayerScene?: Scene;
         /**
          * Values to configure the default target mesh
          */
@@ -44808,34 +44766,72 @@ declare module BABYLON {
             torusArrowMaterial?: Material;
         };
         /**
-         * Disable using the thumbstick and use the main component (usuallly trigger) on long press.
-         * This will be automatically true if the controller doesnt have a thumbstick or touchpad.
+         * A list of meshes to use as floor meshes.
+         * Meshes can be added and removed after initializing the feature using the
+         * addFloorMesh and removeFloorMesh functions
+         * If empty, rotation will still work
          */
-        useMainComponentOnly?: boolean;
+        floorMeshes?: AbstractMesh[];
         /**
-         * If main component is used (no thumbstick), how long should the "long press" take before teleporting
+         *  use this rendering group id for the meshes (optional)
+         */
+        renderingGroupId?: number;
+        /**
+         * Should teleportation move only to snap points
+         */
+        snapPointsOnly?: boolean;
+        /**
+         * An array of points to which the teleportation will snap to.
+         * If the teleportation ray is in the proximity of one of those points, it will be corrected to this point.
+         */
+        snapPositions?: Vector3[];
+        /**
+         * How close should the teleportation ray be in order to snap to position.
+         * Default to 0.8 units (meters)
+         */
+        snapToPositionRadius?: number;
+        /**
+         * Provide your own teleportation mesh instead of babylon's wonderful doughnut.
+         * If you want to support rotation, make sure your mesh has a direction indicator.
+         *
+         * When left untouched, the default mesh will be initialized.
+         */
+        teleportationTargetMesh?: AbstractMesh;
+        /**
+         * If main component is used (no thumbstick), how long should the "long press" take before teleport
          */
         timeToTeleport?: number;
+        /**
+         * Disable using the thumbstick and use the main component (usually trigger) on long press.
+         * This will be automatically true if the controller doesn't have a thumbstick or touchpad.
+         */
+        useMainComponentOnly?: boolean;
         /**
          * Should meshes created here be added to a utility layer or the main scene
          */
         useUtilityLayer?: boolean;
         /**
-         * if provided, this scene will be used to render meshes.
+         * Babylon XR Input class for controller
          */
-        customUtilityLayerScene?: Scene;
-        /**
-         *  use this rendering group id for the meshes (optional)
-         */
-        renderingGroupId?: number;
+        xrInput: WebXRInput;
     }
     /**
-     * This is a teleportation feature to be used with webxr-enabled motion controllers.
+     * This is a teleportation feature to be used with WebXR-enabled motion controllers.
      * When enabled and attached, the feature will allow a user to move around and rotate in the scene using
      * the input of the attached controllers.
      */
     export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         private _options;
+        private _controllers;
+        private _currentTeleportationControllerId;
+        private _floorMeshes;
+        private _quadraticBezierCurve;
+        private _selectionFeature;
+        private _snapToPositions;
+        private _snappedToPoint;
+        private _teleportationRingMaterial?;
+        private _tmpRay;
+        private _tmpVector;
         /**
          * The module's name
          */
@@ -44847,27 +44843,6 @@ declare module BABYLON {
          */
         static readonly Version: number;
         /**
-         * Is rotation enabled when moving forward?
-         * Disabling this feature will prevent the user from deciding the direction when teleporting
-         */
-        rotationEnabled: boolean;
-        /**
-         * Should the module support parabolic ray on top of direct ray
-         * If enabled, the user will be able to point "at the sky" and move according to predefined radius distance
-         * Very helpful when moving between floors / different heights
-         */
-        parabolicRayEnabled: boolean;
-        /**
-         * The distance from the user to the inspection point in the direction of the controller
-         * A higher number will allow the user to move further
-         * defaults to 5 (meters, in xr units)
-         */
-        parabolicCheckRadius: number;
-        /**
-         * How much rotation should be applied when rotating right and left
-         */
-        rotationAngle: number;
-        /**
          * Is movement backwards enabled
          */
         backwardsMovementEnabled: boolean;
@@ -44876,34 +44851,32 @@ declare module BABYLON {
          */
         backwardsTeleportationDistance: number;
         /**
-         * Add a new mesh to the floor meshes array
-         * @param mesh the mesh to use as floor mesh
+         * The distance from the user to the inspection point in the direction of the controller
+         * A higher number will allow the user to move further
+         * defaults to 5 (meters, in xr units)
          */
-        addFloorMesh(mesh: AbstractMesh): void;
+        parabolicCheckRadius: number;
         /**
-         * Remove a mesh from the floor meshes array
-         * @param mesh the mesh to remove
+         * Should the module support parabolic ray on top of direct ray
+         * If enabled, the user will be able to point "at the sky" and move according to predefined radius distance
+         * Very helpful when moving between floors / different heights
          */
-        removeFloorMesh(mesh: AbstractMesh): void;
+        parabolicRayEnabled: boolean;
         /**
-         * Remove a mesh from the floor meshes array using its name
-         * @param name the mesh name to remove
+         * How much rotation should be applied when rotating right and left
          */
-        removeFloorMeshByName(name: string): void;
-        private _tmpRay;
-        private _tmpVector;
-        private _floorMeshes;
-        private _snapToPositions;
-        private _controllers;
+        rotationAngle: number;
+        /**
+         * Is rotation enabled when moving forward?
+         * Disabling this feature will prevent the user from deciding the direction when teleporting
+         */
+        rotationEnabled: boolean;
         /**
          * constructs a new anchor system
          * @param _xrSessionManager an instance of WebXRSessionManager
          * @param _options configuration object for this feature
          */
         constructor(_xrSessionManager: WebXRSessionManager, _options: IWebXRTeleportationOptions);
-        private _selectionFeature;
-        private _snappedToPoint;
-        private _teleportationRingMaterial?;
         /**
          * Get the snapPointsOnly flag
          */
@@ -44914,10 +44887,28 @@ declare module BABYLON {
          */
         set snapPointsOnly(snapToPoints: boolean);
         /**
+         * Add a new mesh to the floor meshes array
+         * @param mesh the mesh to use as floor mesh
+         */
+        addFloorMesh(mesh: AbstractMesh): void;
+        /**
          * Add a new snap-to point to fix teleportation to this position
          * @param newSnapPoint The new Snap-To point
          */
         addSnapPoint(newSnapPoint: Vector3): void;
+        attach(): boolean;
+        detach(): boolean;
+        dispose(): void;
+        /**
+         * Remove a mesh from the floor meshes array
+         * @param mesh the mesh to remove
+         */
+        removeFloorMesh(mesh: AbstractMesh): void;
+        /**
+         * Remove a mesh from the floor meshes array using its name
+         * @param name the mesh name to remove
+         */
+        removeFloorMeshByName(name: string): void;
         /**
          * This function will iterate through the array, searching for this point or equal to it. It will then remove it from the snap-to array
          * @param snapPointToRemove the point (or a clone of it) to be removed from the array
@@ -44931,20 +44922,15 @@ declare module BABYLON {
          * @param selectionFeature the feature to disable when forward movement is enabled
          */
         setSelectionFeature(selectionFeature: IWebXRFeature): void;
-        attach(): boolean;
-        detach(): boolean;
-        dispose(): void;
         protected _onXRFrame(_xrFrame: XRFrame): void;
-        private _currentTeleportationControllerId;
         private _attachController;
-        private _teleportForward;
-        private _detachController;
         private _createDefaultTargetMesh;
-        private _setTargetMeshVisibility;
-        private _setTargetMeshPosition;
-        private _quadraticBezierCurve;
-        private _showParabolicPath;
+        private _detachController;
         private _findClosestSnapPointWithRadius;
+        private _setTargetMeshPosition;
+        private _setTargetMeshVisibility;
+        private _showParabolicPath;
+        private _teleportForward;
     }
 }
 declare module BABYLON {
@@ -44953,13 +44939,27 @@ declare module BABYLON {
      */
     export class WebXRDefaultExperienceOptions {
         /**
-         * Floor meshes that will be used for teleporting
-         */
-        floorMeshes?: Array<AbstractMesh>;
-        /**
          * Enable or disable default UI to enter XR
          */
         disableDefaultUI?: boolean;
+        /**
+         * Should teleportation not initialize. defaults to false.
+         */
+        disableTeleportation?: boolean;
+        /**
+         * Floor meshes that will be used for teleport
+         */
+        floorMeshes?: Array<AbstractMesh>;
+        /**
+         * If set to true, the first frame will not be used to reset position
+         * The first frame is mainly used when copying transformation from the old camera
+         * Mainly used in AR
+         */
+        ignoreNativeCameraTransformation?: boolean;
+        /**
+         * Disable the controller mesh-loading. Can be used if you want to load your own meshes
+         */
+        inputOptions?: IWebXRInputOptions;
         /**
          * optional configuration for the output canvas
          */
@@ -44968,20 +44968,6 @@ declare module BABYLON {
          * optional UI options. This can be used among other to change session mode and reference space type
          */
         uiOptions?: WebXREnterExitUIOptions;
-        /**
-         * Disable the controller mesh-loading. Can be used if you want to load your own meshes
-         */
-        inputOptions?: IWebXRInputOptions;
-        /**
-         * Should teleportation not initialize. defaults to false.
-         */
-        disableTeleportation?: boolean;
-        /**
-         * If set to true, the first frame will not be used to reset position
-         * The first frame is mainly used when copying transformation from the old camera
-         * Mainly used in AR
-         */
-        ignoreNativeCameraTransformation?: boolean;
         /**
          * When loading teleportation and pointer select, use stable versions instead of latest.
          */
@@ -44996,6 +44982,10 @@ declare module BABYLON {
          */
         baseExperience: WebXRExperienceHelper;
         /**
+         * Enables ui for entering/exiting xr
+         */
+        enterExitUI: WebXREnterExitUI;
+        /**
          * Input experience extension
          */
         input: WebXRInput;
@@ -45004,17 +44994,14 @@ declare module BABYLON {
          */
         pointerSelection: WebXRControllerPointerSelection;
         /**
-         * Enables teleportation
-         */
-        teleportation: WebXRMotionControllerTeleportation;
-        /**
-         * Enables ui for entering/exiting xr
-         */
-        enterExitUI: WebXREnterExitUI;
-        /**
          * Default target xr should render to
          */
         renderTarget: WebXRRenderTarget;
+        /**
+         * Enables teleportation
+         */
+        teleportation: WebXRMotionControllerTeleportation;
+        private constructor();
         /**
          * Creates the default xr experience
          * @param scene scene
@@ -45022,7 +45009,6 @@ declare module BABYLON {
          * @returns resulting WebXRDefaultExperience
          */
         static CreateAsync(scene: Scene, options?: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
-        private constructor();
         /**
          * DIsposes of the experience helper
          */
@@ -46756,13 +46742,13 @@ declare module BABYLON {
          * @param onLoad optional callback to be called upon successful completion
          * @param onError optional callback to be called upon failure
          * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
-         * @param fallBack an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
+         * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
-         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
+         * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: InternalTexture, format?: number): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
         /**
          * Creates a new render target texture
          * @param size defines the size of the texture
@@ -47705,25 +47691,26 @@ declare module BABYLON {
         _createTexture(): WebGLTexture;
         protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
         /**
-         * Usually called from BABYLON.Texture.ts.
+         * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
          * @param urlArg defines a value which contains one of the following:
          * * A conventional http URL, e.g. 'http://...' or 'file://...'
          * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
          * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
          * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
-         * @param invertY when true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file
+         * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
          * @param scene needed for loading to the correct scene
-         * @param samplingMode mode with should be used sample / access the texture (Default: BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+         * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
          * @param onLoad optional callback to be called upon successful completion
          * @param onError optional callback to be called upon failure
-         * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), or a Blob
+         * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
+         * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
         /**
          * Creates a cube texture
          * @param rootUrl defines the url where the files to load is located
@@ -50795,6 +50782,7 @@ declare module BABYLON {
         UV1: boolean;
         UV2: boolean;
         ALBEDO: boolean;
+        GAMMAALBEDO: boolean;
         ALBEDODIRECTUV: number;
         VERTEXCOLOR: boolean;
         AMBIENT: boolean;
@@ -52027,29 +52015,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -52058,7 +52028,7 @@ declare module BABYLON {
          */
         loadCubeData(imgs: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -52079,29 +52049,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -52110,7 +52062,7 @@ declare module BABYLON {
          */
         loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -52204,6 +52156,32 @@ declare module BABYLON {
          */
         uploadLevels(texture: InternalTexture, loadMipmaps: boolean): void;
         private _upload2DCompressedLevels;
+        /**
+         * Checks if the given data starts with a KTX file identifier.
+         * @param data the data to check
+         * @returns true if the data is a KTX file or false otherwise
+         */
+        static IsValid(data: ArrayBufferView): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class for loading KTX2 files
+     * !!! Experimental Extension Subject to Changes !!!
+     * @hidden
+     */
+    export class KhronosTextureContainer2 {
+        private static _ModulePromise;
+        private static _TranscodeFormat;
+        constructor(engine: ThinEngine);
+        uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void>;
+        private _determineTranscodeFormat;
+        /**
+         * Checks if the given data starts with a KTX2 file identifier.
+         * @param data the data to check
+         * @returns true if the data is a KTX2 file or false otherwise
+         */
+        static IsValid(data: ArrayBufferView): boolean;
     }
 }
 declare module BABYLON {
@@ -52219,29 +52197,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -52250,7 +52210,7 @@ declare module BABYLON {
          */
         loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -53469,6 +53429,10 @@ declare module BABYLON {
          * @param mesh The mesh to highlight
          */
         removeMesh(mesh: Mesh): void;
+        /**
+         * Remove all the meshes currently referenced in the highlight layer
+         */
+        removeAllMeshes(): void;
         /**
          * Force the stencil to the normal expected value for none glowing parts
          */
@@ -55977,29 +55941,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -56008,7 +55954,7 @@ declare module BABYLON {
          */
         loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -56134,29 +56080,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has already been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -56165,7 +56093,7 @@ declare module BABYLON {
          */
         loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -56841,6 +56769,10 @@ declare module BABYLON {
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz output component
+         */
+        get xyz(): NodeMaterialConnectionPoint;
         /**
          * Gets the matrix transform input
          */
@@ -57898,6 +57830,8 @@ declare module BABYLON {
         isConstant: boolean;
         /** Gets or sets the group to use to display this block in the Inspector */
         groupInInspector: string;
+        /** Gets an observable raised when the value is changed */
+        onValueChangedObservable: Observable<InputBlock>;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -58002,6 +57936,7 @@ declare module BABYLON {
         _transmit(effect: Effect, scene: Scene): void;
         protected _buildBlock(state: NodeMaterialBuildState): void;
         protected _dumpPropertiesCode(): string;
+        dispose(): void;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
@@ -58064,7 +57999,7 @@ declare module BABYLON {
          */
         get associatedVariableName(): string;
         set associatedVariableName(value: string);
-        /** Get the inner type (ie AutoDetect for isntance instead of the inferred one) */
+        /** Get the inner type (ie AutoDetect for instance instead of the inferred one) */
         get innerType(): NodeMaterialBlockConnectionPointTypes;
         /**
          * Gets or sets the connection point type (default is float)
@@ -62506,6 +62441,12 @@ declare module BABYLON {
         get activeParticleCount(): number;
         set activeParticleCount(value: number);
         private _preWarmDone;
+        /**
+         * Specifies if the particles are updated in emitter local space or world space.
+         * This is always false for GPU particles
+         */
+        get isLocal(): boolean;
+        set isLocal(value: boolean);
         /**
          * Is this system ready to be used/rendered
          * @return true if the system is ready
@@ -68690,17 +68631,17 @@ declare module BABYLON {
      */
     export interface IWebXRHitResult {
         /**
-         * The native hit test result
-         */
-        xrHitResult: XRHitResult;
-        /**
          * Transformation matrix that can be applied to a node that will put it in the hit point location
          */
         transformationMatrix: Matrix;
+        /**
+         * The native hit test result
+         */
+        xrHitResult: XRHitResult;
     }
     /**
      * The currently-working hit-test module.
-     * Hit test (or raycasting) is used to interact with the real world.
+     * Hit test (or Ray-casting) is used to interact with the real world.
      * For further information read here - https://github.com/immersive-web/hit-test
      */
     export class WebXRHitTestLegacy extends WebXRAbstractFeature {
@@ -68708,6 +68649,10 @@ declare module BABYLON {
          * options to use when constructing this feature
          */
         readonly options: IWebXRHitTestOptions;
+        private _direction;
+        private _mat;
+        private _onSelectEnabled;
+        private _origin;
         /**
          * The module's name
          */
@@ -68715,31 +68660,17 @@ declare module BABYLON {
         /**
          * The (Babylon) version of this module.
          * This is an integer representing the implementation version.
-         * This number does not correspond to the webxr specs version
+         * This number does not correspond to the WebXR specs version
          */
         static readonly Version: number;
         /**
-         * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
-         * @param event the (select) event to use to select with
-         * @param referenceSpace the reference space to use for this hit test
-         * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
+         * Populated with the last native XR Hit Results
          */
-        static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
-        /**
-         * execute a hit test with an XR Ray
-         *
-         * @param xrSession a native xrSession that will execute this hit test
-         * @param xrRay the ray (position and direction) to use for raycasting
-         * @param referenceSpace native XR reference space to use for the hit-test
-         * @param filter filter function that will filter the results
-         * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
-         */
-        static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]>;
+        lastNativeXRHitResults: XRHitResult[];
         /**
          * Triggered when new babylon (transformed) hit test results are available
          */
         onHitTestResultObservable: Observable<IWebXRHitResult[]>;
-        private _onSelectEnabled;
         /**
          * Creates a new instance of the (legacy version) hit test feature
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -68751,9 +68682,22 @@ declare module BABYLON {
          */
         options?: IWebXRHitTestOptions);
         /**
-         * Populated with the last native XR Hit Results
+         * execute a hit test with an XR Ray
+         *
+         * @param xrSession a native xrSession that will execute this hit test
+         * @param xrRay the ray (position and direction) to use for ray-casting
+         * @param referenceSpace native XR reference space to use for the hit-test
+         * @param filter filter function that will filter the results
+         * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
          */
-        lastNativeXRHitResults: XRHitResult[];
+        static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]>;
+        /**
+         * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
+         * @param event the (select) event to use to select with
+         * @param referenceSpace the reference space to use for this hit test
+         * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
+         */
+        static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
         /**
          * attach this feature
          * Will usually be called by the features manager
@@ -68768,16 +68712,13 @@ declare module BABYLON {
          * @returns true if successful.
          */
         detach(): boolean;
-        private _onHitTestResults;
-        private _origin;
-        private _direction;
-        private _mat;
-        protected _onXRFrame(frame: XRFrame): void;
-        private _onSelect;
         /**
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
+        protected _onXRFrame(frame: XRFrame): void;
+        private _onHitTestResults;
+        private _onSelect;
     }
 }
 declare module BABYLON {
@@ -68791,7 +68732,7 @@ declare module BABYLON {
         worldParentNode?: TransformNode;
     }
     /**
-     * A babylon interface for a webxr plane.
+     * A babylon interface for a WebXR plane.
      * A Plane is actually a polygon, built from N points in space
      *
      * Supported in chrome 79, not supported in canary 81 ATM
@@ -68802,10 +68743,6 @@ declare module BABYLON {
          */
         id: number;
         /**
-         * the native xr-plane object
-         */
-        xrPlane: XRPlane;
-        /**
          * an array of vector3 points in babylon space. right/left hand system is taken into account.
          */
         polygonDefinition: Array<Vector3>;
@@ -68814,6 +68751,10 @@ declare module BABYLON {
          * Local vs. World are decided if worldParentNode was provided or not in the options when constructing the module
          */
         transformationMatrix: Matrix;
+        /**
+         * the native xr-plane object
+         */
+        xrPlane: XRPlane;
     }
     /**
      * The plane detector is used to detect planes in the real world when in AR
@@ -68821,6 +68762,9 @@ declare module BABYLON {
      */
     export class WebXRPlaneDetector extends WebXRAbstractFeature {
         private _options;
+        private _detectedPlanes;
+        private _enabled;
+        private _lastFrameDetected;
         /**
          * The module's name
          */
@@ -68828,7 +68772,7 @@ declare module BABYLON {
         /**
          * The (Babylon) version of this module.
          * This is an integer representing the implementation version.
-         * This number does not correspond to the webxr specs version
+         * This number does not correspond to the WebXR specs version
          */
         static readonly Version: number;
         /**
@@ -68844,21 +68788,18 @@ declare module BABYLON {
          * This can execute N times every frame
          */
         onPlaneUpdatedObservable: Observable<IWebXRPlane>;
-        private _enabled;
-        private _detectedPlanes;
-        private _lastFrameDetected;
         /**
          * construct a new Plane Detector
          * @param _xrSessionManager an instance of xr Session manager
          * @param _options configuration to use when constructing this feature
          */
         constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRPlaneDetectorOptions);
-        private _init;
-        protected _onXRFrame(frame: XRFrame): void;
         /**
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
+        protected _onXRFrame(frame: XRFrame): void;
+        private _init;
         private _updatePlaneWithXRPlane;
         /**
          * avoiding using Array.find for global support.
@@ -68873,18 +68814,18 @@ declare module BABYLON {
      */
     export interface IWebXRAnchorSystemOptions {
         /**
-         * a node that will be used to convert local to world coordinates
+         * Should a new anchor be added every time a select event is triggered
          */
-        worldParentNode?: TransformNode;
+        addAnchorOnSelect?: boolean;
         /**
          * should the anchor system use plane detection.
          * If set to true, the plane-detection feature should be set using setPlaneDetector
          */
         usePlaneDetection?: boolean;
         /**
-         * Should a new anchor be added every time a select event is triggered
+         * a node that will be used to convert local to world coordinates
          */
-        addAnchorOnSelect?: boolean;
+        worldParentNode?: TransformNode;
     }
     /**
      * A babylon container for an XR Anchor
@@ -68895,13 +68836,13 @@ declare module BABYLON {
          */
         id: number;
         /**
-         * The native anchor object
-         */
-        xrAnchor: XRAnchor;
-        /**
          * Transformation matrix to apply to an object attached to this anchor
          */
         transformationMatrix: Matrix;
+        /**
+         * The native anchor object
+         */
+        xrAnchor: XRAnchor;
     }
     /**
      * An implementation of the anchor system of WebXR.
@@ -68911,6 +68852,12 @@ declare module BABYLON {
      */
     export class WebXRAnchorSystem extends WebXRAbstractFeature {
         private _options;
+        private _enabled;
+        private _hitTestModule;
+        private _lastFrameDetected;
+        private _onSelect;
+        private _planeDetector;
+        private _trackedAnchors;
         /**
          * The module's name
          */
@@ -68918,7 +68865,7 @@ declare module BABYLON {
         /**
          * The (Babylon) version of this module.
          * This is an integer representing the implementation version.
-         * This number does not correspond to the webxr specs version
+         * This number does not correspond to the WebXR specs version
          */
         static readonly Version: number;
         /**
@@ -68926,19 +68873,14 @@ declare module BABYLON {
          */
         onAnchorAddedObservable: Observable<IWebXRAnchor>;
         /**
+         * Observers registered here will be executed when an anchor was removed from the session
+         */
+        onAnchorRemovedObservable: Observable<IWebXRAnchor>;
+        /**
          * Observers registered here will be executed when an existing anchor updates
          * This can execute N times every frame
          */
         onAnchorUpdatedObservable: Observable<IWebXRAnchor>;
-        /**
-         * Observers registered here will be executed when an anchor was removed from the session
-         */
-        onAnchorRemovedObservable: Observable<IWebXRAnchor>;
-        private _planeDetector;
-        private _hitTestModule;
-        private _enabled;
-        private _trackedAnchors;
-        private _lastFrameDetected;
         /**
          * constructs a new anchor system
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -68946,16 +68888,13 @@ declare module BABYLON {
          */
         constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRAnchorSystemOptions);
         /**
-         * set the plane detector to use in order to create anchors from frames
-         * @param planeDetector the plane-detector module to use
-         * @param enable enable plane-anchors. default is true
+         * Add anchor at a specific XR point.
+         *
+         * @param xrRigidTransformation xr-coordinates where a new anchor should be added
+         * @param anchorCreator the object o use to create an anchor with. either a session or a plane
+         * @returns a promise the fulfills when the anchor was created
          */
-        setPlaneDetector(planeDetector: WebXRPlaneDetector, enable?: boolean): void;
-        /**
-         * If set, it will improve performance by using the current hit-test results instead of executing a new hit-test
-         * @param hitTestModule the hit-test module to use.
-         */
-        setHitTestModule(hitTestModule: WebXRHitTestLegacy): void;
+        addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator): Promise<XRAnchor>;
         /**
          * attach this feature
          * Will usually be called by the features manager
@@ -68974,22 +68913,24 @@ declare module BABYLON {
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
-        protected _onXRFrame(frame: XRFrame): void;
-        private _onSelect;
         /**
-         * Add anchor at a specific XR point.
-         *
-         * @param xrRigidTransformation xr-coordinates where a new anchor should be added
-         * @param anchorCreator the object o use to create an anchor with. either a session or a plane
-         * @returns a promise the fulfills when the anchor was created
+         * If set, it will improve performance by using the current hit-test results instead of executing a new hit-test
+         * @param hitTestModule the hit-test module to use.
          */
-        addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator): Promise<XRAnchor>;
-        private _updateAnchorWithXRFrame;
+        setHitTestModule(hitTestModule: WebXRHitTestLegacy): void;
+        /**
+         * set the plane detector to use in order to create anchors from frames
+         * @param planeDetector the plane-detector module to use
+         * @param enable enable plane-anchors. default is true
+         */
+        setPlaneDetector(planeDetector: WebXRPlaneDetector, enable?: boolean): void;
+        protected _onXRFrame(frame: XRFrame): void;
         /**
          * avoiding using Array.find for global support.
          * @param xrAnchor the plane to find in the array
          */
         private _findIndexInAnchorArray;
+        private _updateAnchorWithXRFrame;
     }
 }
 declare module BABYLON {
@@ -68998,9 +68939,9 @@ declare module BABYLON {
      */
     export interface IWebXRBackgroundRemoverOptions {
         /**
-         * don't disable the environment helper
+         * Further background meshes to disable when entering AR
          */
-        ignoreEnvironmentHelper?: boolean;
+        backgroundMeshes?: AbstractMesh[];
         /**
          * flags to configure the removal of the environment helper.
          * If not set, the entire background will be removed. If set, flags should be set as well.
@@ -69016,9 +68957,9 @@ declare module BABYLON {
             ground?: boolean;
         };
         /**
-         * Further background meshes to disable when entering AR
+         * don't disable the environment helper
          */
-        backgroundMeshes?: AbstractMesh[];
+        ignoreEnvironmentHelper?: boolean;
     }
     /**
      * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
@@ -69035,7 +68976,7 @@ declare module BABYLON {
         /**
          * The (Babylon) version of this module.
          * This is an integer representing the implementation version.
-         * This number does not correspond to the webxr specs version
+         * This number does not correspond to the WebXR specs version
          */
         static readonly Version: number;
         /**
@@ -69066,12 +69007,12 @@ declare module BABYLON {
          * @returns true if successful.
          */
         detach(): boolean;
-        private _setBackgroundState;
         /**
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
         protected _onXRFrame(_xrFrame: XRFrame): void;
+        private _setBackgroundState;
     }
 }
 declare module BABYLON {
@@ -69080,9 +69021,34 @@ declare module BABYLON {
      */
     export class IWebXRControllerPhysicsOptions {
         /**
-         * the xr input to use with this pointer selection
+         * Should the headset get its own impostor
          */
-        xrInput: WebXRInput;
+        enableHeadsetImpostor?: boolean;
+        /**
+         * Optional parameters for the headset impostor
+         */
+        headsetImpostorParams?: {
+            /**
+             * The type of impostor to create. Default is sphere
+             */
+            impostorType: number;
+            /**
+             * the size of the impostor. Defaults to 10cm
+             */
+            impostorSize?: number | {
+                width: number;
+                height: number;
+                depth: number;
+            };
+            /**
+             * Friction definitions
+             */
+            friction?: number;
+            /**
+             * Restitution
+             */
+            restitution?: number;
+        };
         /**
          * The physics properties of the future impostors
          */
@@ -69114,34 +69080,9 @@ declare module BABYLON {
             restitution?: number;
         };
         /**
-         * Should the headset get its own impostor
+         * the xr input to use with this pointer selection
          */
-        enableHeadsetImpostor?: boolean;
-        /**
-         * Optional parameters for the headset impostor
-         */
-        headsetImpostorParams?: {
-            /**
-             * The type of impostor to create. Default is sphere
-             */
-            impostorType: number;
-            /**
-             * the size of the impostor. Defaults to 10cm
-             */
-            impostorSize?: number | {
-                width: number;
-                height: number;
-                depth: number;
-            };
-            /**
-             * Friction definitions
-             */
-            friction?: number;
-            /**
-             * Restitution
-             */
-            restitution?: number;
-        };
+        xrInput: WebXRInput;
     }
     /**
      * Add physics impostor to your webxr controllers,
@@ -69149,6 +69090,15 @@ declare module BABYLON {
      */
     export class WebXRControllerPhysics extends WebXRAbstractFeature {
         private readonly _options;
+        private _attachController;
+        private _controllers;
+        private _debugMode;
+        private _delta;
+        private _headsetImpostor?;
+        private _headsetMesh?;
+        private _lastTimestamp;
+        private _tmpQuaternion;
+        private _tmpVector;
         /**
          * The module's name
          */
@@ -69159,13 +69109,6 @@ declare module BABYLON {
          * This number does not correspond to the webxr specs version
          */
         static readonly Version: number;
-        private _lastTimestamp;
-        private _delta;
-        private _controllers;
-        private _headsetImpostor?;
-        private _headsetMesh?;
-        private _tmpVector;
-        private _tmpQuaternion;
         /**
          * Construct a new Controller Physics Feature
          * @param _xrSessionManager the corresponding xr session manager
@@ -69173,31 +69116,15 @@ declare module BABYLON {
          */
         constructor(_xrSessionManager: WebXRSessionManager, _options: IWebXRControllerPhysicsOptions);
         /**
-         * Update the physics properties provided in the constructor
-         * @param newProperties the new properties object
+         * @hidden
+         * enable debugging - will show console outputs and the impostor mesh
          */
-        setPhysicsProperties(newProperties: {
-            impostorType?: number;
-            impostorSize?: number | {
-                width: number;
-                height: number;
-                depth: number;
-            };
-            friction?: number;
-            restitution?: number;
-        }): void;
+        _enablePhysicsDebug(): void;
         /**
-         * Get the physics impostor of a specific controller.
-         * The impostor is not attached to a mesh because a mesh for each controller is not obligatory
-         * @param controller the controller or the controller id of which to get the impostor
-         * @returns the impostor or null
+         * Manually add a controller (if no xrInput was provided or physics engine was not enabled)
+         * @param xrController the controller to add
          */
-        getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor>;
-        /**
-         * Get the headset impostor, if enabled
-         * @returns the impostor
-         */
-        getHeadsetImpostor(): PhysicsImpostor | undefined;
+        addController(xrController: WebXRInputSource): void;
         /**
          * attach this feature
          * Will usually be called by the features manager
@@ -69213,19 +69140,33 @@ declare module BABYLON {
          */
         detach(): boolean;
         /**
-         * Manually add a controller (if no xrInput was provided or physics engine was not enabled)
-         * @param xrController the controller to add
+         * Get the headset impostor, if enabled
+         * @returns the impostor
          */
-        addController(xrController: WebXRInputSource): void;
-        private _debugMode;
+        getHeadsetImpostor(): PhysicsImpostor | undefined;
         /**
-         * @hidden
-         * enable debugging - will show console outputs and the impostor mesh
+         * Get the physics impostor of a specific controller.
+         * The impostor is not attached to a mesh because a mesh for each controller is not obligatory
+         * @param controller the controller or the controller id of which to get the impostor
+         * @returns the impostor or null
          */
-        _enablePhysicsDebug(): void;
-        private _attachController;
-        private _detachController;
+        getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor>;
+        /**
+         * Update the physics properties provided in the constructor
+         * @param newProperties the new properties object
+         */
+        setPhysicsProperties(newProperties: {
+            impostorType?: number;
+            impostorSize?: number | {
+                width: number;
+                height: number;
+                depth: number;
+            };
+            friction?: number;
+            restitution?: number;
+        }): void;
         protected _onXRFrame(_xrFrame: any): void;
+        private _detachController;
     }
 }
 declare module BABYLON {
@@ -69233,19 +69174,6 @@ declare module BABYLON {
      * The motion controller class for all microsoft mixed reality controllers
      */
     export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
-        /**
-         * The base url used to load the left and right controller models
-         */
-        static MODEL_BASE_URL: string;
-        /**
-         * The name of the left controller model file
-         */
-        static MODEL_LEFT_FILENAME: string;
-        /**
-         * The name of the right controller model file
-         */
-        static MODEL_RIGHT_FILENAME: string;
-        profileId: string;
         protected readonly _mapping: {
             defaultButton: {
                 "valueNodeName": string;
@@ -69298,15 +69226,28 @@ declare module BABYLON {
                 };
             };
         };
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * The name of the left controller model file
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * The name of the right controller model file
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        profileId: string;
         constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
-        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
         };
-        protected _updateModel(): void;
         protected _getModelLoadingConstraints(): boolean;
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
         protected _setRootMesh(meshes: AbstractMesh[]): void;
+        protected _updateModel(): void;
     }
 }
 declare module BABYLON {
@@ -69316,6 +69257,7 @@ declare module BABYLON {
      */
     export class WebXROculusTouchMotionController extends WebXRAbstractMotionController {
         private _forceLegacyControllers;
+        private _modelRootNode;
         /**
          * The base url used to load the left and right controller models
          */
@@ -69333,21 +69275,20 @@ declare module BABYLON {
          */
         static QUEST_MODEL_BASE_URL: string;
         profileId: string;
-        private _modelRootNode;
         constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness, legacyMapping?: boolean, _forceLegacyControllers?: boolean);
-        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
         };
+        protected _getModelLoadingConstraints(): boolean;
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+        protected _updateModel(): void;
         /**
          * Is this the new type of oculus touch. At the moment both have the same profile and it is impossible to differentiate
          * between the touch and touch 2.
          */
         private _isQuest;
-        protected _updateModel(): void;
-        protected _getModelLoadingConstraints(): boolean;
-        protected _setRootMesh(meshes: AbstractMesh[]): void;
     }
 }
 declare module BABYLON {
@@ -69355,6 +69296,7 @@ declare module BABYLON {
      * The motion controller class for the standard HTC-Vive controllers
      */
     export class WebXRHTCViveMotionController extends WebXRAbstractMotionController {
+        private _modelRootNode;
         /**
          * The base url used to load the left and right controller models
          */
@@ -69364,7 +69306,6 @@ declare module BABYLON {
          */
         static MODEL_FILENAME: string;
         profileId: string;
-        private _modelRootNode;
         /**
          * Create a new Vive motion controller object
          * @param scene the scene to use to create this controller
@@ -69372,14 +69313,14 @@ declare module BABYLON {
          * @param handness the handness of the controller
          */
         constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
-        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
         };
-        protected _updateModel(): void;
         protected _getModelLoadingConstraints(): boolean;
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
         protected _setRootMesh(meshes: AbstractMesh[]): void;
+        protected _updateModel(): void;
     }
 }
 declare module BABYLON {

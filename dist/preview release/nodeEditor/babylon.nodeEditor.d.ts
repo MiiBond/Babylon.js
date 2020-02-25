@@ -194,20 +194,25 @@ declare module NODEEDITOR {
         private _onMove;
         private initResizing;
         private cleanUpResizing;
+        private updateMinHeightWithComments;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
+        private _moveRightHandle;
         private _expandRight;
         private _onRightHandlePointerUp;
         private _onBottomHandlePointerDown;
         private _onBottomHandlePointerMove;
+        private _moveBottomHandle;
         private _expandBottom;
         private _onBottomHandlePointerUp;
         private _onLeftHandlePointerDown;
         private _onLeftHandlePointerMove;
+        private _moveLeftHandle;
         private _expandLeft;
         private _onLeftHandlePointerUp;
         private _onTopHandlePointerDown;
         private _onTopHandlePointerMove;
+        private _moveTopHandle;
         private _expandTop;
         private _onTopHandlePointerUp;
         dispose(): void;
@@ -341,6 +346,7 @@ declare module NODEEDITOR {
         additionalClass?: string;
         step?: string;
         digits?: number;
+        globalState: GlobalState;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -778,7 +784,10 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         renderValue(globalState: GlobalState): JSX.Element | null;
         setDefaultValue(): void;
         render(): JSX.Element;
@@ -1246,9 +1255,14 @@ declare module NODEEDITOR {
         togglePreviewAreaComponent: () => void;
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
+        private colorInputRef;
+        constructor(props: IPreviewMeshControlComponent);
         changeMeshType(newOne: PreviewMeshType): void;
         useCustomMesh(evt: any): void;
         onPopUp(): void;
+        changeAnimation(): void;
+        changeBackground(value: string): void;
+        changeBackgroundClick(): void;
         render(): JSX.Element;
     }
 }
@@ -1260,9 +1274,9 @@ declare module NODEEDITOR {
     export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
         isLoading: boolean;
     }> {
+        private _onIsLoadingChangedObserver;
         constructor(props: IPreviewAreaComponentProps);
-        changeAnimation(): void;
-        changeBackground(value: string): void;
+        componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
         render(): JSX.Element;

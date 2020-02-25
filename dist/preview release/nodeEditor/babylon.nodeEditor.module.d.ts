@@ -274,20 +274,25 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _onMove;
         private initResizing;
         private cleanUpResizing;
+        private updateMinHeightWithComments;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
+        private _moveRightHandle;
         private _expandRight;
         private _onRightHandlePointerUp;
         private _onBottomHandlePointerDown;
         private _onBottomHandlePointerMove;
+        private _moveBottomHandle;
         private _expandBottom;
         private _onBottomHandlePointerUp;
         private _onLeftHandlePointerDown;
         private _onLeftHandlePointerMove;
+        private _moveLeftHandle;
         private _expandLeft;
         private _onLeftHandlePointerUp;
         private _onTopHandlePointerDown;
         private _onTopHandlePointerMove;
+        private _moveTopHandle;
         private _expandTop;
         private _onTopHandlePointerUp;
         dispose(): void;
@@ -427,6 +432,7 @@ declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     interface IFloatLineComponentProps {
         label: string;
         target: any;
@@ -437,6 +443,7 @@ declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
         additionalClass?: string;
         step?: string;
         digits?: number;
+        globalState: GlobalState;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -523,7 +530,7 @@ declare module "babylonjs-node-editor/sharedComponents/numericInputComponent" {
 }
 declare module "babylonjs-node-editor/sharedComponents/vector2LineComponent" {
     import * as React from "react";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -571,7 +578,7 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/vector2P
 declare module "babylonjs-node-editor/sharedComponents/color3LineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
     import { GlobalState } from "babylonjs-node-editor/globalState";
     export interface IColor3LineComponentProps {
@@ -615,7 +622,7 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/color3Pr
 }
 declare module "babylonjs-node-editor/sharedComponents/vector3LineComponent" {
     import * as React from "react";
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -664,7 +671,7 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/vector3P
 }
 declare module "babylonjs-node-editor/sharedComponents/vector4LineComponent" {
     import * as React from "react";
-    import { Vector4 } from "babylonjs/Maths/math";
+    import { Vector4 } from "babylonjs/Maths/math.vector";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -750,7 +757,7 @@ declare module "babylonjs-node-editor/sharedComponents/optionsLineComponent" {
 }
 declare module "babylonjs-node-editor/sharedComponents/matrixLineComponent" {
     import * as React from "react";
-    import { Vector3, Matrix, Vector4 } from "babylonjs/Maths/math";
+    import { Vector3, Matrix, Vector4 } from "babylonjs/Maths/math.vector";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -901,7 +908,7 @@ declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
 declare module "babylonjs-node-editor/sharedComponents/color4LineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Color4 } from "babylonjs/Maths/math";
+    import { Color4 } from "babylonjs/Maths/math.color";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
     import { GlobalState } from "babylonjs-node-editor/globalState";
     export interface IColor4LineComponentProps {
@@ -949,7 +956,10 @@ declare module "babylonjs-node-editor/diagram/properties/inputNodePropertyCompon
     import { GlobalState } from "babylonjs-node-editor/globalState";
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
     export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         renderValue(globalState: GlobalState): JSX.Element | null;
         setDefaultValue(): void;
         render(): JSX.Element;
@@ -1505,9 +1515,14 @@ declare module "babylonjs-node-editor/components/preview/previewMeshControlCompo
         togglePreviewAreaComponent: () => void;
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
+        private colorInputRef;
+        constructor(props: IPreviewMeshControlComponent);
         changeMeshType(newOne: PreviewMeshType): void;
         useCustomMesh(evt: any): void;
         onPopUp(): void;
+        changeAnimation(): void;
+        changeBackground(value: string): void;
+        changeBackgroundClick(): void;
         render(): JSX.Element;
     }
 }
@@ -1521,9 +1536,9 @@ declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
     export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
         isLoading: boolean;
     }> {
+        private _onIsLoadingChangedObserver;
         constructor(props: IPreviewAreaComponentProps);
-        changeAnimation(): void;
-        changeBackground(value: string): void;
+        componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
         render(): JSX.Element;
@@ -1838,20 +1853,25 @@ declare module NODEEDITOR {
         private _onMove;
         private initResizing;
         private cleanUpResizing;
+        private updateMinHeightWithComments;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
+        private _moveRightHandle;
         private _expandRight;
         private _onRightHandlePointerUp;
         private _onBottomHandlePointerDown;
         private _onBottomHandlePointerMove;
+        private _moveBottomHandle;
         private _expandBottom;
         private _onBottomHandlePointerUp;
         private _onLeftHandlePointerDown;
         private _onLeftHandlePointerMove;
+        private _moveLeftHandle;
         private _expandLeft;
         private _onLeftHandlePointerUp;
         private _onTopHandlePointerDown;
         private _onTopHandlePointerMove;
+        private _moveTopHandle;
         private _expandTop;
         private _onTopHandlePointerUp;
         dispose(): void;
@@ -1985,6 +2005,7 @@ declare module NODEEDITOR {
         additionalClass?: string;
         step?: string;
         digits?: number;
+        globalState: GlobalState;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -2422,7 +2443,10 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         renderValue(globalState: GlobalState): JSX.Element | null;
         setDefaultValue(): void;
         render(): JSX.Element;
@@ -2890,9 +2914,14 @@ declare module NODEEDITOR {
         togglePreviewAreaComponent: () => void;
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
+        private colorInputRef;
+        constructor(props: IPreviewMeshControlComponent);
         changeMeshType(newOne: PreviewMeshType): void;
         useCustomMesh(evt: any): void;
         onPopUp(): void;
+        changeAnimation(): void;
+        changeBackground(value: string): void;
+        changeBackgroundClick(): void;
         render(): JSX.Element;
     }
 }
@@ -2904,9 +2933,9 @@ declare module NODEEDITOR {
     export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
         isLoading: boolean;
     }> {
+        private _onIsLoadingChangedObserver;
         constructor(props: IPreviewAreaComponentProps);
-        changeAnimation(): void;
-        changeBackground(value: string): void;
+        componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
         render(): JSX.Element;

@@ -33,7 +33,7 @@ compileAndRun = function (parent, fpsLabel) {
         parent.menuPG.hideWaitDiv();
         globalParent = parent;
 
-        if (!BABYLON.Engine.isSupported()) {
+        if (typeof BABYLON === 'undefined' || !BABYLON.Engine || !BABYLON.Engine.isSupported()) {
             parent.utils.showError("Your browser does not support WebGL. Please, try to update it, or install a compatible one.", null);
             return;
         }
@@ -44,7 +44,7 @@ compileAndRun = function (parent, fpsLabel) {
             readOnly: false
         });
 
-        if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
+        if (typeof BABYLON !== 'undefined' && BABYLON.Engine && BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
             showInspector = true;
         }
 
@@ -220,7 +220,9 @@ class Main {
     constructor(parent) {
         this.parent = parent;
 
-        BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+        if (typeof BABYLON !== 'undefined' && BABYLON.Engine) {
+            BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+        }
         this.snippetV3Url = "https://snippet.babylonjs.com"
         this.currentSnippetToken;
         this.currentSnippetTitle = null;
@@ -229,6 +231,17 @@ class Main {
         this.fpsLabel = document.getElementById("fpsLabel");
         this.scripts;
         this.previousHash = "";
+
+        // Restore BJS version if needed
+        var restoreVersionResult = true;
+        if (this.parent.settingsPG.restoreVersion() == false) {
+            // Check if there a hash in the URL
+            this.checkHash();
+            restoreVersionResult = false;
+        }
+
+        // Load scripts list
+        this.loadScriptsList(restoreVersionResult);
     }
 
     /**
@@ -266,24 +279,15 @@ class Main {
             }.bind(this)
         );
 
-        // Restore BJS version if needed
-        var restoreVersionResult = true;
-        if (this.parent.settingsPG.restoreVersion() == false) {
-            // Check if there a hash in the URL
-            this.checkHash();
-            restoreVersionResult = false;
-        }
-
-        // Load scripts list
-        this.loadScriptsList(restoreVersionResult);
-
         // -------------------- UI --------------------
         var handleRun = () => compileAndRun(this.parent, this.fpsLabel);
         var handleSave = () => this.askForSave();
         var handleGetZip = () => this.parent.zipTool.getZip(engine);
 
         // Display BJS version
-        if (BABYLON) this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
+        if (typeof BABYLON !== 'undefined' && BABYLON.Engine) {
+            this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
+        }
         // Run
         this.parent.utils.setToMultipleID("runButton", "click", handleRun);
         // New
@@ -336,53 +340,56 @@ class Main {
             }
         }
         // Language (JS / TS)
-        this.parent.utils.setToMultipleID("toTSbutton", "click", function () {
-            if (location.hash != null && location.hash != "") {
-                this.parent.settingsPG.ScriptLanguage = "TS";
-                window.location = "./";
-            } else {
-                if (this.parent.settingsPG.ScriptLanguage == "JS") {
-                    //revert in case the reload is cancel due to safe mode
-                    if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
-                        // Message before unload
-                        var languageTSswapper = function () {
+        if (this.parent.settingsPG.ScriptLanguage === "JS") {
+            this.parent.utils.setToMultipleID("toTSbutton", "click", function () {
+                if (location.hash != null && location.hash != "") {
+                    this.parent.settingsPG.ScriptLanguage = "TS";
+                    window.location = "./";
+                } else {
+                    if (this.parent.settingsPG.ScriptLanguage == "JS") {
+                        //revert in case the reload is cancel due to safe mode
+                        if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+                            // Message before unload
+                            var languageTSswapper = function () {
+                                this.parent.settingsPG.ScriptLanguage = "TS";
+                                window.removeEventListener('unload', languageTSswapper.bind(this));
+                            };
+                            window.addEventListener('unload', languageTSswapper.bind(this));
+
+                            location.reload();
+                        } else {
                             this.parent.settingsPG.ScriptLanguage = "TS";
-                            window.removeEventListener('unload', languageTSswapper.bind(this));
-                        };
-                        window.addEventListener('unload', languageTSswapper.bind(this));
-
-                        location.reload();
-                    } else {
-                        this.parent.settingsPG.ScriptLanguage = "TS";
-                        location.reload();
+                            location.reload();
+                        }
                     }
                 }
-            }
 
-        }.bind(this));
-        this.parent.utils.setToMultipleID("toJSbutton", "click", function () {
-            if (location.hash != null && location.hash != "") {
-                this.parent.settingsPG.ScriptLanguage = "JS";
-                window.location = "./";
-            } else {
-                if (this.parent.settingsPG.ScriptLanguage == "TS") {
-                    //revert in case the reload is cancel due to safe mode
-                    if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
-                        // Message before unload
-                        var LanguageJSswapper = function () {
+            }.bind(this));
+        } else {
+            this.parent.utils.setToMultipleID("toJSbutton", "click", function () {
+                if (location.hash != null && location.hash != "") {
+                    this.parent.settingsPG.ScriptLanguage = "JS";
+                    window.location = "./";
+                } else {
+                    if (this.parent.settingsPG.ScriptLanguage == "TS") {
+                        //revert in case the reload is cancel due to safe mode
+                        if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+                            // Message before unload
+                            var LanguageJSswapper = function () {
+                                this.parent.settingsPG.ScriptLanguage = "JS";
+                                window.removeEventListener('unload', LanguageJSswapper.bind(this));
+                            };
+                            window.addEventListener('unload', LanguageJSswapper.bind(this));
+
+                            location.reload();
+                        } else {
                             this.parent.settingsPG.ScriptLanguage = "JS";
-                            window.removeEventListener('unload', LanguageJSswapper.bind(this));
-                        };
-                        window.addEventListener('unload', LanguageJSswapper.bind(this));
-
-                        location.reload();
-                    } else {
-                        this.parent.settingsPG.ScriptLanguage = "JS";
-                        location.reload();
+                            location.reload();
+                        }
                     }
                 }
-            }
-        }.bind(this));
+            }.bind(this));
+        }
         // Safe mode
         this.parent.utils.setToMultipleID("safemodeToggle", 'click', function () {
             document.getElementById("safemodeToggle1280").classList.toggle('checked');
@@ -497,14 +504,16 @@ class Main {
                     if (!this.checkTypescriptSupport(xhr)) return;
 
                     xhr.onreadystatechange = null;
-                    this.parent.monacoCreator.BlockEditorChange = true;
-                    this.parent.monacoCreator.JsEditor.setValue(xhr.responseText);
-                    this.parent.monacoCreator.JsEditor.setPosition({
-                        lineNumber: 0,
-                        column: 0
-                    });
-                    this.parent.monacoCreator.BlockEditorChange = false;
-                    compileAndRun(this.parent, this.fpsLabel);
+                    this.parent.monacoCreator.addOnMonacoLoadedCallback(function () {
+                        this.parent.monacoCreator.BlockEditorChange = true;
+                        this.parent.monacoCreator.JsEditor.setValue(xhr.responseText);
+                        this.parent.monacoCreator.JsEditor.setPosition({
+                            lineNumber: 0,
+                            column: 0
+                        });
+                        this.parent.monacoCreator.BlockEditorChange = false;
+                        compileAndRun(this.parent, this.fpsLabel);
+                    }, this);
 
                     this.currentSnippetToken = null;
                 }
@@ -539,69 +548,6 @@ class Main {
                     this.scripts.sort(sortScriptsList);
 
                     if (exampleList) {
-                        for (var i = 0; i < this.scripts.length; i++) {
-                            this.scripts[i].samples.sort(sortScriptsList);
-
-                            var exampleCategory = document.createElement("div");
-                            exampleCategory.classList.add("categoryContainer");
-
-                            var exampleCategoryTitle = document.createElement("p");
-                            exampleCategoryTitle.innerText = this.scripts[i].title;
-                            exampleCategory.appendChild(exampleCategoryTitle);
-
-                            for (var ii = 0; ii < this.scripts[i].samples.length; ii++) {
-                                var example = document.createElement("div");
-                                example.classList.add("itemLine");
-                                example.id = ii;
-
-                                var exampleImg = document.createElement("img");
-                                exampleImg.setAttribute("data-src", this.scripts[i].samples[ii].icon.replace("icons", "https://doc.babylonjs.com/examples/icons"));
-                                exampleImg.setAttribute("onClick", "document.getElementById('PGLink_" + this.scripts[i].samples[ii].PGID + "').click();");
-
-                                var exampleContent = document.createElement("div");
-                                exampleContent.classList.add("itemContent");
-                                exampleContent.setAttribute("onClick", "document.getElementById('PGLink_" + this.scripts[i].samples[ii].PGID + "').click();");
-
-                                var exampleContentLink = document.createElement("div");
-                                exampleContentLink.classList.add("itemContentLink");
-
-                                var exampleTitle = document.createElement("h3");
-                                exampleTitle.classList.add("exampleCategoryTitle");
-                                exampleTitle.innerText = this.scripts[i].samples[ii].title;
-                                var exampleDescr = document.createElement("div");
-                                exampleDescr.classList.add("itemLineChild");
-                                exampleDescr.innerText = this.scripts[i].samples[ii].description;
-
-                                var exampleDocLink = document.createElement("a");
-                                exampleDocLink.classList.add("itemLineDocLink");
-                                exampleDocLink.innerText = "Documentation";
-                                exampleDocLink.href = this.scripts[i].samples[ii].doc;
-                                exampleDocLink.target = "_blank";
-
-                                var examplePGLink = document.createElement("a");
-                                examplePGLink.id = "PGLink_" + this.scripts[i].samples[ii].PGID;
-                                examplePGLink.classList.add("itemLinePGLink");
-                                examplePGLink.innerText = "Display";
-                                examplePGLink.href = this.scripts[i].samples[ii].PGID;
-                                examplePGLink.addEventListener("click", function () {
-                                    location.href = this.href;
-                                    location.reload();
-                                });
-
-                                exampleContentLink.appendChild(exampleTitle);
-                                exampleContentLink.appendChild(exampleDescr);
-                                exampleContent.appendChild(exampleContentLink);
-                                exampleContent.appendChild(exampleDocLink);
-                                exampleContent.appendChild(examplePGLink);
-
-                                example.appendChild(exampleImg);
-                                example.appendChild(exampleContent);
-
-                                exampleCategory.appendChild(example);
-                            }
-
-                            exampleList.appendChild(exampleCategory);
-                        }
 
                         var noResultContainer = document.createElement("div");
                         noResultContainer.id = "noResultsContainer";
@@ -1074,8 +1020,8 @@ class Main {
         }
         if (pgHash) {
             var match = pgHash.match(/^(#[A-Za-z\d]*)(%23)([\d]+)$/);
-            if (match){
-                pgHash = match[1]+'#'+match[3];
+            if (match) {
+                pgHash = match[1] + '#' + match[3];
                 parent.location.hash = pgHash;
             }
             this.previousHash = pgHash;
@@ -1095,9 +1041,6 @@ class Main {
                         }
 
                         var snippet = JSON.parse(xmlHttp.responseText);
-
-                        this.parent.monacoCreator.BlockEditorChange = true;
-                        this.parent.monacoCreator.JsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
 
                         // Check if title / descr / tags are already set
                         if (snippet.name != null && snippet.name != "") {
@@ -1127,12 +1070,26 @@ class Main {
 
                         this.updateMetadata();
 
-                        this.parent.monacoCreator.JsEditor.setPosition({
-                            lineNumber: 0,
-                            column: 0
-                        });
-                        this.parent.monacoCreator.BlockEditorChange = false;
-                        compileAndRun(this.parent, this.fpsLabel);
+                        var code = JSON.parse(snippet.jsonPayload).code.toString();
+                        var editorSpace = document.getElementById('jsEditor');
+                        if (editorSpace) {
+                            // editorSpace.style.overflow = "overlay";
+                            // editorSpace.innerHTML = '<pre class="loading-pre">' + code + "</pre>";
+                            // this.parent.menuPG.resizeBigJsEditor();
+                        }
+
+                        this.parent.monacoCreator.addOnMonacoLoadedCallback(function () {
+                            this.parent.monacoCreatorjs = true;
+                            this.parent.monacoCreator.JsEditor.setValue(code);
+
+                            this.parent.monacoCreator.JsEditor.setPosition({
+                                lineNumber: 0,
+                                column: 0
+                            });
+                            this.parent.monacoCreator.BlockEditorChange = false;
+                            compileAndRun(this.parent, this.fpsLabel);
+                        }, this);
+
                     }
                 }
             }.bind(this);
@@ -1151,21 +1108,21 @@ class Main {
 
         if (this.currentSnippetTitle) {
             selection = document.querySelector('title');
-            if(selection){
+            if (selection) {
                 selection.innerText = (this.currentSnippetTitle + " | Babylon.js Playground");
             }
         }
 
         if (this.currentSnippetDescription) {
             selection = document.querySelector('meta[name="description"]');
-            if(selection){
+            if (selection) {
                 selection.setAttribute("content", this.currentSnippetDescription + " - Babylon.js Playground");
             }
         }
 
         if (this.currentSnippetTags) {
             selection = document.querySelector('meta[name="keywords"]');
-            if(selection){
+            if (selection) {
                 selection.setAttribute("content", "babylon.js, game engine, webgl, 3d," + this.currentSnippetTags);
             }
         }
