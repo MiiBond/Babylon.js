@@ -379,16 +379,17 @@ void main(void) {
             refractionVector.z *= -1.0;
         #endif
 
-        // If we're using Adobe transparency and either alpha blending or we have access to refraction depth,
+        // If we're using either alpha blending or we have access to refraction depth,
         // we'll also need to sample the unrefracted scene render.
         #if !defined(SS_REFRACTIONMAP_3D)
 
             mat4 refractViewMatrix = refractionMatrix * view;
+            vec3 vNoRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW, 1.0));
+            vec2 refractionCoordsNoRefract = vNoRefractionUVW.xy / vNoRefractionUVW.z;
+            refractionCoordsNoRefract.y = 1.0 - refractionCoordsNoRefract.y;
+            vec4 refraction_clear = sampleRefraction(refractionSampler, refractionCoordsNoRefract).rgba;
             #if defined(SS_DEPTHINREFRACTIONALPHA) || defined(ALPHABLEND)
-                vec3 vNoRefractionUVW = vec3(refractViewMatrix * vec4(vPositionW, 1.0));
-                vec2 refractionCoordsNoRefract = vNoRefractionUVW.xy / vNoRefractionUVW.z;
-                refractionCoordsNoRefract.y = 1.0 - refractionCoordsNoRefract.y;
-                vec4 refraction_clear = sampleRefraction(refractionSampler, refractionCoordsNoRefract).rgba;
+                
                 #if defined(SS_VOLUME_THICKNESS) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
                     // To avoid artifacts from the lower-res refraction depth, we will take a bunch of samples and select the one
                     // that gives the smallest thickness while still being positive.
@@ -444,7 +445,7 @@ void main(void) {
                 float requestedRefractionLOD = refractionLOD;
             #endif
 
-            #if defined(SS_DEPTHINREFRACTIONALPHA) && !defined(SS_REFRACTIONMAP_3D) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+            #if !defined(SS_REFRACTIONMAP_3D) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
                 // #if defined(ALPHABLEND)
                 //     if (alpha <= 0.4) {
                 //         requestedRefractionLOD = 0.0;
@@ -486,10 +487,6 @@ void main(void) {
                     lodRefractionNormalizedDoubled - 1.0
                 );
             }
-        #endif
-
-        #if defined(LODBASEDMICROSFURACE) && defined(ALPHABLEND) && defined(SS_REFRACTION) && defined(SS_DEPTHINREFRACTIONALPHA) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
-            vec3 sceneColor = refraction_colour.rgb;
         #endif
 
         #ifdef SS_RGBDREFRACTION
@@ -1436,12 +1433,12 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
         #if !defined(SS_DEPTHINREFRACTIONALPHA) && !defined(DEPTH_PEELING)
             float sceneDepthNormalized = 0.0;
         #endif
-        gl_FragData[1] = vec4(refref + finalEmissiveLight, 1.0 - sceneDepthNormalized);
+        gl_FragData[1] = applyImageProcessing(vec4(refref + finalEmissiveLight, 1.0 - sceneDepthNormalized));
         vec2 norm = (view * vec4(normalW, 1.0)).xy;
         norm = norm * 0.5 + 0.5;
         #ifndef SS_REFRACTION
             float refractionIntensity = 0.0;
-        #elif defined(REFLECTION)
+        #elif defined(REFLECTION) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
             refractionIntensity -= specularEnvironmentReflectance.r;
         #endif
         gl_FragData[2] = vec4(refractionIntensity, roughness, norm.x, norm.y);
@@ -1510,11 +1507,11 @@ vec3 finalEmissiveLight = finalEmissive	* vLightingIntensity.y;
         finalColor = applyImageProcessing(finalColor);
     #endif
 
-    #if defined(SS_REFRACTION) && defined(ALPHABLEND) && defined(SS_DEPTHINREFRACTIONALPHA) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
-        // Use refraction texture rather than actual alpha blending.
-        finalColor.rgb = mix(sceneColor.rgb, finalColor.rgb, alpha);
-        finalColor.a = 1.0;
-    #endif
+    // #if defined(SS_REFRACTION) && defined(ALPHABLEND) && defined(SS_DEPTHINREFRACTIONALPHA) && !defined(ADOBE_TRANSPARENCY_G_BUFFER)
+    //     // Use refraction texture rather than actual alpha blending.
+    //     finalColor.rgb = mix(sceneColor.rgb, finalColor.rgb, alpha);
+    //     finalColor.a = 1.0;
+    // #endif
 
         finalColor.a *= visibility;
 

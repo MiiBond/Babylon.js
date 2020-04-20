@@ -236,7 +236,7 @@ export class AdobeTransparencyCompositor {
         floatTextureType = Engine.TEXTURETYPE_FLOAT;
         // }
 
-        this.compositedTexture = new RenderTargetTexture("trans_composite_output", this._options.renderSize, this._scene, true, undefined, floatTextureType, false, undefined, false, false, false);
+        this.compositedTexture = new RenderTargetTexture("trans_composite_output", this._options.renderSize, this._scene, true, undefined, floatTextureType, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, false, false, false);
         this.compositedTexture.clearColor = new Color4(1, 0, 1, 1);
         this.compositedTexture.lodGenerationScale = 1;
         this.compositedTexture.lodGenerationOffset = -4;

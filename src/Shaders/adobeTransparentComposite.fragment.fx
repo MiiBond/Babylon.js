@@ -50,6 +50,10 @@ void main(void) {
     vec4 reflection = texture2D(reflectionTexture, vUV);
     float pixel_depth = reflection.a;
 
+    reflection.rgb = toLinearSpace(reflection.rgb);
+    colour.rgb = toLinearSpace(colour.rgb);
+    background_clear.rgb = toLinearSpace(background_clear.rgb);
+    
     float front_facing = 0.0;
     #ifdef BACKGROUND_DEPTH
         float background_depth_no_refract = 1.0 - texture2D(backgroundDepth, vUV).r;
@@ -64,7 +68,7 @@ void main(void) {
         float thickness = 0.0;
         float refract_amount = 0.0;
         vec2 refractionCoords = vUV;
-        vec2 norm = (misc.ba - vec2(0.5)) * 2.0;
+        // vec2 norm = (misc.ba - vec2(0.5)) * 2.0;
         // vec3 normal_VS = vec3(norm.x, norm.y, 0.0);
         // normal_VS.z = sqrt(1.0 - dot(norm, norm));
 
@@ -109,7 +113,8 @@ void main(void) {
         // }
 
         // vec3 refraction_color = mix(background_clear.rgb, background_refracted.rgb * colour.rgb, colour.a);
-        vec3 refraction_color = background_refracted.rgb;
+        // vec3 refraction_color = background_refracted.rgb;
+        vec3 refraction_color = toLinearSpace(background_refracted.rgb);
         
         // Interior calculation
         if (front_facing == 1.0) {
@@ -138,7 +143,7 @@ void main(void) {
         
     #else
         vec4 background = sampleRefractionLod(textureSampler, vUV, refractionLOD);
-        
+        background.rgb = toLinearSpace(background.rgb);
         vec3 finalColour = mix(colour.xyz, background.xyz * colour.xyz, misc.r);
     #endif
     
@@ -154,5 +159,5 @@ void main(void) {
         finalColour += reflection.xyz;
     #endif
     finalColour = mix(background_clear.xyz, finalColour.xyz, colour.a * renderOpacity);
-    gl_FragColor = vec4(finalColour, pixel_depth);
+    gl_FragColor = vec4(toGammaSpace(finalColour), pixel_depth);
 }
