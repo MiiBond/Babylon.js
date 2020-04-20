@@ -127,7 +127,7 @@ export class AdobeTransparencyCompositor {
     }
 
     private _createPass(passNum: number): void {
-        
+
         const postOptions: PostProcessOptions = {
             width: this._options.renderSize,
             height: this._options.renderSize
@@ -156,7 +156,7 @@ export class AdobeTransparencyCompositor {
         let postEffect = new PostProcess("transparentComposite", "adobeTransparentComposite", ["renderSize", "renderOpacity", "depthValues"],
             ["colourTexture", "reflectionTexture", "miscTexture", "attenuationTexture", "scatterTexture", "backgroundDepth"],
             postOptions, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), undefined, defines, floatTextureType);
-        
+
         postEffect.getEffect().setFloat("renderOpacity", 1.0);
         postEffect.onApplyObservable.add((effect: Effect) => {
             postEffect._textures.forEach((tex) => {
@@ -174,19 +174,19 @@ export class AdobeTransparencyCompositor {
                 effect.setTexture("colourTexture", this.transparentTextures[passNum].textures[0]);
                 effect.setTexture("reflectionTexture", this.transparentTextures[passNum].textures[1]);
                 effect.setTexture("miscTexture", this.transparentTextures[passNum].textures[2]);
-    
+
                 if (this._options.volumeRendering) {
                     effect.setTexture("attenuationTexture", this.transparentTextures[passNum].textures[3]);
                     effect.setTexture("scatterTexture", this.transparentTextures[passNum].textures[4]);
                 }
-    
+
                 if (passNum === this._options.passesToEnable - 1) {
                     effect.setTexture("backgroundDepth", this.backgroundDepthTexture);
                     effect.setTexture("textureSampler", this.backgroundTexture);
                 }
             }
         });
-        
+
         this._postProcesses.push(postEffect);
         this._effectOpacity.push(1.0);
     }
@@ -210,7 +210,7 @@ export class AdobeTransparencyCompositor {
         // Frames of animation, assuming 33 ms per frame.
         const frames = time / 33;
         const step = numPasses / frames;
-        
+
         const animationTimeout = setInterval(() => {
             opacity += step;
             if (opacity > 1.0) {
