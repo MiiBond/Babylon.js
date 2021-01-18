@@ -919,6 +919,16 @@ void main(void) {
                 #ifdef SS_SCATTERING
                     scatteringIntensity *= thicknessMap.a;
                 #endif
+            #elif defined(SS_MASK_FROM_THICKNESS_TEXTURE_GLTF)
+                #ifdef SS_REFRACTION
+                    refractionIntensity *= thicknessMap.r;
+                #endif
+                #ifdef SS_TRANSLUCENCY
+                    translucencyIntensity *= thicknessMap.r;
+                #endif
+                #if !defined(SS_VOLUME_THICKNESS)
+                    thickness = thicknessMap.g * vThicknessParam.y + vThicknessParam.x;
+                #endif
             #endif
         #endif
 

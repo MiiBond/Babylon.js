@@ -218,8 +218,10 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Mask From Thickness" target={material.subSurface} propertyName="useMaskFromThicknessTexture"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Mask From Thickness Gltf" target={material.subSurface} propertyName="useMaskFromThicknessTextureGltf"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Tint Color" target={material.subSurface} propertyName="tintColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-
                     <CheckBoxLineComponent label="Refraction Enabled" target={material.subSurface} propertyName="isRefractionEnabled"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -241,6 +243,17 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         <div className="fragment">
                             <SliderLineComponent label="Intensity" target={material.subSurface} propertyName="translucencyIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <Color3LineComponent label="Diffusion Distance" target={material.subSurface} propertyName="diffusionDistance" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        </div>
+                    }
+
+<CheckBoxLineComponent label="Scattering Enabled" target={material.subSurface} propertyName="isScatteringEnabled"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    {
+                        material.subSurface.isScatteringEnabled &&
+                        <div className="fragment">
+                            <SliderLineComponent label="Intensity" target={material.subSurface} propertyName="scatteringIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <Color3LineComponent label="Scatter Color" target={material.subSurface} propertyName="scatterColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         </div>
                     }
                 </LineContainerComponent>

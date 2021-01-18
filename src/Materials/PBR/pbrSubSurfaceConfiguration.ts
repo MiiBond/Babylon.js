@@ -39,6 +39,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_ALBEDOFORREFRACTIONTINT: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
+    SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
 
     SS_VOLUME_THICKNESS: boolean;
 
@@ -212,6 +213,17 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useMaskFromThicknessTexture: boolean = false;
 
+    private _useMaskFromThicknessTextureGltf = false;
+    /**
+     * Stores the intensity of the different subsurface effects in the thickness texture.
+     * * the green channel is the translucency intensity.
+     * * the blue channel is the scattering intensity.
+     * * the alpha channel is the refraction intensity.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public useMaskFromThicknessTextureGltf: boolean = false;
+
     private _depthInRefractionAlpha = false;
     /**
      * This parameter says that the scene depth is stored in the refraction texture's alpha channel.
@@ -287,6 +299,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_SCATTERING = this._isScatteringEnabled;
             defines.SS_THICKNESSANDMASK_TEXTURE = false;
             defines.SS_MASK_FROM_THICKNESS_TEXTURE = false;
+            defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
             defines.SS_REFRACTION = false;
             defines.SS_REFRACTIONMAP_3D = false;
             defines.SS_GAMMAREFRACTION = false;
@@ -312,6 +325,7 @@ export class PBRSubSurfaceConfiguration {
                 }
 
                 defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture;
+                defines.SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = this._useMaskFromThicknessTextureGltf;
             }
 
             if (this._isVolumeThicknessEnabled) {
