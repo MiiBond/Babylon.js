@@ -74,7 +74,7 @@
             #else
                 preInfo.roughness = adjustRoughnessFromLightProperties(roughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
             #endif
-            preInfo.diffuseRoughness = diffuseRoughness;
+            preInfo.diffuseRoughness = baseDiffuseRoughness;
 
             #ifdef IRIDESCENCE
                 preInfo.iridescenceIntensity = iridescenceIntensity;
@@ -88,7 +88,7 @@
             #elif defined(SS_TRANSLUCENCY)
                 info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
             #else
-                preInfo.roughness = diffuseRoughness;
+                preInfo.roughness = roughness;
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
             #endif
 
