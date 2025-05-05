@@ -2607,6 +2607,14 @@
         {
             "title": "Conductor Transmission",
             "playgroundId": "#KQYNYS#15"
+        },
+        {
+            "title": "Furnace Test for Spec-Gloss",
+            "playgroundId": "#KQYNYS#20"
+        },
+        {
+            "title": "Furnace Test for Metal-Rough",
+            "playgroundId": "#KQYNYS#21"
         }
     ]
 }
