@@ -3,6 +3,7 @@ import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
+import { Constants } from "../../Engines/constants";
 import type { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { ColorCurves } from "../../Materials/colorCurves";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -297,6 +298,20 @@ export class PBRMaterial extends PBRBaseMaterial {
     @serializeAsColor3("reflection")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public reflectionColor = new Color3(1.0, 1.0, 1.0);
+
+    /**
+     * The material model to use for specular lighting of dielectric materials.
+     */
+    @serialize("dielectricSpecularModel")
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public dielectricSpecularModel: number = Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_GLTF;
+
+    /**
+     * The material model to use for specular lighting.
+     */
+    @serialize("conductorSpecularModel")
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public conductorSpecularModel: number = Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_GLTF;
 
     /**
      * The color emitted from the material.

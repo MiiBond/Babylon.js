@@ -1,5 +1,9 @@
 // Constants
 #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
+#define DIELECTRIC_SPECULAR_MODEL_GLTF 0
+#define DIELECTRIC_SPECULAR_MODEL_OPENPBR 1
+#define CONDUCTOR_SPECULAR_MODEL_GLTF 0
+#define CONDUCTOR_SPECULAR_MODEL_OPENPBR 1
 
 // ______________________________________________________________________
 //

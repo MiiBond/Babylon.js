@@ -255,6 +255,16 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },
         ];
 
+        const dielectricSpecularModelOptions = [
+            { label: "glTF", value: Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_GLTF },
+            { label: "OpenPBR", value: Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_OPENPBR },
+        ];
+
+        const conductorSpecularModelOptions = [
+            { label: "glTF", value: Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_GLTF },
+            { label: "OpenPBR", value: Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_OPENPBR },
+        ];
+
         (material.sheen as any)._useRoughness = (material.sheen as any)._useRoughness ?? material.sheen.roughness !== null;
         material.sheen.roughness = material.sheen.roughness ?? (material.sheen as any)._saveRoughness ?? 0;
 
@@ -1229,6 +1239,22 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         options={realTimeFilteringQualityOptions}
                         target={material}
                         propertyName="realTimeFilteringQuality"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <OptionsLine
+                        allowNullValue={true}
+                        label="Dielectric Specular Model"
+                        options={dielectricSpecularModelOptions}
+                        target={material}
+                        propertyName="dielectricSpecularModel"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <OptionsLine
+                        allowNullValue={true}
+                        label="Conductor Specular Model"
+                        options={conductorSpecularModelOptions}
+                        target={material}
+                        propertyName="conductorSpecularModel"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
