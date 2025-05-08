@@ -188,7 +188,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 , vThicknessParam
                 , vTintColor
                 , normalW
-                , cumulativeSpecularEnvironmentReflectance
+                , colorSpecularEnvironmentReflectance
             #ifdef SS_THICKNESSANDMASK_TEXTURE
                 , vec4${state.fSuffix}(0.)
             #endif
@@ -282,7 +282,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
             #endif
         #else
-            subSurfaceOut.specularEnvironmentReflectance = cumulativeSpecularEnvironmentReflectance;
+            subSurfaceOut.specularEnvironmentReflectance = colorSpecularEnvironmentReflectance;
         #endif\n`;
 
         return code;

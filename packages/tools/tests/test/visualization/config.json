@@ -2615,6 +2615,14 @@
         {
             "title": "Furnace Test for Metal-Rough",
             "playgroundId": "#KQYNYS#21"
+        },
+        {
+            "title": "Specular reflectance models for IBL",
+            "playgroundId": "#GRQHVV#10"
+        },
+        {
+            "title": "Specular reflectance models for analytic lights",
+            "playgroundId": "#GRQHVV#9"
         }
     ]
 }
