@@ -10,6 +10,7 @@ export * from "./pbrMetallicRoughnessMaterial";
 export * from "./pbrSpecularGlossinessMaterial";
 export * from "./pbrSheenConfiguration";
 export * from "./pbrSubSurfaceConfiguration";
+export * from "./fabricFuzzPluginMaterial";
 
 // async-loaded shaders
 export * from "../../ShadersWGSL/pbr.vertex";

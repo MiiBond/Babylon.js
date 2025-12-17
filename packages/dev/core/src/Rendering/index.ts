@@ -102,3 +102,7 @@ export * from "../Shaders/oitBackBlend.fragment";
 export * from "../Shaders/oitFinal.fragment";
 export * from "../ShadersWGSL/oitBackBlend.fragment";
 export * from "../ShadersWGSL/oitFinal.fragment";
+
+// Fabric Fuzz Renderer
+export * from "./fabricFuzzRenderer";
+export * from "./fabricFuzzRendererSceneComponent";

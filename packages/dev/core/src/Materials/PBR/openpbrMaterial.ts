@@ -2604,7 +2604,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // Textures
         defines.METALLICWORKFLOW = true;
         if (defines._areTexturesDirty) {
-            defines._needUVs = false;
+            // defines._needUVs = false;
             for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
                 defines["MAINUV" + i] = false;
             }

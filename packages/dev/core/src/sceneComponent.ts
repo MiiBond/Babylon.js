@@ -40,6 +40,7 @@ export class SceneComponentConstants {
     public static readonly NAME_FLUIDRENDERER = "FluidRenderer";
     public static readonly NAME_IBLCDFGENERATOR = "iblCDFGenerator";
     public static readonly NAME_CLUSTEREDLIGHTING = "ClusteredLighting";
+    public static readonly NAME_FABRICFUZZRENDERER = "FabricFuzzRenderer";
 
     public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 

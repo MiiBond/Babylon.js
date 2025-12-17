@@ -168,6 +168,8 @@ void main(void) {
     #include<prePassVertex>
 #endif
 
+#define CUSTOM_VERTEX_UPDATE_WORLDPOS
+
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);
 
@@ -199,8 +201,6 @@ void main(void) {
         vEnvironmentIrradiance = computeEnvironmentIrradiance(reflectionVector);
     #endif
 #endif
-
-#define CUSTOM_VERTEX_UPDATE_WORLDPOS
 
 #ifdef MULTIVIEW
 	if (gl_ViewID_OVR == 0u) {
@@ -237,6 +237,8 @@ void main(void) {
 #ifdef MAINUV2
     vMainUV2 = uv2Updated;
 #endif
+
+#define CUSTOM_VERTEX_UPDATE_UVS
 
     #include<uvVariableDeclaration>[3..7]
 

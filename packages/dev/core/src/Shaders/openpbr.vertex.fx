@@ -98,11 +98,11 @@ varying vec3 vDirectionW;
 #endif
 
 #include<logDepthDeclaration>
-#define CUSTOM_VERTEX_DEFINITIONS
+#define CUSTOM_VERTEX_DEFINITIONS // TODO: #include<fabricFuzzVertexDeclaration>
 
 void main(void) {
 
-	#define CUSTOM_VERTEX_MAIN_BEGIN
+	#define CUSTOM_VERTEX_MAIN_BEGIN // TODO: #include<fabricFuzzVertexInitialization> // samples the instance data for fabric fuzz
 
     vec3 positionUpdated = position;
 #ifdef NORMAL
@@ -150,6 +150,9 @@ void main(void) {
     #include<prePassVertex>
 #endif
 
+#define CUSTOM_VERTEX_UPDATE_WORLDPOS
+// TODO: Update position with for fabric fuzz - this is where all the work is done.
+
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);
 
@@ -190,8 +193,6 @@ void main(void) {
     #endif
 #endif
 
-#define CUSTOM_VERTEX_UPDATE_WORLDPOS
-
 #ifdef MULTIVIEW
 	if (gl_ViewID_OVR == 0u) {
 		gl_Position = viewProjection * worldPos;
@@ -223,6 +224,11 @@ void main(void) {
 #ifdef MAINUV2
     vMainUV2 = uv2Updated;
 #endif
+
+// Update UV varyings for fabric fuzz
+    // TODO: support more UV sets if needed
+// #include<fabricFuzzUVUpdate>
+#define CUSTOM_VERTEX_UPDATE_UVS
 
     #include<uvVariableDeclaration>[3..7]
 
