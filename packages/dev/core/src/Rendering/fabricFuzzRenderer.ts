@@ -36,9 +36,14 @@ export class FabricFuzzRenderer {
     private _positionSeedBuffer: Nullable<Float32Array> = null;
 
     /**
-     * Buffer that stores the normal and UV data for the fibers.
+     * Buffer that stores the normal data for the fibers.
      */
-    private _normalUVBuffer: Nullable<Float32Array> = null;
+    private _normalBuffer: Nullable<Float32Array> = null;
+
+    /**
+     * Buffer that stores the UV data for the fibers.
+     */
+    private _uvBuffer: Nullable<Float32Array> = null;
 
     /**
      * Buffer that stores the tangent data for the fibers.
@@ -51,9 +56,14 @@ export class FabricFuzzRenderer {
     private _positionSeedTexture: Nullable<RawTexture> = null;
 
     /**
-     * Texture that stores the normal and UV data for the fibers.
+     * Texture that stores the normal data for the fibers.
      */
-    private _normalUVTexture: Nullable<RawTexture> = null;
+    private _normalTexture: Nullable<RawTexture> = null;
+
+    /**
+     * Texture that stores the UV data for the fibers.
+     */
+    private _uvTexture: Nullable<RawTexture> = null;
 
     /**
      * Texture that stores the tangent data for the fibers.
@@ -130,7 +140,8 @@ export class FabricFuzzRenderer {
         if (!plugin) {
             plugin = new FabricFuzzPluginMaterial(mesh.material);
             plugin.positionSeedTexture = this._positionSeedTexture!.getInternalTexture();
-            plugin.normalUVTexture = this._normalUVTexture!.getInternalTexture();
+            plugin.normalTexture = this._normalTexture!.getInternalTexture();
+            plugin.uvTexture = this._uvTexture!.getInternalTexture();
             plugin.tangentTexture = this._tangentTexture!.getInternalTexture();
             plugin.isEnabled = this.enabled;
         }
@@ -140,6 +151,8 @@ export class FabricFuzzRenderer {
         // - we should also load the tangent data, if available, to better align fibers
         const meshSampler = new MeshSurfaceSampler(mesh);
         meshSampler.preprocessMesh();
+
+        Logger.Log(`Mesh total area: ${meshSampler.getTotalArea().toFixed(2)}`);
 
         // Store a map of mesh-material pairs and their associated fiber mesh and instance offset/count
         this._meshInstanceMap.set(mesh, { offset: this._currentOffset, count: 0, sampler: meshSampler });
@@ -267,6 +280,8 @@ export class FabricFuzzRenderer {
             meshInfo.fiberMesh = fiberMesh;
         }
 
+        meshInfo.fiberMesh.setBoundingInfo(mesh.getBoundingInfo());
+
         meshInfo.fiberMesh.material = mesh.material;
         meshInfo.fiberMesh.isVisible = false; // Hide prototype mesh
 
@@ -288,7 +303,8 @@ export class FabricFuzzRenderer {
 
     private _createTextures(): void {
         this._positionSeedBuffer = new Float32Array(this._textureSize * this._textureSize * 4).fill(0);
-        this._normalUVBuffer = new Float32Array(this._textureSize * this._textureSize * 4).fill(0);
+        this._normalBuffer = new Float32Array(this._textureSize * this._textureSize * 4).fill(0);
+        this._uvBuffer = new Float32Array(this._textureSize * this._textureSize * 4).fill(0);
         this._tangentBuffer = new Float32Array(this._textureSize * this._textureSize * 4).fill(0);
 
         this._positionSeedTexture = RawTexture.CreateRGBATexture(
@@ -302,8 +318,19 @@ export class FabricFuzzRenderer {
             Constants.TEXTURETYPE_FLOAT
         );
 
-        this._normalUVTexture = RawTexture.CreateRGBATexture(
-            this._normalUVBuffer,
+        this._normalTexture = RawTexture.CreateRGBATexture(
+            this._normalBuffer,
+            this._textureSize,
+            this._textureSize,
+            this._scene,
+            false,
+            false,
+            RawTexture.NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_FLOAT
+        );
+
+        this._uvTexture = RawTexture.CreateRGBATexture(
+            this._uvBuffer,
             this._textureSize,
             this._textureSize,
             this._scene,
@@ -326,7 +353,7 @@ export class FabricFuzzRenderer {
     }
 
     private _updateTextures(surfaceSamplingData: ISurfaceSamplingData, offset: number): void {
-        if (!this._positionSeedBuffer || !this._normalUVBuffer || !this._tangentBuffer) {
+        if (!this._positionSeedBuffer || !this._normalBuffer || !this._uvBuffer || !this._tangentBuffer) {
             return;
         }
 
@@ -341,6 +368,7 @@ export class FabricFuzzRenderer {
             const norm = surfaceSamplingData.normals[i];
             const seed = surfaceSamplingData.seeds[i];
             const uv = surfaceSamplingData["uvs"] ? surfaceSamplingData["uvs"][i] : { x: 0, y: 0 };
+            const uv2 = surfaceSamplingData["uvs2"] ? surfaceSamplingData["uvs2"][i] : { x: 0, y: 0 };
             const tangent = surfaceSamplingData["tangents"] ? surfaceSamplingData["tangents"][i] : { x: 1, y: 0, z: 0, w: 1 };
             const index = offset + i;
             this._positionSeedBuffer[index * 4 + 0] = pos.x;
@@ -348,11 +376,15 @@ export class FabricFuzzRenderer {
             this._positionSeedBuffer[index * 4 + 2] = pos.z;
             this._positionSeedBuffer[index * 4 + 3] = seed;
 
-            // *** I can't do this. It only makes sense to pack normal.xy if we know that z is positive (or negative).
-            this._normalUVBuffer[index * 4 + 0] = norm.x;
-            this._normalUVBuffer[index * 4 + 1] = norm.y;
-            this._normalUVBuffer[index * 4 + 2] = uv.x;
-            this._normalUVBuffer[index * 4 + 3] = uv.y;
+            this._normalBuffer[index * 4 + 0] = norm.x;
+            this._normalBuffer[index * 4 + 1] = norm.y;
+            this._normalBuffer[index * 4 + 2] = norm.z;
+            this._normalBuffer[index * 4 + 3] = 1;
+
+            this._uvBuffer[index * 4 + 0] = uv.x;
+            this._uvBuffer[index * 4 + 1] = uv.y;
+            this._uvBuffer[index * 4 + 2] = uv2.x;
+            this._uvBuffer[index * 4 + 3] = uv2.y;
 
             this._tangentBuffer[index * 4 + 0] = tangent.x;
             this._tangentBuffer[index * 4 + 1] = tangent.y;
@@ -360,7 +392,8 @@ export class FabricFuzzRenderer {
             this._tangentBuffer[index * 4 + 3] = tangent.w;
         }
         this._positionSeedTexture!.update(this._positionSeedBuffer);
-        this._normalUVTexture!.update(this._normalUVBuffer);
+        this._normalTexture!.update(this._normalBuffer);
+        this._uvTexture!.update(this._uvBuffer);
         this._tangentTexture!.update(this._tangentBuffer);
     }
 

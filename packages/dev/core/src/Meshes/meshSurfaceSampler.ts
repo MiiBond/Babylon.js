@@ -228,6 +228,7 @@ export interface ISurfaceSamplingData {
     barycentricCoords: Vector3[];
     tangents?: Vector4[];
     uvs?: Vector2[];
+    uvs2?: Vector2[];
 }
 
 /**
@@ -258,7 +259,7 @@ export class MeshSurfaceSampler {
         this._totalArea = 0;
 
         // Get world space transform
-        const worldMatrix = this._mesh.getWorldMatrix();
+        // const worldMatrix = this._mesh.getWorldMatrix();
 
         // Compute triangle areas
         for (let i = 0; i < triangleCount; i++) {
@@ -271,13 +272,13 @@ export class MeshSurfaceSampler {
             const v2 = Vector3.FromArray(positions, i2 * 3);
 
             // Transform to world space
-            const v0WorldSpace = Vector3.TransformCoordinates(v0, worldMatrix);
-            const v1WorldSpace = Vector3.TransformCoordinates(v1, worldMatrix);
-            const v2WorldSpace = Vector3.TransformCoordinates(v2, worldMatrix);
+            // const v0WorldSpace = Vector3.TransformCoordinates(v0, worldMatrix);
+            // const v1WorldSpace = Vector3.TransformCoordinates(v1, worldMatrix);
+            // const v2WorldSpace = Vector3.TransformCoordinates(v2, worldMatrix);
 
             // Compute triangle area using cross product
-            const e0 = v1WorldSpace.subtract(v0WorldSpace);
-            const e1 = v2WorldSpace.subtract(v0WorldSpace);
+            const e0 = v1.subtract(v0);
+            const e1 = v2.subtract(v0);
             const crossProduct = Vector3.Cross(e0, e1);
             const area = crossProduct.length() * 0.5;
 
@@ -307,6 +308,7 @@ export class MeshSurfaceSampler {
         const positions = this._mesh.getVerticesData(VertexBuffer.PositionKind);
         const normals = this._mesh.getVerticesData(VertexBuffer.NormalKind);
         const uvs = this._mesh.getVerticesData(VertexBuffer.UVKind);
+        const uvs2 = this._mesh.getVerticesData(VertexBuffer.UV2Kind);
         const tangents = this._mesh.getVerticesData(VertexBuffer.TangentKind);
         const indices = this._mesh.getIndices();
 
@@ -363,6 +365,15 @@ export class MeshSurfaceSampler {
             interpolatedUV = uv0.scale(bary.x).add(uv1.scale(bary.y)).add(uv2.scale(bary.z));
         }
 
+        let interpolatedUV2 = Vector2.Zero();
+        if (uvs2) {
+            const uv20 = Vector2.FromArray(uvs2, i0 * 2);
+            const uv21 = Vector2.FromArray(uvs2, i1 * 2);
+            const uv22 = Vector2.FromArray(uvs2, i2 * 2);
+
+            interpolatedUV2 = uv20.scale(bary.x).add(uv21.scale(bary.y)).add(uv22.scale(bary.z));
+        }
+
         let interpolatedTangent = null;
         if (tangents) {
             const t0 = Vector4.FromArray(tangents, i0 * 4);
@@ -384,12 +395,13 @@ export class MeshSurfaceSampler {
         }
 
         return {
-            positions: [scaledPosition],
+            positions: [localPosition],
             normals: [interpolatedNormal],
             seeds: [seed],
             triangleIndices: [triangleIndex],
             barycentricCoords: [bary],
             uvs: interpolatedUV ? [interpolatedUV] : undefined,
+            uvs2: interpolatedUV2 ? [interpolatedUV2] : undefined,
             tangents: interpolatedTangent ? [interpolatedTangent] : undefined,
         };
     }
@@ -406,6 +418,7 @@ export class MeshSurfaceSampler {
         const allSeeds: number[] = [];
         const allTangents: Vector4[] = [];
         const allUVs: Vector2[] = [];
+        const allUVs2: Vector2[] = [];
         const allTriangleIndices: number[] = [];
         const allBarycentricCoords: Vector3[] = [];
         const rng = new SimpleRng(seedBase);
@@ -417,6 +430,7 @@ export class MeshSurfaceSampler {
             allSeeds.push(...sample.seeds);
             allTangents.push(...(sample.tangents ?? []));
             allUVs.push(...(sample.uvs ?? []));
+            allUVs2.push(...(sample.uvs2 ?? []));
             allTriangleIndices.push(...sample.triangleIndices);
             allBarycentricCoords.push(...sample.barycentricCoords);
         }
@@ -427,6 +441,7 @@ export class MeshSurfaceSampler {
             seeds: allSeeds,
             tangents: allTangents.length > 0 ? allTangents : undefined,
             uvs: allUVs.length > 0 ? allUVs : undefined,
+            uvs2: allUVs2.length > 0 ? allUVs2 : undefined,
             triangleIndices: allTriangleIndices,
             barycentricCoords: allBarycentricCoords,
         };
@@ -460,7 +475,19 @@ export class MeshSurfaceSampler {
      * @returns Total area
      */
     getTotalArea(): number {
-        return this._totalArea;
+        const scaling = this._mesh.absoluteScaling;
+        // Surface area scales by the product of the two scaling components for 2D surface embedded in 3D
+        // For non-uniform scaling: area_scaled = area_original * scale_x * scale_y * scale_z^(2/3) in general
+        // But for a surface (2D manifold), we need the product of two tangent scale factors
+        // Simplest approach: use the determinant's 2/3 power, or just scale_x * scale_y for planar cases
+        // For general case with uniform-ish scaling: area scales by average of two dimensions squared
+        const scaleX = Math.abs(scaling.x);
+        const scaleY = Math.abs(scaling.y);
+        const scaleZ = Math.abs(scaling.z);
+        // Geometric mean of two largest scales (approximation for surface area scaling)
+        const scales = [scaleX, scaleY, scaleZ].sort((a, b) => b - a);
+        const areaScale = scales[0] * scales[1];
+        return this._totalArea * areaScale;
     }
 
     /**

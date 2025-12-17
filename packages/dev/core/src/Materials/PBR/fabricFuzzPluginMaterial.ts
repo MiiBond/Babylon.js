@@ -38,9 +38,14 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
     public positionSeedTexture: Nullable<InternalTexture> = null;
 
     /**
-     * The texture containing the normal (XY) and UV coordinates for each fiber.
+     * The texture containing the normal for each fiber.
      */
-    public normalUVTexture: Nullable<InternalTexture> = null;
+    public normalTexture: Nullable<InternalTexture> = null;
+
+    /**
+     * The texture containing the UV coordinates for each fiber.
+     */
+    public uvTexture: Nullable<InternalTexture> = null;
 
     /**
      * The texture containing the tangent at the surface for each fiber.
@@ -282,18 +287,23 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
 
     public override prepareDefines(defines: MaterialFabricFuzzRenderDefines) {
         // defines.FABRIC_FUZZ = this._isEnabled;
-        defines.MAINUV1 = true; // The fiber mesh will always have uvs.
-        defines.UV1 = true; // The fiber mesh will always have uvs.
-        defines._needUVs = true;
+        // defines.MAINUV1 = true; // The fiber mesh will always have uvs.
+        // defines.UV1 = true; // The fiber mesh will always have uvs.
+        // defines._needUVs = true;
     }
 
     public override prepareDefinesBeforeAttributes(defines: MaterialFabricFuzzRenderDefines, scene: Scene, mesh: AbstractMesh) {
         // Check if this mesh is a fiber instance mesh
         const isFiberMesh = mesh.name === "fabric_fuzz_fiber_instance";
         defines.FABRIC_FUZZ = this._isEnabled && isFiberMesh;
+        if (isFiberMesh && this._isEnabled) {
+            // There are certain material features that don't make sense for fiber meshes such as per-fragment normal mapping and fuzz/sheen.
+            delete defines.GEOMETRY_NORMAL;
+            delete defines.FUZZ;
+        }
         // Force UV defines for fiber instances
-        defines.UV1 = true;
-        defines.MAINUV1 = true;
+        // defines.UV1 = true;
+        // defines.MAINUV1 = true;
         defines._needUVs = true;
     }
 
@@ -305,7 +315,7 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
         return {
             ubo: [
                 { name: "surfaceMeshToWorld", size: 16, type: "mat4" },
-                { name: "fiberSegments", size: 1, type: "uint" },
+                { name: "fiberSegments", size: 1, type: "float" },
                 { name: "fiberLength", size: 1, type: "float" },
                 { name: "fiberLengthVariation", size: 1, type: "float" },
                 { name: "fiberRadius", size: 1, type: "float" },
@@ -322,7 +332,7 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
             vertex: `
                 // Fiber constants
                 uniform mat4 surfaceMeshToWorld;
-                uniform uint fiberSegments;
+                uniform float fiberSegments;
                 uniform float fiberLength;
                 uniform float fiberLengthVariation;
                 uniform float fiberRadius;
@@ -344,7 +354,8 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
 
     public override getSamplers(samplers: string[]) {
         samplers.push("ffPositionSeedTexture"); // Stores local positions on the mesh and random seed for each fiber
-        samplers.push("ffNormalUVTexture"); // Stores the surface normal and UV coordinates where each fiber is rooted
+        samplers.push("ffNormalTexture"); // Stores the surface normal where each fiber is rooted
+        samplers.push("ffUVTexture"); // Stores the UV coordinates where each fiber is rooted
         samplers.push("ffTangentTexture"); // Stores the surface tangent at each fiber root
     }
 
@@ -352,11 +363,12 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
         if (this._isEnabled) {
             // Find offset into the data textures for this submesh
             uniformBuffer.bindTexture("ffPositionSeedTexture", this.positionSeedTexture);
-            uniformBuffer.bindTexture("ffNormalUVTexture", this.normalUVTexture);
+            uniformBuffer.bindTexture("ffNormalTexture", this.normalTexture);
+            uniformBuffer.bindTexture("ffUVTexture", this.uvTexture);
             uniformBuffer.bindTexture("ffTangentTexture", this.tangentTexture);
 
             uniformBuffer.updateMatrix("surfaceMeshToWorld", this._surfaceMeshToWorldMatrix ?? Matrix.IdentityReadOnly);
-            uniformBuffer.updateUInt("fiberSegments", this.fiberSegments);
+            uniformBuffer.updateFloat("fiberSegments", this.fiberSegments);
             uniformBuffer.updateFloat("fiberRadius", this.fiberRadius);
             uniformBuffer.updateFloat("fiberTaper", this.fiberTaper);
             uniformBuffer.updateFloat("fiberTaperStart", this.fiberTaperStart);
@@ -413,7 +425,8 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
             CUSTOM_VERTEX_DEFINITIONS: `
             #ifdef FABRIC_FUZZ
                 uniform sampler2D ffPositionSeedTexture;
-                uniform sampler2D ffNormalUVTexture;
+                uniform sampler2D ffNormalTexture;
+                uniform sampler2D ffUVTexture;
                 #ifdef FABRIC_FUZZ_TANGENTS
                     uniform sampler2D ffTangentTexture;
                 #endif
@@ -501,7 +514,8 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
             #ifdef FABRIC_FUZZ
                 // Read data for the current instance
                 vec4 positionSeedData = readFiberInstanceData(ffPositionSeedTexture);
-                vec4 normalUVData = readFiberInstanceData(ffNormalUVTexture);
+                vec3 ffSurfaceNormal = readFiberInstanceData(ffNormalTexture).xyz;
+                vec4 ffSurfaceUVData = readFiberInstanceData(ffUVTexture);
                 #ifdef FABRIC_FUZZ_TANGENTS
                     vec4 tangentData = readFiberInstanceData(ffTangentTexture);
                 #endif
@@ -512,8 +526,14 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 vec3 rootPos = positionSeedData.xyz;
                 float seed = positionSeedData.w;
                 initRNG(seed);
-                vec3 ffSurfaceNormal = vec3(normalUVData.x, normalUVData.y, 1.0 - length(normalUVData.xy));
-                vec2 ffSurfaceUV = vec2(normalUVData.z, normalUVData.w);
+
+                #ifdef UV1
+                    vec2 ffSurfaceUV1 = ffSurfaceUVData.xy;
+                #endif
+                #ifdef UV2
+                    vec2 ffSurfaceUV2 = ffSurfaceUVData.zw;
+                #endif
+                
                 #ifdef FABRIC_FUZZ_TANGENTS
                     vFiberBasisX = tangentData.xyz;
                     vFiberBasisZ = cross(ffSurfaceNormal, vFiberBasisX) * tangentData.w;
@@ -540,7 +560,7 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 float tiltAngle = fiberTilt * HALF_PI;
                 vec3 fiberDirection = ffSurfaceNormal * cos(tiltAngle) + 
                                     rotatedTangent * sin(tiltAngle);
-                fiberDirection = normalize(fiberDirection);
+                fiberDirection = normalize(vec4(fiberDirection, 0.0) * transpose(surfaceMeshToWorld)).xyz;
 
                 // Extract triangle strip information
                 // For a triangle strip: 
@@ -548,13 +568,13 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 // - position.x is the signed offset from center (-1 to +1)
                 float vertexProgress = positionUpdated.y;
                 
-                uint vertexIndex = uint(vertexProgress * float(fiberSegments));
+                uint vertexIndex = uint(vertexProgress * fiberSegments);
                 
                 // Strip width parameter: -1 = left edge, 0 = center, +1 = right edge
                 float stripOffset = positionUpdated.x;  // Assumes strip is in XY plane, offset in X
                 
                 // Calculate deformed spine position at this vertex
-                float baseSegmentLength = fiberLength / float(fiberSegments);
+                float baseSegmentLength = fiberLength / fiberSegments;
                 
                 vec3 spinePosition = (surfaceMeshToWorld * vec4(rootPos, 1.0)).xyz;
                 vec3 currentDirection = fiberDirection;
@@ -562,7 +582,7 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 vec3 stableRight = rotatedTangent;
                 vec3 stableBitangent = rotatedBitangent;
                 
-                float curlAnglePerSegment = fiberCurl * PI / max(1.0, float(fiberSegments) - 1.0);
+                float curlAnglePerSegment = fiberCurl * PI / max(1.0, fiberSegments - 1.0);
                 float maxChaosAnglePerSegment = fiberChaos * HALF_PI;
                 
                 // Walk through segments up to current vertex
@@ -652,19 +672,19 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
             CUSTOM_VERTEX_UPDATE_UVS: `
             #ifdef FABRIC_FUZZ
                 #ifdef UV1
-                    // Fiber local UV: 
-                    // - uv.x represents position along circumference (0 to 1)  
-                    // - uv.y represents position along length (0=root to 1=tip)
-                    
                     // Use the surface UV as the base
-                    uvUpdated = uv;
+                    uvUpdated = ffSurfaceUV1;
                 #endif
-                
+                #ifdef UV2
+                    uv2Updated = ffSurfaceUV2;
+                #endif
                 #ifdef MAINUV1
-                    vMainUV1 = uvUpdated;
+                    // Use the surface UV as the base
+                    vMainUV1 = ffSurfaceUV1;
                 #endif
                 #ifdef MAINUV2
-                    vMainUV2 = uv2Updated;
+                    // Use the surface UV as the base
+                    vMainUV2 = ffSurfaceUV2;
                 #endif
             #endif
             `,
