@@ -398,13 +398,13 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
             #ifdef FABRIC_FUZZ
                 varying vec3 vFiberBasisX;
                 varying vec3 vFiberBasisZ;
-                varying float horizontalUV;
+                varying vec2 vFiberUV;
             #endif
             `,
             CUSTOM_FRAGMENT_MAIN_BEGIN: `
             #ifdef FABRIC_FUZZ
                 // Compute lighting based on fiber orientation
-                float localX = horizontalUV * 2.0 - 1.0;
+                float localX = vFiberUV.x;
                 vec3 localCylinderNormal = normalize(vec3(localX, 0.0, 1.0 - abs(localX)));
 
                 // 2. Transform the local normal to world space using the interpolated basis vectors (TBN)
@@ -433,7 +433,7 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 // Varyings for passing data to the fragment shader
                 varying vec3 vFiberBasisX;
                 varying vec3 vFiberBasisZ;
-                varying float horizontalUV;
+                varying vec2 vFiberUV;
 
                 // Read the position or normal for the current instance (gl_InstanceID)
                 vec4 readFiberInstanceData(sampler2D dataTexture) {
@@ -661,7 +661,7 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 
                 vFiberBasisX = stripRight;
                 vFiberBasisZ = toCamera;
-                horizontalUV = (stripOffset + 1.0) * 0.5; // Map from [-1,+1] to [0,1]
+                vFiberUV = vec2(stripOffset, vertexProgress);
 
                 // Position vertex along strip width     
                 vec3 finalPosition = spinePosition + stripRight * stripOffset * currentRadius;
