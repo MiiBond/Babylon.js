@@ -319,7 +319,6 @@ export class MeshSurfaceSampler {
         if (!rng) {
             rng = new SimpleRng(seed);
         }
-        const scaling = this._mesh.scaling;
 
         // Step 1: Sample triangle using PMF
         const triangleIndex = this._pmf.sample(rng.nextFloat());
@@ -341,7 +340,6 @@ export class MeshSurfaceSampler {
 
         // Step 4: Interpolate root position
         const localPosition = v0.scale(bary.x).add(v1.scale(bary.y)).add(v2.scale(bary.z));
-        const scaledPosition = localPosition.multiply(scaling);
 
         // Step 5: Interpolate normal (if available)
         let interpolatedNormal = Vector3.Up();

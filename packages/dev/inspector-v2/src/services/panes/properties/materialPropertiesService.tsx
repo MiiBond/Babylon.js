@@ -136,6 +136,22 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
+        // const openPBRMaterialFFPropertiesRegistration = propertiesService.addSectionContent({
+        //     key: "OpenPBR Fabric Fuzz Properties",
+        //     predicate: (entity: unknown) => {
+        //         if (entity instanceof OpenPBRMaterial && entity.pluginManager) {
+        //             return entity.pluginManager.getPlugin<FabricFuzzPluginMaterial>(FabricFuzzPluginMaterial.Name) !== null;
+        //         }
+        //         return false;
+        //     },
+        //     content: [
+        //         {
+        //             section: "Base",
+        //             component: ({ context }) => <OpenPBRMaterialFFProperties material={context} />,
+        //         },
+        //     ],
+        // });
+
         const openPBRMaterialPropertiesRegistration = propertiesService.addSectionContent({
             key: "OpenPBR Material Properties",
             predicate: (entity: unknown) => entity instanceof OpenPBRMaterial,
@@ -168,6 +184,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                     section: "Geometry",
                     component: ({ context }) => <OpenPBRMaterialGeometryProperties material={context} />,
                 },
+                // {
+                //     section: "Fabric Fuzz",
+                //     component: ({ context }) => <FabricFuzzMaterialProperties material={context} />,
+                // }
             ],
         });
 

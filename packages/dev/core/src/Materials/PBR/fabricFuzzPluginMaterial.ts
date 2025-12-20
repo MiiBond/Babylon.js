@@ -3,7 +3,7 @@ import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Constants } from "core/Engines/constants";
 import { Color3 } from "core/Maths/math.color";
-// import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { expandToProperty, serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -15,12 +15,21 @@ import type { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { Material } from "core/Materials/material";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Matrix } from "core/Maths/math.vector";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 /**
  * @internal
  */
 class MaterialFabricFuzzRenderDefines extends MaterialDefines {
     public FABRIC_FUZZ = false;
+    public FABRIC_FUZZ_DENSITY_TEXTURE = false;
+    public FABRIC_FUZZ_LENGTH_TEXTURE = false;
+    public FABRIC_FUZZ_RADIUS_TEXTURE = false;
+    public FABRIC_FUZZ_TILT_TEXTURE = false;
+    public FABRIC_FUZZ_CHAOS_TEXTURE = false;
+    public FABRIC_FUZZ_CURL_TEXTURE = false;
+    public FABRIC_FUZZ_TAPER_TEXTURE = false;
+    public FABRIC_FUZZ_TIP_COLOR_TEXTURE = false;
 }
 
 /**
@@ -52,6 +61,134 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
      */
     public tangentTexture: Nullable<InternalTexture> = null;
 
+    /**
+     * Texture used to modulate fiber density across the surface.
+     */
+    private _fiberDensityTexture: Nullable<BaseTexture> = null;
+    @serialize("fiberDensityTexture")
+    public get fiberDensityTexture(): Nullable<BaseTexture> {
+        return this._fiberDensityTexture;
+    }
+    public set fiberDensityTexture(value: Nullable<BaseTexture>) {
+        if (this._fiberDensityTexture === value) {
+            return;
+        }
+        this._fiberDensityTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
+     * Texture used to modulate fiber length across the surface.
+     */
+    private _fiberLengthTexture: Nullable<BaseTexture> = null;
+    @serialize("fiberLengthTexture")
+    public get fiberLengthTexture(): Nullable<BaseTexture> {
+        return this._fiberLengthTexture;
+    }
+    public set fiberLengthTexture(value: Nullable<BaseTexture>) {
+        if (this._fiberLengthTexture === value) {
+            return;
+        }
+        this._fiberLengthTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
+     * Texture used to modulate fiber radius across the surface.
+     */
+    private _fiberRadiusTexture: Nullable<BaseTexture> = null;
+    @serialize("fiberRadiusTexture")
+    public get fiberRadiusTexture(): Nullable<BaseTexture> {
+        return this._fiberRadiusTexture;
+    }
+    public set fiberRadiusTexture(value: Nullable<BaseTexture>) {
+        if (this._fiberRadiusTexture === value) {
+            return;
+        }
+        this._fiberRadiusTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
+     * Texture used to modulate fiber tilt across the surface.
+     */
+    private _fiberTiltTexture: Nullable<BaseTexture> = null;
+    @serialize("fiberTiltTexture")
+    public get fiberTiltTexture(): Nullable<BaseTexture> {
+        return this._fiberTiltTexture;
+    }
+    public set fiberTiltTexture(value: Nullable<BaseTexture>) {
+        if (this._fiberTiltTexture === value) {
+            return;
+        }
+        this._fiberTiltTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
+     * Texture used to modulate fiber chaos across the surface.
+     */
+    private _fiberChaosTexture: Nullable<BaseTexture> = null;
+    @serialize("fiberChaosTexture")
+    public get fiberChaosTexture(): Nullable<BaseTexture> {
+        return this._fiberChaosTexture;
+    }
+    public set fiberChaosTexture(value: Nullable<BaseTexture>) {
+        if (this._fiberChaosTexture === value) {
+            return;
+        }
+        this._fiberChaosTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
+     * Texture used to modulate fiber curl across the surface.
+     */
+    private _fiberCurlTexture: Nullable<BaseTexture> = null;
+    @serialize("fiberCurlTexture")
+    public get fiberCurlTexture(): Nullable<BaseTexture> {
+        return this._fiberCurlTexture;
+    }
+    public set fiberCurlTexture(value: Nullable<BaseTexture>) {
+        if (this._fiberCurlTexture === value) {
+            return;
+        }
+        this._fiberCurlTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
+     * Texture used to modulate fiber taper across the surface.
+     */
+    private _fiberTaperTexture: Nullable<BaseTexture> = null;
+    @serialize("fiberTaperTexture")
+    public get fiberTaperTexture(): Nullable<BaseTexture> {
+        return this._fiberTaperTexture;
+    }
+    public set fiberTaperTexture(value: Nullable<BaseTexture>) {
+        if (this._fiberTaperTexture === value) {
+            return;
+        }
+        this._fiberTaperTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
+     * Texture used to modulate tip color blend across the surface.
+     */
+    private _fiberTipColorTexture: Nullable<BaseTexture> = null;
+    @serialize("fiberTipColorTexture")
+    public get fiberTipColorTexture(): Nullable<BaseTexture> {
+        return this._fiberTipColorTexture;
+    }
+    public set fiberTipColorTexture(value: Nullable<BaseTexture>) {
+        if (this._fiberTipColorTexture === value) {
+            return;
+        }
+        this._fiberTipColorTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+
     private _isEnabled = false;
 
     /**
@@ -67,7 +204,7 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
         }
         this._fiberDensity = value;
         const fuzzRenderer = this._material.getScene().fabricFuzzRenderer;
-        if (fuzzRenderer) {
+        if (fuzzRenderer && this._material instanceof OpenPBRMaterial) {
             fuzzRenderer.updateDensityForMaterial(this._material);
         }
         this._markAllSubMeshesAsTexturesDirty();
@@ -301,9 +438,15 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
             delete defines.GEOMETRY_NORMAL;
             delete defines.FUZZ;
         }
-        // Force UV defines for fiber instances
-        // defines.UV1 = true;
-        // defines.MAINUV1 = true;
+        // Set texture defines
+        defines.FABRIC_FUZZ_DENSITY_TEXTURE = !!this._fiberDensityTexture && this._fiberDensityTexture.isReadyOrNotBlocking();
+        defines.FABRIC_FUZZ_LENGTH_TEXTURE = !!this._fiberLengthTexture && this._fiberLengthTexture.isReadyOrNotBlocking();
+        defines.FABRIC_FUZZ_RADIUS_TEXTURE = !!this._fiberRadiusTexture && this._fiberRadiusTexture.isReadyOrNotBlocking();
+        defines.FABRIC_FUZZ_TILT_TEXTURE = !!this._fiberTiltTexture && this._fiberTiltTexture.isReadyOrNotBlocking();
+        defines.FABRIC_FUZZ_CHAOS_TEXTURE = !!this._fiberChaosTexture && this._fiberChaosTexture.isReadyOrNotBlocking();
+        defines.FABRIC_FUZZ_CURL_TEXTURE = !!this._fiberCurlTexture && this._fiberCurlTexture.isReadyOrNotBlocking();
+        defines.FABRIC_FUZZ_TAPER_TEXTURE = !!this._fiberTaperTexture && this._fiberTaperTexture.isReadyOrNotBlocking();
+        defines.FABRIC_FUZZ_TIP_COLOR_TEXTURE = !!this._fiberTipColorTexture && this._fiberTipColorTexture.isReadyOrNotBlocking();
         defines._needUVs = true;
     }
 
@@ -357,6 +500,16 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
         samplers.push("ffNormalTexture"); // Stores the surface normal where each fiber is rooted
         samplers.push("ffUVTexture"); // Stores the UV coordinates where each fiber is rooted
         samplers.push("ffTangentTexture"); // Stores the surface tangent at each fiber root
+
+        // Fiber parameter textures
+        samplers.push("fiberDensityTexture");
+        samplers.push("fiberLengthTexture");
+        samplers.push("fiberRadiusTexture");
+        samplers.push("fiberTiltTexture");
+        samplers.push("fiberChaosTexture");
+        samplers.push("fiberCurlTexture");
+        samplers.push("fiberTaperTexture");
+        samplers.push("fiberTipColorTexture");
     }
 
     public override bindForSubMesh(uniformBuffer: UniformBuffer, _scene: Scene, _engine: AbstractEngine, _subMesh: SubMesh) {
@@ -366,6 +519,32 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
             uniformBuffer.bindTexture("ffNormalTexture", this.normalTexture);
             uniformBuffer.bindTexture("ffUVTexture", this.uvTexture);
             uniformBuffer.bindTexture("ffTangentTexture", this.tangentTexture);
+
+            // Bind fiber parameter textures
+            if (this._fiberDensityTexture && this._fiberDensityTexture.isReadyOrNotBlocking()) {
+                uniformBuffer.bindTexture("fiberDensityTexture", this._fiberDensityTexture.getInternalTexture());
+            }
+            if (this._fiberLengthTexture && this._fiberLengthTexture.isReadyOrNotBlocking()) {
+                uniformBuffer.bindTexture("fiberLengthTexture", this._fiberLengthTexture.getInternalTexture());
+            }
+            if (this._fiberRadiusTexture && this._fiberRadiusTexture.isReadyOrNotBlocking()) {
+                uniformBuffer.bindTexture("fiberRadiusTexture", this._fiberRadiusTexture.getInternalTexture());
+            }
+            if (this._fiberTiltTexture && this._fiberTiltTexture.isReadyOrNotBlocking()) {
+                uniformBuffer.bindTexture("fiberTiltTexture", this._fiberTiltTexture.getInternalTexture());
+            }
+            if (this._fiberChaosTexture && this._fiberChaosTexture.isReadyOrNotBlocking()) {
+                uniformBuffer.bindTexture("fiberChaosTexture", this._fiberChaosTexture.getInternalTexture());
+            }
+            if (this._fiberCurlTexture && this._fiberCurlTexture.isReadyOrNotBlocking()) {
+                uniformBuffer.bindTexture("fiberCurlTexture", this._fiberCurlTexture.getInternalTexture());
+            }
+            if (this._fiberTaperTexture && this._fiberTaperTexture.isReadyOrNotBlocking()) {
+                uniformBuffer.bindTexture("fiberTaperTexture", this._fiberTaperTexture.getInternalTexture());
+            }
+            if (this._fiberTipColorTexture && this._fiberTipColorTexture.isReadyOrNotBlocking()) {
+                uniformBuffer.bindTexture("fiberTipColorTexture", this._fiberTipColorTexture.getInternalTexture());
+            }
 
             uniformBuffer.updateMatrix("surfaceMeshToWorld", this._surfaceMeshToWorldMatrix ?? Matrix.IdentityReadOnly);
             uniformBuffer.updateFloat("fiberSegments", this.fiberSegments);
@@ -385,42 +564,6 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
     }
 
     public override getCustomCode(shaderType: string, shaderLanguage: ShaderLanguage) {
-        // let frag: { [name: string]: string };
-        // let vert: { [name: string]: string };
-
-        // if (shaderLanguage === ShaderLanguage.WGSL) {
-        //     frag = {
-        //     };
-        //     vert = {
-        // } else {
-        const frag = {
-            CUSTOM_FRAGMENT_DEFINITIONS: `
-            #ifdef FABRIC_FUZZ
-                varying vec3 vFiberBasisX;
-                varying vec3 vFiberBasisZ;
-                varying vec2 vFiberUV;
-            #endif
-            `,
-            CUSTOM_FRAGMENT_MAIN_BEGIN: `
-            #ifdef FABRIC_FUZZ
-                // Compute lighting based on fiber orientation
-                float localX = vFiberUV.x;
-                vec3 localCylinderNormal = normalize(vec3(localX, 0.0, 1.0 - abs(localX)));
-
-                // 2. Transform the local normal to world space using the interpolated basis vectors (TBN)
-                // Since the local normal only has X and Z components (in local hair space):
-                vec3 fiberNormalW = normalize(
-                    localCylinderNormal.x * vFiberBasisX +
-                    localCylinderNormal.z * vFiberBasisZ 
-                );
-                // Flip normal based on facing (this is done later in the shader and doesn't work well for fibers so this cancels it out)
-                fiberNormalW = gl_FrontFacing ? fiberNormalW : -fiberNormalW;
-                // Replace the varying vNormalW with the fiber normal
-                #define vNormalW fiberNormalW
-            #endif
-            `,
-        };
-
         const vert = {
             CUSTOM_VERTEX_DEFINITIONS: `
             #ifdef FABRIC_FUZZ
@@ -430,10 +573,35 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 #ifdef FABRIC_FUZZ_TANGENTS
                     uniform sampler2D ffTangentTexture;
                 #endif
+                
+                // Fiber parameter textures
+                #ifdef FABRIC_FUZZ_DENSITY_TEXTURE
+                    uniform sampler2D fiberDensityTexture;
+                #endif
+                #ifdef FABRIC_FUZZ_LENGTH_TEXTURE
+                    uniform sampler2D fiberLengthTexture;
+                #endif
+                #ifdef FABRIC_FUZZ_RADIUS_TEXTURE
+                    uniform sampler2D fiberRadiusTexture;
+                #endif
+                #ifdef FABRIC_FUZZ_TILT_TEXTURE
+                    uniform sampler2D fiberTiltTexture;
+                #endif
+                #ifdef FABRIC_FUZZ_CHAOS_TEXTURE
+                    uniform sampler2D fiberChaosTexture;
+                #endif
+                #ifdef FABRIC_FUZZ_CURL_TEXTURE
+                    uniform sampler2D fiberCurlTexture;
+                #endif
+                #ifdef FABRIC_FUZZ_TAPER_TEXTURE
+                    uniform sampler2D fiberTaperTexture;
+                #endif
+                
                 // Varyings for passing data to the fragment shader
                 varying vec3 vFiberBasisX;
                 varying vec3 vFiberBasisZ;
                 varying vec2 vFiberUV;
+                varying float vTipColorBlend;
 
                 // Read the position or normal for the current instance (gl_InstanceID)
                 vec4 readFiberInstanceData(sampler2D dataTexture) {
@@ -534,6 +702,60 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                     vec2 ffSurfaceUV2 = ffSurfaceUVData.zw;
                 #endif
                 
+                // Sample parameter textures to modulate fiber properties
+                float texDensity = 1.0;
+                float texLength = 1.0;
+                float texRadius = 1.0;
+                float texTilt = 1.0;
+                float texChaos = 1.0;
+                float texCurl = 1.0;
+                float texTaper = 1.0;
+                float texTipColorBlend = 1.0;
+                
+                #ifdef FABRIC_FUZZ_DENSITY_TEXTURE
+                    #ifdef UV1
+                        texDensity = texture2D(fiberDensityTexture, ffSurfaceUV1).r;
+                    #endif
+                #endif
+                #ifdef FABRIC_FUZZ_LENGTH_TEXTURE
+                    #ifdef UV1
+                        texLength = texture2D(fiberLengthTexture, ffSurfaceUV1).r;
+                    #endif
+                #endif
+                #ifdef FABRIC_FUZZ_RADIUS_TEXTURE
+                    #ifdef UV1
+                        texRadius = texture2D(fiberRadiusTexture, ffSurfaceUV1).r;
+                    #endif
+                #endif
+                #ifdef FABRIC_FUZZ_TILT_TEXTURE
+                    #ifdef UV1
+                        texTilt = texture2D(fiberTiltTexture, ffSurfaceUV1).r;
+                    #endif
+                #endif
+                #ifdef FABRIC_FUZZ_CHAOS_TEXTURE
+                    #ifdef UV1
+                        texChaos = texture2D(fiberChaosTexture, ffSurfaceUV1).r;
+                    #endif
+                #endif
+                #ifdef FABRIC_FUZZ_CURL_TEXTURE
+                    #ifdef UV1
+                        texCurl = texture2D(fiberCurlTexture, ffSurfaceUV1).r;
+                    #endif
+                #endif
+                #ifdef FABRIC_FUZZ_TAPER_TEXTURE
+                    #ifdef UV1
+                        texTaper = texture2D(fiberTaperTexture, ffSurfaceUV1).r;
+                    #endif
+                #endif
+                
+                // Apply texture modulation to parameters
+                float modifiedLength = fiberLength * texLength;
+                float modifiedRadius = fiberRadius * texRadius;
+                float modifiedTilt = fiberTilt * texTilt;
+                float modifiedChaos = fiberChaos * texChaos;
+                float modifiedCurl = fiberCurl * texCurl;
+                float modifiedTaper = fiberTaper * texTaper;
+                
                 #ifdef FABRIC_FUZZ_TANGENTS
                     vFiberBasisX = tangentData.xyz;
                     vFiberBasisZ = cross(ffSurfaceNormal, vFiberBasisX) * tangentData.w;
@@ -557,7 +779,7 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 vec3 rotatedBitangent = cross(ffSurfaceNormal, rotatedTangent);
                 
                 // Apply tilt (angle away from normal toward tangent)
-                float tiltAngle = fiberTilt * HALF_PI;
+                float tiltAngle = modifiedTilt * HALF_PI;
                 vec3 fiberDirection = ffSurfaceNormal * cos(tiltAngle) + 
                                     rotatedTangent * sin(tiltAngle);
                 fiberDirection = normalize(vec4(fiberDirection, 0.0) * transpose(surfaceMeshToWorld)).xyz;
@@ -574,7 +796,7 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 float stripOffset = positionUpdated.x;  // Assumes strip is in XY plane, offset in X
                 
                 // Calculate deformed spine position at this vertex
-                float baseSegmentLength = fiberLength / fiberSegments;
+                float baseSegmentLength = modifiedLength / fiberSegments;
                 
                 vec3 spinePosition = (surfaceMeshToWorld * vec4(rootPos, 1.0)).xyz;
                 vec3 currentDirection = fiberDirection;
@@ -582,8 +804,8 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 vec3 stableRight = rotatedTangent;
                 vec3 stableBitangent = rotatedBitangent;
                 
-                float curlAnglePerSegment = fiberCurl * PI / max(1.0, fiberSegments - 1.0);
-                float maxChaosAnglePerSegment = fiberChaos * HALF_PI;
+                float curlAnglePerSegment = modifiedCurl * PI / max(1.0, fiberSegments - 1.0);
+                float maxChaosAnglePerSegment = modifiedChaos * HALF_PI;
                 
                 // Walk through segments up to current vertex
                 for (uint seg = 0u; seg < vertexIndex; seg++) {
@@ -647,8 +869,8 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
 
                 // Apply tapering to radius based on vertex progress
                 float taperProgress = max(0.0, vertexProgress - fiberTaperStart);
-                float taperScale = 1.0 - (taperProgress / max(0.001, 1.0 - fiberTaperStart)) * fiberTaper;
-                float currentRadius = fiberRadius * taperScale;
+                float taperScale = 1.0 - (taperProgress / max(0.001, 1.0 - fiberTaperStart)) * modifiedTaper;
+                float currentRadius = modifiedRadius * taperScale;
                 
                 // Orient strip to face camera (billboard effect)
                 vec3 fiberForward = normalize(currentDirection);
@@ -660,7 +882,7 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                 vec3 stripRight = normalize(cross(fiberForward, toCamera));
                 
                 vFiberBasisX = stripRight;
-                vFiberBasisZ = toCamera;
+                vFiberBasisZ = cross(fiberForward, stripRight);
                 vFiberUV = vec2(stripOffset, vertexProgress);
 
                 // Position vertex along strip width     
@@ -686,6 +908,56 @@ export class FabricFuzzPluginMaterial extends MaterialPluginBase {
                     // Use the surface UV as the base
                     vMainUV2 = ffSurfaceUV2;
                 #endif
+            #endif
+            `,
+        };
+
+        const frag = {
+            CUSTOM_FRAGMENT_DEFINITIONS: `
+            #ifdef FABRIC_FUZZ
+                #ifdef FABRIC_FUZZ_TIP_COLOR_TEXTURE
+                    uniform sampler2D fiberTipColorTexture;
+                #endif
+                varying vec3 vFiberBasisX;
+                varying vec3 vFiberBasisZ;
+                varying vec2 vFiberUV;
+            #endif
+            `,
+            CUSTOM_FRAGMENT_MAIN_BEGIN: `
+            #ifdef FABRIC_FUZZ
+
+                #ifdef FABRIC_FUZZ_TIP_COLOR_TEXTURE
+                    #ifdef MAINUV1
+                        float texTipColor = texture2D(fiberTipColorTexture, vMainUV1).r;
+                    #endif
+                #endif
+                // Compute lighting based on fiber orientation
+                float localX = vFiberUV.x;
+                vec3 localCylinderNormal = normalize(vec3(localX, 0.0, 1.0 - abs(localX)));
+
+                // 2. Transform the local normal to world space using the interpolated basis vectors (TBN)
+                // Since the local normal only has X and Z components (in local hair space):
+                vec3 fiberNormalW = normalize(
+                    localCylinderNormal.x * vFiberBasisX +
+                    localCylinderNormal.z * vFiberBasisZ 
+                );
+                // Flip normal based on facing (this is done later in the shader and doesn't work well for fibers so this cancels it out)
+                fiberNormalW = gl_FrontFacing ? fiberNormalW : -fiberNormalW;
+                // Replace the varying vNormalW with the fiber normal
+                #define vNormalW fiberNormalW
+                
+            #endif
+            `,
+            CUSTOM_FRAGMENT_BEFORE_LIGHTS: `
+            #ifdef FABRIC_FUZZ
+                // Apply tip color blending
+                vec3 tipColor = fiberTipColor;
+                #ifdef FABRIC_FUZZ_TIP_COLOR_TEXTURE
+                    #ifdef MAINUV1
+                        tipColor *= texTipColor;
+                    #endif
+                #endif
+                base_color = mix(base_color.rgb, tipColor, vFiberUV.y * fiberTipColorBlend);
             #endif
             `,
         };
