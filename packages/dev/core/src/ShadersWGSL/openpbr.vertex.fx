@@ -211,6 +211,8 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vMainUV2 = uv2Updated;
 #endif
 
+#define CUSTOM_VERTEX_UPDATE_UVS
+
     #include<uvVariableDeclaration>[3..7]
 
     #include<samplerVertexImplementation>(_DEFINENAME_,BASE_COLOR,_VARYINGNAME_,BaseColor,_MATRIXNAME_,baseColor,_INFONAME_,BaseColorInfos.x)

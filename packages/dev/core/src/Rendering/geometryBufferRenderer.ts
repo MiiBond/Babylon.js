@@ -25,6 +25,7 @@ import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareDefinesAndAtt
 import "../Engines/Extensions/engine.multiRender";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial";
+import { FabricFuzzPluginMaterial } from "../Materials/PBR/fabricFuzzPluginMaterial";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -750,6 +751,46 @@ export class GeometryBufferRenderer {
                     uv2 = true;
                 }
             }
+
+            if (material.getClassName() === "OpenPBRMaterial") {
+                const pbrMaterial = material as OpenPBRMaterial;
+                if (mesh.name === "fabric_fuzz_fiber_instance" && pbrMaterial.pluginManager) {
+                    const plugin = pbrMaterial.pluginManager.getPlugin(FabricFuzzPluginMaterial.Name);
+                    if (plugin) {
+                        const fuzzPlugin = plugin as FabricFuzzPluginMaterial;
+                        defines.push("#define FABRIC_FUZZ");
+
+                        // Add texture defines
+                        if (fuzzPlugin.fiberDensityTexture && fuzzPlugin.fiberDensityTexture.isReadyOrNotBlocking()) {
+                            defines.push("#define FABRIC_FUZZ_DENSITY_TEXTURE");
+                        }
+                        if (fuzzPlugin.fiberLengthTexture && fuzzPlugin.fiberLengthTexture.isReadyOrNotBlocking()) {
+                            defines.push("#define FABRIC_FUZZ_LENGTH_TEXTURE");
+                        }
+                        if (fuzzPlugin.fiberRadiusTexture && fuzzPlugin.fiberRadiusTexture.isReadyOrNotBlocking()) {
+                            defines.push("#define FABRIC_FUZZ_RADIUS_TEXTURE");
+                        }
+                        if (fuzzPlugin.fiberTiltTexture && fuzzPlugin.fiberTiltTexture.isReadyOrNotBlocking()) {
+                            defines.push("#define FABRIC_FUZZ_TILT_TEXTURE");
+                        }
+                        if (fuzzPlugin.fiberChaosTexture && fuzzPlugin.fiberChaosTexture.isReadyOrNotBlocking()) {
+                            defines.push("#define FABRIC_FUZZ_CHAOS_TEXTURE");
+                        }
+                        if (fuzzPlugin.fiberCurlTexture && fuzzPlugin.fiberCurlTexture.isReadyOrNotBlocking()) {
+                            defines.push("#define FABRIC_FUZZ_CURL_TEXTURE");
+                        }
+                        if (fuzzPlugin.fiberTaperTexture && fuzzPlugin.fiberTaperTexture.isReadyOrNotBlocking()) {
+                            defines.push("#define FABRIC_FUZZ_TAPER_TEXTURE");
+                        }
+                        if (fuzzPlugin.fiberTipColorTexture && fuzzPlugin.fiberTipColorTexture.isReadyOrNotBlocking()) {
+                            defines.push("#define FABRIC_FUZZ_TIP_COLOR_TEXTURE");
+                        }
+                        if (fuzzPlugin.tangentTexture) {
+                            defines.push("#define FABRIC_FUZZ_TANGENTS");
+                        }
+                    }
+                }
+            }
         }
 
         // Buffers
@@ -861,13 +902,97 @@ export class GeometryBufferRenderer {
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
+            // Add FabricFuzz uniforms and samplers if this is a fiber mesh
+            const uniformsNames = [...Uniforms];
+            const samplers = ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets", "boneSampler"];
+
+            if (mesh.name === "fabric_fuzz_fiber_instance" && material && material.getClassName() === "OpenPBRMaterial") {
+                const pbrMaterial = material as OpenPBRMaterial;
+                if (pbrMaterial.pluginManager) {
+                    const plugin = pbrMaterial.pluginManager.getPlugin(FabricFuzzPluginMaterial.Name);
+                    if (plugin) {
+                        // Add FabricFuzz uniforms
+                        uniformsNames.push(
+                            "surfaceMeshToWorld",
+                            "fiberSegments",
+                            "fiberLength",
+                            "fiberLengthVariation",
+                            "fiberRadius",
+                            "fiberRotation",
+                            "fiberRotationVariation",
+                            "fiberTilt",
+                            "fiberCurl",
+                            "fiberChaos",
+                            "fiberTaper",
+                            "fiberTaperStart",
+                            "fiberTipColor",
+                            "fiberTipColorBlend",
+                            "fiberOffset",
+                            "vEyePosition"
+                        );
+
+                        // Add FabricFuzz samplers
+                        samplers.push(
+                            "ffPositionSeedTexture",
+                            "ffNormalTexture",
+                            "ffUVTexture",
+                            "ffTangentTexture",
+                            "fiberDensityTexture",
+                            "fiberLengthTexture",
+                            "fiberRadiusTexture",
+                            "fiberTiltTexture",
+                            "fiberChaosTexture",
+                            "fiberCurlTexture",
+                            "fiberTaperTexture",
+                            "fiberTipColorTexture"
+                        );
+                    }
+                }
+            }
+
+            // Create custom shader processing function to inject FabricFuzz code
+            let customShaderProcessing: ((shaderType: string, code: string) => string) | undefined = undefined;
+
+            if (mesh.name === "fabric_fuzz_fiber_instance" && material && material.getClassName() === "OpenPBRMaterial") {
+                const pbrMaterial = material as OpenPBRMaterial;
+                if (pbrMaterial.pluginManager) {
+                    const plugin = pbrMaterial.pluginManager.getPlugin(FabricFuzzPluginMaterial.Name);
+                    if (plugin) {
+                        const fuzzPlugin = plugin as FabricFuzzPluginMaterial;
+                        customShaderProcessing = (shaderType: string, code: string) => {
+                            // Get custom code from the plugin
+                            const customCode = fuzzPlugin.getCustomCode(shaderType, this.shaderLanguage);
+                            if (customCode) {
+                                // Inject code at each define point
+                                for (const pointName in customCode) {
+                                    const fullPointName = "#define " + pointName;
+                                    const injectedCode = customCode[pointName];
+                                    if (injectedCode) {
+                                        code = code.replace(fullPointName, "\n" + injectedCode + "\n" + fullPointName);
+                                    }
+                                }
+                            }
+                            if (shaderType === "vertex") {
+                                // Add vEyePosition uniform based on shader language
+                                if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                    code = code.replace("#define CUSTOM_VERTEX_UNIFORMS", "\nuniform vEyePosition: vec3f;\n#define CUSTOM_VERTEX_UNIFORMS");
+                                } else {
+                                    code = code.replace("#define CUSTOM_VERTEX_UNIFORMS", "\nuniform vec3 vEyePosition;\n#define CUSTOM_VERTEX_UNIFORMS");
+                                }
+                            }
+                            return code;
+                        };
+                    }
+                }
+            }
+
             drawWrapper.setEffect(
                 engine.createEffect(
                     "geometry",
                     {
                         attributes: attribs,
-                        uniformsNames: Uniforms,
-                        samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets", "boneSampler"],
+                        uniformsNames: uniformsNames,
+                        samplers: samplers,
                         defines: join,
                         onCompiled: null,
                         fallbacks: null,
@@ -875,6 +1000,7 @@ export class GeometryBufferRenderer {
                         uniformBuffersNames: ["Scene"],
                         indexParameters: { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers },
                         shaderLanguage: this.shaderLanguage,
+                        processCodeAfterIncludes: customShaderProcessing,
                     },
                     engine
                 ),
@@ -1262,6 +1388,72 @@ export class GeometryBufferRenderer {
                         if (openpbrMaterial.baseColor !== null) {
                             effect.setColor3("albedoColor", openpbrMaterial.baseColor);
                         }
+                    }
+                }
+
+                // Bind FabricFuzz plugin if present
+                if (renderingMesh.name === "fabric_fuzz_fiber_instance" && material.pluginManager) {
+                    const plugin = material.pluginManager.getPlugin(FabricFuzzPluginMaterial.Name);
+                    if (plugin) {
+                        const fuzzPlugin = plugin as FabricFuzzPluginMaterial;
+                        // Bind data textures
+                        if (fuzzPlugin.positionSeedTexture) {
+                            effect.setTexture("ffPositionSeedTexture", fuzzPlugin.positionSeedTexture);
+                        }
+                        if (fuzzPlugin.normalTexture) {
+                            effect.setTexture("ffNormalTexture", fuzzPlugin.normalTexture);
+                        }
+                        if (fuzzPlugin.uvTexture) {
+                            effect.setTexture("ffUVTexture", fuzzPlugin.uvTexture);
+                        }
+                        if (fuzzPlugin.tangentTexture) {
+                            effect.setTexture("ffTangentTexture", fuzzPlugin.tangentTexture);
+                        }
+
+                        // Bind parameter textures
+                        if (fuzzPlugin.fiberDensityTexture && fuzzPlugin.fiberDensityTexture.isReadyOrNotBlocking()) {
+                            effect.setTexture("fiberDensityTexture", fuzzPlugin.fiberDensityTexture);
+                        }
+                        if (fuzzPlugin.fiberLengthTexture && fuzzPlugin.fiberLengthTexture.isReadyOrNotBlocking()) {
+                            effect.setTexture("fiberLengthTexture", fuzzPlugin.fiberLengthTexture);
+                        }
+                        if (fuzzPlugin.fiberRadiusTexture && fuzzPlugin.fiberRadiusTexture.isReadyOrNotBlocking()) {
+                            effect.setTexture("fiberRadiusTexture", fuzzPlugin.fiberRadiusTexture);
+                        }
+                        if (fuzzPlugin.fiberTiltTexture && fuzzPlugin.fiberTiltTexture.isReadyOrNotBlocking()) {
+                            effect.setTexture("fiberTiltTexture", fuzzPlugin.fiberTiltTexture);
+                        }
+                        if (fuzzPlugin.fiberChaosTexture && fuzzPlugin.fiberChaosTexture.isReadyOrNotBlocking()) {
+                            effect.setTexture("fiberChaosTexture", fuzzPlugin.fiberChaosTexture);
+                        }
+                        if (fuzzPlugin.fiberCurlTexture && fuzzPlugin.fiberCurlTexture.isReadyOrNotBlocking()) {
+                            effect.setTexture("fiberCurlTexture", fuzzPlugin.fiberCurlTexture);
+                        }
+                        if (fuzzPlugin.fiberTaperTexture && fuzzPlugin.fiberTaperTexture.isReadyOrNotBlocking()) {
+                            effect.setTexture("fiberTaperTexture", fuzzPlugin.fiberTaperTexture);
+                        }
+                        if (fuzzPlugin.fiberTipColorTexture && fuzzPlugin.fiberTipColorTexture.isReadyOrNotBlocking()) {
+                            effect.setTexture("fiberTipColorTexture", fuzzPlugin.fiberTipColorTexture);
+                        }
+
+                        // Bind uniforms
+                        effect.setMatrix("surfaceMeshToWorld", fuzzPlugin.surfaceMeshToWorldMatrix ?? Matrix.IdentityReadOnly);
+                        effect.setFloat("fiberSegments", fuzzPlugin.fiberSegments);
+                        effect.setFloat("fiberLength", fuzzPlugin.fiberLength);
+                        effect.setFloat("fiberLengthVariation", fuzzPlugin.fiberLengthVariation);
+                        effect.setFloat("fiberRadius", fuzzPlugin.fiberRadius);
+                        effect.setFloat("fiberRotation", fuzzPlugin.fiberRotation);
+                        effect.setFloat("fiberRotationVariation", fuzzPlugin.fiberRotationVariation);
+                        effect.setFloat("fiberTilt", fuzzPlugin.fiberTilt);
+                        effect.setFloat("fiberCurl", fuzzPlugin.fiberCurl);
+                        effect.setFloat("fiberChaos", fuzzPlugin.fiberChaos);
+                        effect.setFloat("fiberTaper", fuzzPlugin.fiberTaper);
+                        effect.setFloat("fiberTaperStart", fuzzPlugin.fiberTaperStart);
+                        effect.setColor3("fiberTipColor", fuzzPlugin.fiberTipColor);
+                        effect.setFloat("fiberTipColorBlend", fuzzPlugin.fiberTipColorBlend);
+                        effect.setFloat("fiberOffset", fuzzPlugin.fiberOffset);
+
+                        scene.bindEyePosition(effect, "vEyePosition", true);
                     }
                 }
 

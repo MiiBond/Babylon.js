@@ -98,11 +98,11 @@ varying vec3 vDirectionW;
 #endif
 
 #include<logDepthDeclaration>
-#define CUSTOM_VERTEX_DEFINITIONS // TODO: #include<fabricFuzzVertexDeclaration>
+#define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void) {
 
-	#define CUSTOM_VERTEX_MAIN_BEGIN // TODO: #include<fabricFuzzVertexInitialization> // samples the instance data for fabric fuzz
+	#define CUSTOM_VERTEX_MAIN_BEGIN
 
     vec3 positionUpdated = position;
 #ifdef NORMAL
@@ -225,9 +225,6 @@ void main(void) {
     vMainUV2 = uv2Updated;
 #endif
 
-// Update UV varyings for fabric fuzz
-    // TODO: support more UV sets if needed
-// #include<fabricFuzzUVUpdate>
 #define CUSTOM_VERTEX_UPDATE_UVS
 
     #include<uvVariableDeclaration>[3..7]

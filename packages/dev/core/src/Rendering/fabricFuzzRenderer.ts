@@ -11,7 +11,6 @@ import type { ISurfaceSamplingData } from "../Meshes/meshSurfaceSampler";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { ToHalfFloat } from "../Misc/textureTools";
-import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { VertexBuffer } from "core/Meshes/buffer";
 import type { Observer } from "../Misc/observable";
 import type { TransformNode } from "../Meshes/transformNode";
@@ -155,10 +154,10 @@ export class FabricFuzzRenderer {
         let plugin = material.pluginManager?.getPlugin<FabricFuzzPluginMaterial>(FabricFuzzPluginMaterial.Name);
         if (!plugin) {
             plugin = new FabricFuzzPluginMaterial(material);
-            plugin.positionSeedTexture = this._positionSeedTexture!.getInternalTexture();
-            plugin.normalTexture = this._normalTexture!.getInternalTexture();
-            plugin.uvTexture = this._uvTexture!.getInternalTexture();
-            plugin.tangentTexture = this._tangentTexture!.getInternalTexture();
+            plugin.positionSeedTexture = this._positionSeedTexture;
+            plugin.normalTexture = this._normalTexture;
+            plugin.uvTexture = this._uvTexture;
+            plugin.tangentTexture = this._tangentTexture;
             plugin.isEnabled = this.enabled;
         }
 
@@ -218,11 +217,10 @@ export class FabricFuzzRenderer {
         });
 
         // Set up observer to keep bounding info in sync
-        meshData.observers.onWorldMatrixUpdated = mesh.onAfterWorldMatrixUpdateObservable.add((transformNode) => {
-            if (meshData.fiberMesh && meshData.fiberMesh.rawBoundingInfo) {
-                meshData.fiberMesh.getRawBoundingInfo().reConstruct(mesh.getBoundingInfo().minimum, mesh.getBoundingInfo().maximum, transformNode.getWorldMatrix());
-                meshData.fiberMesh.getRawBoundingInfo().isLocked = true; // refreshBoundingInfo(true);
-                // meshData.fiberMesh.getBoundingInfo().isLocked = true; // = mesh.getBoundingInfo(); //.isLocked = true;
+        meshData.observers.onWorldMatrixUpdated = mesh.onAfterWorldMatrixUpdateObservable.add(() => {
+            if (meshData.fiberMesh) {
+                const meshBoundingInfo = mesh.getBoundingInfo();
+                meshData.fiberMesh.buildBoundingInfo(meshBoundingInfo.minimum.clone(), meshBoundingInfo.maximum.clone(), mesh.getWorldMatrix());
             }
         });
     }
@@ -261,6 +259,11 @@ export class FabricFuzzRenderer {
         meshData.observers = {};
     }
 
+    /**
+     * Update the density of fibers for the given material. This will regenerate fibers for all meshes using the material.
+     * Currently, this requires regenerating fibers for all meshes since all fibers share the same texture buffers.
+     * @param material The material who's fiber density has changed
+     */
     public updateDensityForMaterial(material: OpenPBRMaterial): void {
         const materialInfo = this._materialInstanceMap.get(material);
         if (!materialInfo) {
@@ -274,18 +277,17 @@ export class FabricFuzzRenderer {
                 this._updateFiberInstances(materialInfo, meshData.mesh);
             });
         });
+    }
 
-        // Find all meshes using this material and find the lowest offset.
-        // Find all meshes using any material that has an offset higher than this one and
-        // regenerate their fibers.
-        // let lowestOffset = this.maxFibers;
-        // materialInfo.meshes.forEach((meshData) => {
-        //     meshData.count > 0 && lowestOffset > meshData.offset ? (lowestOffset = meshData.offset) : null;
-        // });
-
-        // materialInfo.meshes.forEach((meshData) => {
-        //     this._updateFiberInstances(materialInfo, meshData.mesh);
-        // });
+    public updateSegmentsForMaterial(material: OpenPBRMaterial): void {
+        const materialInfo = this._materialInstanceMap.get(material);
+        if (!materialInfo) {
+            Logger.Warn("FabricFuzzRenderer: Material not found in renderer. Call addMaterial() first.");
+            return;
+        }
+        materialInfo.meshes.forEach((meshData) => {
+            this._updateFiberMesh(materialInfo, meshData.mesh, true);
+        });
     }
 
     private _updateFiberInstances(materialInfo: IMaterialFiberInfo, mesh: Mesh): void {
@@ -304,12 +306,18 @@ export class FabricFuzzRenderer {
         }
         meshData.count = surfaceSamplingData.positions.length;
         if (meshData.count > 0) {
-            this._updateTextures(surfaceSamplingData, meshData.offset);
+            this._updateTextures(surfaceSamplingData, this._currentOffset);
 
-            this._currentOffset += surfaceSamplingData ? surfaceSamplingData.positions.length : 0;
+            const plugin = materialInfo.plugin;
+            plugin.fiberOffset = this._currentOffset;
+            meshData.offset = this._currentOffset;
+
+            Logger.Log(`Updating fibers for mesh ${mesh.name}: ${meshData.count} instances at offset ${meshData.offset}`);
 
             // The fiber mesh with instance info should be created and stored in the material plugin
             this._updateFiberMesh(materialInfo, mesh);
+
+            this._currentOffset += surfaceSamplingData ? surfaceSamplingData.positions.length : 0;
         }
     }
 
@@ -346,46 +354,68 @@ export class FabricFuzzRenderer {
     }
 
     private _createFiberMesh(segments: number = 10): Nullable<Mesh> {
-        const fiberMesh = MeshBuilder.CreateCylinder(
-            "fabric_fuzz_fiber_instance",
-            {
-                height: 1.0,
-                diameter: 0.5,
-                tessellation: 2,
-                subdivisions: segments,
-                hasRings: true,
-            },
-            this._scene
-        );
+        const fiberMesh = new Mesh("fabric_fuzz_fiber_instance", this._scene);
 
-        // Shift cylinder pivot to bottom center ---
-        const vertPositions = fiberMesh.getVerticesData(VertexBuffer.PositionKind);
-        if (!vertPositions) {
-            Logger.Warn("Failed to get vertex positions for fiber mesh.");
-            return null;
+        // Create triangle strip geometry for fiber
+        const positions: number[] = [];
+        const uvs: number[] = [];
+        const normals: number[] = [];
+        const indices: number[] = [];
+
+        const width = 0.25; // Half of the original diameter (0.5)
+
+        // Generate vertices for triangle strip
+        for (let i = 0; i <= segments; i++) {
+            const y = i / segments; // Y coordinate from 0 to 1
+            const u = i / segments; // UV coordinate along the strip
+
+            // Left vertex
+            positions.push(-width, y, 0);
+            uvs.push(0, u);
+            normals.push(0, 0, 1); // Normal pointing towards camera
+
+            // Right vertex
+            positions.push(width, y, 0);
+            uvs.push(1, u);
+            normals.push(0, 0, 1); // Normal pointing towards camera
         }
-        const offset = 0.5;
-        // Adjust the Y coordinate of every vertex to shift the mesh upwards
-        for (let i = 1; i < vertPositions.length; i += 3) {
-            vertPositions[i] += offset;
+
+        // Generate triangle strip indices with clockwise winding order
+        for (let i = 0; i < segments; i++) {
+            const base = i * 2;
+
+            // First triangle: bottom-left, top-left, bottom-right (clockwise)
+            indices.push(base, base + 2, base + 1);
+            // Second triangle: bottom-right, top-left, top-right (clockwise)
+            indices.push(base + 1, base + 2, base + 3);
         }
-        fiberMesh.setVerticesData(VertexBuffer.PositionKind, vertPositions);
+
+        // Set the mesh data
+        fiberMesh.setVerticesData(VertexBuffer.PositionKind, positions);
+        fiberMesh.setVerticesData(VertexBuffer.UVKind, uvs);
+        fiberMesh.setVerticesData(VertexBuffer.NormalKind, normals);
+        fiberMesh.setIndices(indices);
+
         return fiberMesh;
     }
 
     /**
-     * Update the fiber mesh to render the given number of fiber instances.
+     * Updates or creates the fiber mesh for the given mesh and material.
      * @param materialInfo The material info
      * @param mesh The mesh to update the fiber instances for
+     * @param forceRebuild If true, forces the fiber mesh to be rebuilt
      */
-    private _updateFiberMesh(materialInfo: IMaterialFiberInfo, mesh: Mesh): void {
+    private _updateFiberMesh(materialInfo: IMaterialFiberInfo, mesh: Mesh, forceRebuild: boolean = false): void {
         const meshData = materialInfo.meshes.get(mesh.uniqueId);
         if (!meshData) {
             Logger.Warn("FabricFuzzRenderer: Mesh not found in material. This should not happen.");
             return;
         }
-        if (!meshData.fiberMesh) {
-            const fiberMesh = this._createFiberMesh();
+        if (!meshData.fiberMesh || forceRebuild) {
+            if (meshData.fiberMesh) {
+                meshData.fiberMesh.dispose();
+            }
+            const fiberMesh = this._createFiberMesh(materialInfo.plugin.fiberSegments);
             if (!fiberMesh) {
                 Logger.Warn("FabricFuzzRenderer: Failed to create fiber mesh.");
                 return;
@@ -394,8 +424,11 @@ export class FabricFuzzRenderer {
         }
 
         // Update fiber mesh bounding info to match the original mesh
-        // const meshBoundingInfo = mesh.getBoundingInfo();
-        // meshData.fiberMesh.setBoundingInfo(meshBoundingInfo);
+        // Ensure the mesh is fully ready before copying bounding info
+        mesh.computeWorldMatrix(true);
+        mesh.refreshBoundingInfo(true); // Force bounding info refresh
+        const meshBoundingInfo = mesh.getBoundingInfo();
+        meshData.fiberMesh.buildBoundingInfo(meshBoundingInfo.minimum.clone(), meshBoundingInfo.maximum.clone(), mesh.getWorldMatrix());
 
         meshData.fiberMesh.material = materialInfo.material;
         meshData.fiberMesh.isVisible = false; // Hide prototype mesh
@@ -414,7 +447,6 @@ export class FabricFuzzRenderer {
         meshData.fiberMesh.thinInstanceSetBuffer("matrix", instanceMatrices, 16, false);
         meshData.fiberMesh.thinInstanceCount = meshData.count;
         meshData.fiberMesh.isVisible = true;
-        meshData.fiberMesh.doNotSyncBoundingInfo = true;
     }
 
     private _createTextures(): void {

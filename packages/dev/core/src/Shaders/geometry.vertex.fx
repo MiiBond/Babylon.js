@@ -11,6 +11,8 @@ precision highp float;
 
 #include<clipPlaneVertexDeclaration>
 
+#include<helperFunctions>
+
 attribute vec3 position;
 #ifdef HAS_NORMAL_ATTRIBUTE
 	attribute vec3 normal;
@@ -73,11 +75,13 @@ varying vec4 vCurrentPosition;
 varying vec4 vPreviousPosition;
 #endif
 
+#define CUSTOM_VERTEX_UNIFORMS
 
 #define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void)
 {
+#define CUSTOM_VERTEX_MAIN_BEGIN
     vec3 positionUpdated = position;
 #ifdef HAS_NORMAL_ATTRIBUTE
     vec3 normalUpdated = normal;
@@ -117,6 +121,8 @@ void main(void)
 			vNormalV = normalize(vec3((view * finalWorld) * vec4(normalUpdated, 0.0)));
 		#endif
 	#endif
+
+#define CUSTOM_VERTEX_UPDATE_WORLDPOS
 
 	vViewPos = view * worldPos;
 
@@ -162,6 +168,8 @@ void main(void)
 	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 
 	#include<clipPlaneVertex>
+
+	#define CUSTOM_VERTEX_UPDATE_UVS
 
 	#ifdef NEED_UV
 		#ifdef UV1

@@ -76,7 +76,11 @@ uniform sampler2D diffuseSampler;
 #include<bumpFragmentFunctions>
 #include<helperFunctions>
 
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main() {
+    #define CUSTOM_FRAGMENT_MAIN_BEGIN
+    
     #include<clipPlaneFragment>
 
     #ifdef ALPHATEST

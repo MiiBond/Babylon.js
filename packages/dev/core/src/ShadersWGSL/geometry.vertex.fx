@@ -9,6 +9,8 @@
 
 #include<clipPlaneVertexDeclaration>
 
+#include<helperFunctions>
+
 attribute position: vec3f;
 #ifdef HAS_NORMAL_ATTRIBUTE
 	attribute normal: vec3f;
@@ -74,11 +76,13 @@ varying vCurrentPosition: vec4f;
 varying vPreviousPosition: vec4f;
 #endif
 
+#define CUSTOM_VERTEX_UNIFORMS
 
 #define CUSTOM_VERTEX_DEFINITIONS
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
+	#define CUSTOM_VERTEX_MAIN_BEGIN
     var positionUpdated: vec3f = input.position;
 #ifdef HAS_NORMAL_ATTRIBUTE
     var normalUpdated: vec3f = input.normal;
@@ -124,6 +128,8 @@ fn main(input : VertexInputs) -> FragmentInputs {
 		#endif
 	#endif
 
+	#define CUSTOM_VERTEX_UPDATE_WORLDPOS
+
 	vertexOutputs.vViewPos = scene.view * worldPos;
 
 	#if (defined(VELOCITY) || defined(VELOCITY_LINEAR)) && defined(BONES_VELOCITY_ENABLED)
@@ -168,6 +174,8 @@ fn main(input : VertexInputs) -> FragmentInputs {
 	vertexOutputs.position = scene.viewProjection * finalWorld *  vec4f(positionUpdated, 1.0);
 
 	#include<clipPlaneVertex>
+
+	#define CUSTOM_VERTEX_UPDATE_UVS
 
 	#ifdef NEED_UV
 		#ifdef UV1
