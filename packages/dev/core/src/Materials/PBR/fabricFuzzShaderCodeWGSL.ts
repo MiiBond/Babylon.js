@@ -442,6 +442,6 @@ export const FabricFuzzFragmentBeforeLights = `
             tipColor *= texTipColor;
         #endif
     #endif
-    base_color = mix(base_color.rgb, tipColor, fragmentInputs.vFiberUV.y * uniforms.fiberTipColorBlend);
+    base_color = mix(base_color.rgb, tipColor, sqrt(fragmentInputs.vFiberUV.y) * uniforms.fiberTipColorBlend);
 #endif
 `;
