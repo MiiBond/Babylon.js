@@ -19,6 +19,7 @@ export * from "./Engines/index";
 export * from "./Events/index";
 export * from "./FlowGraph/index";
 export * from "./FrameGraph/index";
+export * from "./RayTracing/index";
 export * from "./Gamepads/index";
 export * from "./Gizmos/index";
 export * from "./Helpers/index";

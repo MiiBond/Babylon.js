@@ -20,6 +20,7 @@ export * from "./Engines/pure";
 export * from "./Events/pure";
 export * from "./FlowGraph/pure";
 export * from "./FrameGraph/pure";
+export * from "./RayTracing/pure";
 export * from "./Gamepads/pure";
 export * from "./Gizmos/pure";
 export * from "./Helpers/pure";

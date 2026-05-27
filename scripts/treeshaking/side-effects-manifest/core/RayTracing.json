@@ -1,0 +1,6 @@
+{
+    "version": 1,
+    "files": {
+        "RayTracing/tasks/frameGraphRtRayTracingTask.ts": ["shader-store-write"]
+    }
+}
