@@ -29,6 +29,27 @@ const RtMaterialFloats = RtMaterialStride / 4; // 176 / 4 = 44
 // We avoid a hard import of OpenPBRMaterial / PBRMaterial to keep this module
 // engine-agnostic.  Instead we probe getClassName() and cast via unknown.
 
+/** Minimal shape of Babylon.js PBRMaterial / PBRMetallicRoughnessMaterial */
+interface IPBRProps {
+    albedoColor?: { r: number; g: number; b: number }; // PBRMaterial base color
+    baseColor?: { r: number; g: number; b: number }; // PBRMetallicRoughnessMaterial
+    metallic?: number;
+    roughness?: number;
+    indexOfRefraction?: number;
+    emissiveColor?: { r: number; g: number; b: number };
+    emissiveIntensity?: number;
+    microSurface?: number; // PBRMaterial: 1-roughness
+    directIntensity?: number;
+}
+
+/** Minimal shape of Babylon.js StandardMaterial */
+interface IStandardProps {
+    diffuseColor?: { r: number; g: number; b: number };
+    specularColor?: { r: number; g: number; b: number };
+    specularPower?: number;
+    emissiveColor?: { r: number; g: number; b: number };
+}
+
 interface IOpenPBRProps {
     baseColor: { r: number; g: number; b: number };
     baseMetalness: number;
@@ -134,6 +155,10 @@ export class RtMaterialManager {
 
             if (cls === "OpenPBRMaterial") {
                 this._packOpenPBR(flat, base, mat as unknown as IOpenPBRProps, texIndexMap);
+            } else if (cls === "PBRMaterial" || cls === "PBRMetallicRoughnessMaterial") {
+                this._packPBR(flat, base, mat as unknown as IPBRProps);
+            } else if (cls === "StandardMaterial") {
+                this._packStandard(flat, base, mat as unknown as IStandardProps);
             } else {
                 this._packDefault(flat, base);
             }
@@ -234,6 +259,64 @@ export class RtMaterialManager {
         flat[base + 41] = texFlags;
         flat[base + 42] = 1; // normalScale
         flat[base + 43] = 0; // pad
+    }
+
+    /**
+     * Best-effort packing for Babylon.js PBRMaterial / PBRMetallicRoughnessMaterial.
+     * Maps albedoColor → baseColor, metallic/roughness, and emissiveColor × emissiveIntensity.
+     * @param flat - The flat Float32Array buffer to write into
+     * @param base - The starting index in the flat buffer
+     * @param m - The PBR material properties to pack
+     */
+    private _packPBR(flat: Float32Array, base: number, m: IPBRProps): void {
+        // Start from defaults so any unmapped slots are valid.
+        this._packDefault(flat, base);
+
+        // Base color (albedoColor for PBRMaterial, baseColor for PBRMetallicRoughnessMaterial)
+        const bc = m.albedoColor ?? m.baseColor ?? { r: 0.8, g: 0.8, b: 0.8 };
+        flat[base + 0] = bc.r;
+        flat[base + 1] = bc.g;
+        flat[base + 2] = bc.b;
+        flat[base + 3] = m.metallic ?? 0;
+
+        // Roughness: PBRMaterial stores microSurface = 1 - roughness.
+        const roughness = m.roughness ?? 1.0 - (m.microSurface ?? 0.5);
+        flat[base + 7] = roughness;
+
+        // IOR
+        flat[base + 24] = m.indexOfRefraction ?? 1.5;
+
+        // Emission: emissiveColor × emissiveIntensity
+        const ec = m.emissiveColor ?? { r: 0, g: 0, b: 0 };
+        const intensity = m.emissiveIntensity ?? 1;
+        flat[base + 8] = ec.r * intensity;
+        flat[base + 9] = ec.g * intensity;
+        flat[base + 10] = ec.b * intensity;
+        // emissionLuminance = 1 when emissiveColor is already in radiance units
+        flat[base + 11] = ec.r + ec.g + ec.b > 0 ? 1 : 0;
+    }
+
+    /**
+     * Best-effort packing for Babylon.js StandardMaterial.
+     * Maps diffuseColor → baseColor and emissiveColor → emission.
+     * @param flat - The flat Float32Array buffer to write into
+     * @param base - The starting index in the flat buffer
+     * @param m - The Standard material properties to pack
+     */
+    private _packStandard(flat: Float32Array, base: number, m: IStandardProps): void {
+        this._packDefault(flat, base);
+
+        const dc = m.diffuseColor ?? { r: 0.8, g: 0.8, b: 0.8 };
+        flat[base + 0] = dc.r;
+        flat[base + 1] = dc.g;
+        flat[base + 2] = dc.b;
+
+        // Emission
+        const ec = m.emissiveColor ?? { r: 0, g: 0, b: 0 };
+        flat[base + 8] = ec.r;
+        flat[base + 9] = ec.g;
+        flat[base + 10] = ec.b;
+        flat[base + 11] = ec.r + ec.g + ec.b > 0 ? 1 : 0;
     }
 
     /**

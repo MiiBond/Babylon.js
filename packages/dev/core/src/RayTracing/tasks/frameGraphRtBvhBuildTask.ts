@@ -96,6 +96,61 @@ export class FrameGraphRtBvhBuildTask extends FrameGraphTask {
             // Snapshot scene geometry and upload BVH + triangles
             const snapshot = SnapshotScene(this._scene, this._materialManager.materialIndexMap);
             this._geometryManager.upload(snapshot);
+
+            // Build the emissive triangle list for Next Event Estimation.
+            // For each mesh, extract emitted radiance from its material regardless of type:
+            //   OpenPBRMaterial  → emissionColor × emissionLuminance
+            //   PBRMaterial      → emissiveColor × emissiveIntensity  (Babylon.js PBR)
+            //   StandardMaterial → emissiveColor (treated as luminance-1 white * color)
+            // The meshEmissiveLe array is indexed in parallel with snapshot.meshGeometries.
+            const meshEmissiveLe: Array<[number, number, number] | null> = snapshot.meshGeometries.map((geom) => {
+                const mat = geom.mesh.material;
+                if (!mat) {
+                    return null;
+                }
+                const cls = mat.getClassName?.() ?? "";
+                // Cast to a union of the properties we care about across material types.
+                const m = mat as unknown as {
+                    emissionLuminance?: number;
+                    emissionColor?: { r: number; g: number; b: number };
+                    emissiveColor?: { r: number; g: number; b: number };
+                    emissiveIntensity?: number;
+                };
+
+                let lr: number, lg: number, lb: number;
+
+                if (cls === "OpenPBRMaterial") {
+                    const lum = m.emissionLuminance ?? 0;
+                    if (lum <= 0) {
+                        return null;
+                    }
+                    const ec = m.emissionColor ?? { r: 0, g: 0, b: 0 };
+                    lr = ec.r * lum;
+                    lg = ec.g * lum;
+                    lb = ec.b * lum;
+                } else if (cls === "PBRMaterial" || cls === "PBRMetallicRoughnessMaterial") {
+                    // Babylon.js PBR: emissiveColor is a linear-space Color3, emissiveIntensity scales it.
+                    const ec = m.emissiveColor ?? { r: 0, g: 0, b: 0 };
+                    const intensity = m.emissiveIntensity ?? 1;
+                    lr = ec.r * intensity;
+                    lg = ec.g * intensity;
+                    lb = ec.b * intensity;
+                } else if (cls === "StandardMaterial") {
+                    // StandardMaterial: emissiveColor is a linear Color3 (no separate intensity scalar).
+                    const ec = m.emissiveColor ?? { r: 0, g: 0, b: 0 };
+                    lr = ec.r;
+                    lg = ec.g;
+                    lb = ec.b;
+                } else {
+                    return null;
+                }
+
+                if (lr <= 0 && lg <= 0 && lb <= 0) {
+                    return null;
+                }
+                return [lr, lg, lb];
+            });
+            this._geometryManager.uploadEmissive(snapshot, meshEmissiveLe);
         });
     }
 

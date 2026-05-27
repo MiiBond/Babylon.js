@@ -52,6 +52,19 @@ export const TriangleStride = 48;
 /** Size of one triangle attribute record in bytes */
 export const TriangleAttribStride = 80;
 
+// ---- EmissiveTri ------------------------------------------------------------
+
+/**
+ * Size of one EmissiveTri struct in bytes (64 bytes = 4 × vec4f).
+ *
+ * Layout:
+ *   v0 : vec4f  — world-space vertex 0, w = 0
+ *   v1 : vec4f  — world-space vertex 1, w = 0
+ *   v2 : vec4f  — world-space vertex 2, w = 0
+ *   Le : vec4f  — emitted radiance in xyz (emissionColor × emissionLuminance), area in w
+ */
+export const EmissiveTriStride = 64;
+
 // ---- RTMaterial -------------------------------------------------------------
 
 /** Size of one RTMaterial struct in bytes (176 = 11 × 16-byte vec4 slots) */

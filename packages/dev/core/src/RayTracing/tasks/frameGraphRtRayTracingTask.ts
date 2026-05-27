@@ -154,6 +154,8 @@ export class FrameGraphRtRayTracingTask extends FrameGraphTask {
                     // Material texture array: binding 12 is the sampler (auto-inserted),
                     // binding 13 is the texture_2d_array itself.
                     texArray: { group: 0, binding: 13 },
+                    // Emissive triangle list for NEE (binding 14).
+                    emissiveTris: { group: 0, binding: 14 },
                 },
             }
         );
@@ -170,6 +172,9 @@ export class FrameGraphRtRayTracingTask extends FrameGraphTask {
         this._frameUbo.addUniform("iblEnabled", 1);
         this._frameUbo.addUniform("iblMaxMip", 1);
         this._frameUbo.addUniform("iblLodScale", 1);
+        this._frameUbo.addUniform("emissiveCount", 1);
+        this._frameUbo.addUniform("_padFU0", 1);
+        this._frameUbo.addUniform("_padFU1", 1);
 
         this._cs.setUniformBuffer("frame", this._frameUbo);
     }
@@ -304,6 +309,11 @@ export class FrameGraphRtRayTracingTask extends FrameGraphTask {
             this._cs.setStorageBuffer("triangles", geomMgr.triangleBuffer);
             this._cs.setStorageBuffer("attribs", geomMgr.attribBuffer);
             this._cs.setStorageBuffer("materials", matMgr.buffer);
+            // Emissive triangle list — always bound (contains at least one sentinel
+            // entry even when emissiveCount == 0 so the bind group is always valid).
+            if (geomMgr.emissiveBuffer) {
+                this._cs.setStorageBuffer("emissiveTris", geomMgr.emissiveBuffer);
+            }
 
             // Update camera-derived uniforms and detect movement for accumulation reset
             if (this.camera) {
@@ -374,6 +384,7 @@ export class FrameGraphRtRayTracingTask extends FrameGraphTask {
             }
             this._frameUbo!.updateFloat("iblMaxMip", iblMaxMip);
             this._frameUbo!.updateFloat("iblLodScale", iblLodScale);
+            this._frameUbo!.updateUInt("emissiveCount", this._geomMgr?.emissiveCount ?? 0);
             this._frameUbo!.update();
 
             // Bind storage textures — resolved fresh each frame from the frame graph
