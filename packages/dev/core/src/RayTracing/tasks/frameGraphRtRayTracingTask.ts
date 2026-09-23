@@ -18,6 +18,7 @@ import { type RtTextureManager } from "../materials/rtTextureManager";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { type Scene } from "core/scene";
 import { GetOpenPBREnvironmentBRDFTexture } from "core/Misc/brdfTextureTools";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 
 // Register the megakernel WGSL source into the ShaderStore on first import.
 // The source is split across three WGSL files that are embedded here as
@@ -26,15 +27,17 @@ import { GetOpenPBREnvironmentBRDFTexture } from "core/Misc/brdfTextureTools";
 import { RtCommonWgsl } from "../shaders/rtCommonWgsl";
 import { RtUserHooksWgsl } from "../shaders/rtUserHooksWgsl";
 import { RtBsdfWgsl } from "../shaders/rtBsdfWgsl";
+import { RtTraversalWgsl } from "../shaders/rtTraversalWgsl";
 import { RtMegakernelWgsl } from "../shaders/rtMegakernelWgsl";
 
 const RtShaderName = "rtMegakernel";
 
 if (!ShaderStore.ShadersStoreWGSL[`${RtShaderName}ComputeShader`]) {
-    // Concatenate common structs + default user hooks + BSDF library + megakernel body.
+    // Concatenate common structs + default user hooks + BSDF library + traversal helpers + megakernel body.
     // Order matters: rtCommon declares types, rtUserHooks provides override stubs,
-    // rtBsdf provides sampleSurface/evalIblShading, rtMegakernel is the entry point.
-    ShaderStore.ShadersStoreWGSL[`${RtShaderName}ComputeShader`] = RtCommonWgsl + "\n" + RtUserHooksWgsl + "\n" + RtBsdfWgsl + "\n" + RtMegakernelWgsl;
+    // rtBsdf provides sampleSurface/evalIblShading, rtTraversal provides BVH/NEE helpers,
+    // rtMegakernel is the entry point.
+    ShaderStore.ShadersStoreWGSL[`${RtShaderName}ComputeShader`] = RtCommonWgsl + "\n" + RtUserHooksWgsl + "\n" + RtBsdfWgsl + "\n" + RtTraversalWgsl + "\n" + RtMegakernelWgsl;
 }
 
 /**
@@ -126,7 +129,9 @@ export class FrameGraphRtRayTracingTask extends FrameGraphTask {
         // processFinalCode callback because Babylon.js invokes it synchronously during
         // construction — before the caller has had a chance to set processFinalCode via
         // addClosestHitShader() / setMissShader() / setRayGenShader().
-        const baseSource = ShaderStore.ShadersStoreWGSL[`${RtShaderName}ComputeShader`];
+        const baseSource =
+            ShaderStore.ShadersStoreWGSL[`${RtShaderName}ComputeShader`] ??
+            RtCommonWgsl + "\n" + RtUserHooksWgsl + "\n" + RtBsdfWgsl + "\n" + RtTraversalWgsl + "\n" + RtMegakernelWgsl;
         let shaderKey = RtShaderName;
         if (this.processFinalCode) {
             shaderKey = `${RtShaderName}_${this.name}`;
@@ -173,7 +178,7 @@ export class FrameGraphRtRayTracingTask extends FrameGraphTask {
         this._frameUbo.addUniform("iblMaxMip", 1);
         this._frameUbo.addUniform("iblLodScale", 1);
         this._frameUbo.addUniform("emissiveCount", 1);
-        this._frameUbo.addUniform("_padFU0", 1);
+        this._frameUbo.addUniform("iblRotation", 1);
         this._frameUbo.addUniform("_padFU1", 1);
 
         this._cs.setUniformBuffer("frame", this._frameUbo);
@@ -385,6 +390,8 @@ export class FrameGraphRtRayTracingTask extends FrameGraphTask {
             this._frameUbo!.updateFloat("iblMaxMip", iblMaxMip);
             this._frameUbo!.updateFloat("iblLodScale", iblLodScale);
             this._frameUbo!.updateUInt("emissiveCount", this._geomMgr?.emissiveCount ?? 0);
+            const iblRotation = envTex instanceof CubeTexture ? (envTex.rotationY ?? 0) : 0;
+            this._frameUbo!.updateFloat("iblRotation", iblRotation);
             this._frameUbo!.update();
 
             // Bind storage textures — resolved fresh each frame from the frame graph

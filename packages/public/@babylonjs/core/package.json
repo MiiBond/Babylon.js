@@ -785,6 +785,8 @@
         "PostProcesses/vrMultiviewToSingleviewPostProcess.js",
         "Probes/reflectionProbe.js",
         "Probes/reflectionProbe.types.js",
+        "RayTracing/materials/rtDiffuseGIPluginMaterial.js",
+        "RayTracing/tasks/frameGraphRtGITraceTask.js",
         "RayTracing/tasks/frameGraphRtRayTracingTask.js",
         "Rendering/GlobalIllumination/giRSMManager.js",
         "Rendering/IBLShadows/iblShadowsPluginMaterial.js",

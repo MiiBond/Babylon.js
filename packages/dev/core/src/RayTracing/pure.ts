@@ -7,4 +7,5 @@ export * from "./geometry/rtGeometryManager";
 export * from "./materials/rtMaterialManager";
 export * from "./materials/rtTextureManager";
 export * from "./tasks/frameGraphRayTracerTask";
+export * from "./tasks/frameGraphRtDiffuseGITask";
 export * from "./tasks/frameGraphRtBvhBuildTask";

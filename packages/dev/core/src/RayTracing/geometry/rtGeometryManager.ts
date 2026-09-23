@@ -53,6 +53,9 @@ export class RtGeometryManager {
     /** Number of emissive triangles uploaded during the last uploadEmissive() call */
     public emissiveCount = 0;
 
+    /** Combined hash of all BLAS geometry + world transforms from the last upload. */
+    private _sceneHash = 0;
+
     /**
      * Creates a new RtGeometryManager.
      * @param engine - The WebGPU engine used to create storage buffers
@@ -113,21 +116,41 @@ export class RtGeometryManager {
         // --- Step 1: build/retrieve BLASes and measure totals ---
         let totalTris = 0;
         let totalNodes = 0;
+        let sceneHash = 0x811c9dc5 ^ geoms.length;
 
         for (const geom of geoms) {
             const meshId = geom.mesh.uniqueId;
-            const hash = this._hashPositions(geom.positions);
+            const posHash = this._hashPositions(geom.positions);
 
             let entry = this._blasCache.get(meshId);
-            if (!entry || entry.hash !== hash) {
+            if (!entry || entry.hash !== posHash) {
                 const blas = this._builder.buildBlas(geom.positions);
-                entry = { nodes: blas.nodes, triIndices: blas.triIndices, nodeCount: blas.nodeCount, hash };
+                entry = { nodes: blas.nodes, triIndices: blas.triIndices, nodeCount: blas.nodeCount, hash: posHash };
                 this._blasCache.set(meshId, entry);
             }
 
             totalTris += geom.triangleCount;
             totalNodes += entry.nodeCount;
+
+            // Fold mesh id + geometry hash + transform into the scene hash.
+            // geom.worldToLocal is a Float32Array[16]; sample 8 elements for speed.
+            const m = geom.worldToLocal;
+            let th = posHash ^ meshId;
+            th ^= (m[0] * 73856093) | 0;
+            th ^= (m[5] * 19349663) | 0;
+            th ^= (m[10] * 83492791) | 0;
+            th ^= (m[12] * 73856093) | 0;
+            th ^= (m[13] * 19349663) | 0;
+            th ^= (m[14] * 83492791) | 0;
+            sceneHash = Math.imul(sceneHash ^ th, 0x01000193) >>> 0;
         }
+
+        // If nothing changed (geometry + transforms), skip the expensive packing
+        // and GPU upload.  Buffer contents from the last frame are still valid.
+        if (sceneHash === this._sceneHash && this._triBuffer !== null) {
+            return;
+        }
+        this._sceneHash = sceneHash;
 
         // --- Step 2: ensure GPU buffers are large enough ---
         this._ensureTriBuffer(totalTris);

@@ -23,6 +23,9 @@ export class FrameGraphRtBvhBuildTask extends FrameGraphTask {
     private readonly _textureManager: RtTextureManager;
     private readonly _notSupported: boolean;
 
+    /** Fast scene hash from the last frame — mesh IDs + transforms + emissive properties. */
+    private _fastSceneHash = 0;
+
     /** Access the geometry manager to bind its buffers to the megakernel. */
     public get geometryManager(): RtGeometryManager {
         return this._geometryManager;
@@ -83,33 +86,63 @@ export class FrameGraphRtBvhBuildTask extends FrameGraphTask {
         }
 
         pass.setExecuteFunc(() => {
-            // Start async texture upload; no-op if already running or unchanged.
-            // The texture manager's texIndexMap is populated after the first upload completes.
+            // ---- Fast scene hash ------------------------------------------------
+            // Hash mesh count + IDs + world transforms + emissive material values.
+            // This is O(meshCount), not O(triangleCount), and avoids reading vertex
+            // data.  If nothing changed since the last frame we can skip the entire
+            // snapshot + upload pipeline.
+            const meshes = this._scene.meshes;
+            let fh = 0x811c9dc5 ^ meshes.length;
+            for (const mesh of meshes) {
+                if (!mesh.isEnabled() || !mesh.isVisible) {
+                    continue;
+                }
+                fh = Math.imul(fh ^ mesh.uniqueId, 0x01000193) >>> 0;
+                const m = mesh.getWorldMatrix().m;
+                // Sample 6 matrix elements — catches translation + rotation changes.
+                fh ^= (m[0] * 73856093) | 0;
+                fh ^= (m[5] * 19349663) | 0;
+                fh ^= (m[10] * 83492791) | 0;
+                fh ^= (m[12] * 73856093) | 0;
+                fh ^= (m[13] * 19349663) | 0;
+                fh ^= (m[14] * 83492791) | 0;
+                fh = Math.imul(fh, 0x01000193) >>> 0;
+
+                // Fold in emissive state so a material change forces a rebuild.
+                const mat = mesh.material as unknown as {
+                    emissionLuminance?: number;
+                    emissionColor?: { r: number; g: number; b: number };
+                } | null;
+                if (mat?.emissionLuminance) {
+                    fh ^= (mat.emissionLuminance * 1000) | 0;
+                }
+            }
+
+            const sceneUnchanged = fh === this._fastSceneHash && this._geometryManager.instanceCount > 0;
+            this._fastSceneHash = fh;
+
+            // Always tick the async texture upload (no-op if already done).
             this._textureManager.requestUpload(this._scene);
 
-            // Rebuild material buffer — passes the current texIndexMap so texture indices
-            // are baked into the RTMaterial structs.  On the very first frame the map is
-            // empty (upload not finished yet), so all texture slots get NO_TEX; subsequent
-            // frames will use the populated map once the async upload completes.
+            if (sceneUnchanged) {
+                // Scene is identical to last frame — GPU buffers are still valid.
+                // Still update materials in case texture upload just completed.
+                this._materialManager.upload(this._scene, this._textureManager.texIndexMap);
+                return;
+            }
+
+            // ---- Full rebuild ---------------------------------------------------
             this._materialManager.upload(this._scene, this._textureManager.texIndexMap);
 
-            // Snapshot scene geometry and upload BVH + triangles
             const snapshot = SnapshotScene(this._scene, this._materialManager.materialIndexMap);
             this._geometryManager.upload(snapshot);
 
-            // Build the emissive triangle list for Next Event Estimation.
-            // For each mesh, extract emitted radiance from its material regardless of type:
-            //   OpenPBRMaterial  → emissionColor × emissionLuminance
-            //   PBRMaterial      → emissiveColor × emissiveIntensity  (Babylon.js PBR)
-            //   StandardMaterial → emissiveColor (treated as luminance-1 white * color)
-            // The meshEmissiveLe array is indexed in parallel with snapshot.meshGeometries.
             const meshEmissiveLe: Array<[number, number, number] | null> = snapshot.meshGeometries.map((geom) => {
                 const mat = geom.mesh.material;
                 if (!mat) {
                     return null;
                 }
                 const cls = mat.getClassName?.() ?? "";
-                // Cast to a union of the properties we care about across material types.
                 const m = mat as unknown as {
                     emissionLuminance?: number;
                     emissionColor?: { r: number; g: number; b: number };
@@ -129,14 +162,12 @@ export class FrameGraphRtBvhBuildTask extends FrameGraphTask {
                     lg = ec.g * lum;
                     lb = ec.b * lum;
                 } else if (cls === "PBRMaterial" || cls === "PBRMetallicRoughnessMaterial") {
-                    // Babylon.js PBR: emissiveColor is a linear-space Color3, emissiveIntensity scales it.
                     const ec = m.emissiveColor ?? { r: 0, g: 0, b: 0 };
                     const intensity = m.emissiveIntensity ?? 1;
                     lr = ec.r * intensity;
                     lg = ec.g * intensity;
                     lb = ec.b * intensity;
                 } else if (cls === "StandardMaterial") {
-                    // StandardMaterial: emissiveColor is a linear Color3 (no separate intensity scalar).
                     const ec = m.emissiveColor ?? { r: 0, g: 0, b: 0 };
                     lr = ec.r;
                     lg = ec.g;

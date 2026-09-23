@@ -13,6 +13,11 @@ export * from "./materials/rtTextureManager";
 
 // Frame graph tasks (public API)
 export * from "./tasks/frameGraphRayTracerTask";
+export * from "./tasks/frameGraphRtDiffuseGITask";
 // Internal tasks are also exported for advanced users
 export * from "./tasks/frameGraphRtBvhBuildTask";
 export * from "./tasks/frameGraphRtRayTracingTask";
+export * from "./tasks/frameGraphRtGITraceTask";
+
+// Materials
+export * from "./materials/rtDiffuseGIPluginMaterial";

@@ -1,6 +1,8 @@
 {
     "version": 1,
     "files": {
+        "RayTracing/materials/rtDiffuseGIPluginMaterial.ts": ["RegisterClass"],
+        "RayTracing/tasks/frameGraphRtGITraceTask.ts": ["shader-store-write"],
         "RayTracing/tasks/frameGraphRtRayTracingTask.ts": ["shader-store-write"]
     }
 }
