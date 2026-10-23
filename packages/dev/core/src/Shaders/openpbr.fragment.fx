@@ -184,6 +184,13 @@ void main(void) {
             , specular_color
             , specular_weight
         );
+
+        #if defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS)
+            // specular_weight modulates the base IOR relative to its surrounding medium (the coat, if present),
+            // so that refraction stays consistent with the weighted F0. specular_weight = 0 index-matches the
+            // base to that medium. From here on, specular_ior is the weighted absolute IOR, which is only read by refraction.
+            specular_ior = applySpecularWeightToIor(specular_ior, effectiveCoatIor, specular_weight);
+        #endif
     }
 
     // Base Metallic

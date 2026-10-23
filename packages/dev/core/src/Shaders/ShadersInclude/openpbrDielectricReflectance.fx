@@ -51,3 +51,20 @@ ReflectanceParams dielectricReflectance(
 
     return outParams;
 }
+
+// Applies the OpenPBR specular_weight to the IOR of an interface, returning the weighted absolute inside IOR.
+// specular_weight scales F0, and the IOR is re-derived from the scaled F0 so that refraction stays consistent
+// with reflection (specular_weight = 0 index-matches the inside to the outside medium).
+// The (inside - outside) / (inside + outside) term matches dielectricReflectance() so the compiler can share it.
+// Not marked pbr_inline: the shader code inliner does not support early returns.
+float applySpecularWeightToIor(in float insideIOR, in float outsideIOR, in float specularWeight)
+{
+    if (specularWeight == 1.0) {
+        return insideIOR;
+    }
+    float r = (insideIOR - outsideIOR) / (insideIOR + outsideIOR);
+    float scaledF0 = min(r * r * specularWeight, 0.9999);
+    float sqrtF0 = sqrt(scaledF0);
+    float relativeIOR = (1.0 + sqrtF0) / (1.0 - sqrtF0);
+    return insideIOR < outsideIOR ? outsideIOR / relativeIOR : outsideIOR * relativeIOR;
+}

@@ -4673,6 +4673,12 @@
             "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
         },
         {
+            "title": "OpenPBR Transmission Specular Weight VS Roughness - IBL",
+            "playgroundId": "#GRQHVV#340",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
+        },
+        {
             "title": "OpenPBR Transmission Forward Scatter and Absorption - IBL",
             "playgroundId": "#GRQHVV#263",
             "excludedEngines": ["webgl1"],

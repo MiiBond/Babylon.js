@@ -163,12 +163,20 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
     // Base Dielectric
+    let effectiveCoatIor: f32 = mix(1.0f, coat_ior, coat_weight);
     let baseDielectricReflectance: ReflectanceParams = dielectricReflectance(
         specular_ior // inside IOR
-        , mix(1.0f, coat_ior, coat_weight) // outside IOR is coat
+        , effectiveCoatIor // outside IOR is coat
         , specular_color
         , specular_weight
     );
+
+    #if defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS)
+        // specular_weight modulates the base IOR relative to its surrounding medium (the coat, if present),
+        // so that refraction stays consistent with the weighted F0. specular_weight = 0 index-matches the
+        // base to that medium. From here on, specular_ior is the weighted absolute IOR, which is only read by refraction.
+        specular_ior = applySpecularWeightToIor(specular_ior, effectiveCoatIor, specular_weight);
+    #endif
 
     // Base Metallic
     let baseConductorReflectance: ReflectanceParams = conductorReflectance(base_color, specular_color, specular_weight);
